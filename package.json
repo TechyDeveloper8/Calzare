@@ -1,0 +1,17 @@
+{
+  "name": "calzare-ecommerce-root",
+  "version": "1.0.0",
+  "description": "CALZARE - Production-Ready Footwear E-Commerce Platform & Admin CMS",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "install:all": "npm --prefix backend install && npm --prefix frontend install",
+    "server": "npm --prefix backend run dev",
+    "client": "npm --prefix frontend run dev",
+    "seed": "npm --prefix backend run seed",
+    "test": "npm --prefix backend test"
+  }
+}

@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /checkout
+Disallow: /order-success/
+Disallow: /order-confirmation/
+Disallow: /account
+
+Sitemap: https://calzare.in/sitemap.xml

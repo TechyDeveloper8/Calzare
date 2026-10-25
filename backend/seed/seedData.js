@@ -899,11 +899,9 @@ const seedDatabase = async () => {
         items: [
           { label: 'Men', url: '/men' },
           { label: 'Women', url: '/women' },
-          { label: 'Kids', url: '/kids', badge: 'NEW' },
-          { label: 'Unisex', url: '/unisex' },
-          { label: 'Clogs', url: '/shop?category=clogs' },
-          { label: 'Sliders', url: '/shop?category=sliders' },
-          { label: 'Sandals', url: '/shop?category=sandals' },
+          { label: 'Kids', url: '/kids' },
+          { label: 'Our Story', url: '/about' },
+          { label: 'Contact', url: '/contact' },
         ],
         metadata: {
           stickyHeader: true,

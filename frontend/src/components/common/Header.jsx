@@ -33,22 +33,47 @@ export const Header = ({ onOpenSearch }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const headerMenu = menus?.header;
-  const rawNavItems = headerMenu?.items?.length
-    ? headerMenu.items
-    : [
-        { label: 'Men', url: '/men' },
-        { label: 'Women', url: '/women' },
-        { label: 'Kids', url: '/kids' },
-        { label: 'Our Story', url: '/about' },
-        { label: 'Contact', url: '/contact' },
-      ];
+  const defaultNavItems = [
+    { label: 'Men', url: '/men' },
+    { label: 'Women', url: '/women' },
+    { label: 'Kids', url: '/kids' },
+    { label: 'Our Story', url: '/about' },
+    { label: 'Contact', url: '/contact' },
+  ];
 
-  const navItems = rawNavItems.filter((item) => {
-    const lbl = (item.label || '').toLowerCase();
-    const url = (item.url || '').toLowerCase();
-    return !lbl.includes('999') && !lbl.includes('drop') && !url.includes('999');
-  });
+  const headerMenu = menus?.header;
+  let navItems = headerMenu?.items?.length ? headerMenu.items : defaultNavItems;
+
+  // Filter out any unwanted categories/drop badges from legacy seeds
+  navItems = navItems
+    .filter((item) => {
+      const lbl = (item.label || '').toLowerCase();
+      const url = (item.url || '').toLowerCase();
+      return (
+        !lbl.includes('999') &&
+        !lbl.includes('drop') &&
+        !url.includes('999') &&
+        !lbl.includes('unisex') &&
+        !lbl.includes('clog') &&
+        !lbl.includes('slider') &&
+        !lbl.includes('sandal')
+      );
+    })
+    .map((item) => {
+      // Remove badge from Kids if present
+      if (item.label === 'Kids' && item.badge === 'NEW') {
+        return { ...item, badge: null };
+      }
+      return item;
+    });
+
+  // Ensure Our Story and Contact are always present in the header
+  if (!navItems.some((i) => i.url === '/about')) {
+    navItems.push({ label: 'Our Story', url: '/about' });
+  }
+  if (!navItems.some((i) => i.url === '/contact')) {
+    navItems.push({ label: 'Contact', url: '/contact' });
+  }
 
   return (
     <>

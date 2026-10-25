@@ -1,4 +1,7 @@
-const API_BASE = '/api/v1';
+const rawApiRoot = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '';
+const API_BASE = rawApiRoot
+  ? `${rawApiRoot.replace(/\/+$/, '').replace(/\/api\/v1$/, '')}/api/v1`
+  : '/api/v1';
 
 // Helper to get auth token
 const getAuthHeaders = () => {

@@ -11,7 +11,7 @@ import {
   adminUpdateVariant,
   adminDeleteVariant,
 } from '../controllers/productController.js';
-import { protect, authorize } from '../middleware/authMiddleware.js';
+import { protect, authorize, optionalAuth } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -19,7 +19,7 @@ const router = express.Router();
 router.get('/', getProducts);
 router.get('/search', searchProducts);
 router.get('/check-delivery/:pincode', checkDeliveryPincode);
-router.get('/:slug', getProductBySlug);
+router.get('/:slug', optionalAuth, getProductBySlug);
 
 // Protected Admin product and variant routes
 router.post('/', protect, authorize('admin', 'superadmin', 'product_manager'), adminCreateProduct);

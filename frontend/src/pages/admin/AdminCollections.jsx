@@ -13,15 +13,41 @@ import {
   Sparkles,
   X,
   AlertCircle,
+  ArrowRight,
+  Eye,
+  Monitor,
+  Smartphone,
+  Layout,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { ImageUploadField } from '../../components/admin/ImageUploadField.jsx';
+import { CollectionHeroStudioModal } from '../../components/admin/CollectionHeroStudioModal.jsx';
 
 export const AdminCollections = () => {
-  const [activeTab, setActiveTab] = useState('categories'); // 'categories' | 'collections'
+  const [activeTab, setActiveTab] = useState('hero-banners'); // 'hero-banners' | 'collections' | 'categories'
   const [categories, setCategories] = useState([]);
   const [collections, setCollections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  // Hero Banner CMS Studio Modal States
+  const [heroStudioModalOpen, setHeroStudioModalOpen] = useState(false);
+  const [heroStudioSelectedCol, setHeroStudioSelectedCol] = useState(null);
+  const [heroFilter, setHeroFilter] = useState('all'); // 'all' | 'audience' | 'drops'
+
+  const handleOpenHeroStudio = (col) => {
+    setHeroStudioSelectedCol(col);
+    setHeroStudioModalOpen(true);
+  };
+
+  const handleSaveHeroStudio = async (colId, updateData) => {
+    const res = await api.adminUpdateCollection(colId, updateData);
+    if (res.success) {
+      await fetchData();
+    } else {
+      throw new Error(res.message || 'Failed to update hero banner');
+    }
+  };
 
   // Category Modal State
   const [catModalOpen, setCatModalOpen] = useState(false);
@@ -66,6 +92,16 @@ export const AdminCollections = () => {
       imageUrl: '',
       ctaText: '',
       ctaLink: '',
+    },
+    brandComparison: {
+      isEnabled: false,
+      isPublished: true,
+      heading: 'SEE THE DIFFERENCE',
+      subheading: '',
+      desktopMediaUrl: '',
+      mobileMediaUrl: '',
+      altText: 'Brand comparison',
+      displayOrder: 0,
     },
     seoTitle: '',
     seoDescription: '',
@@ -160,10 +196,43 @@ export const AdminCollections = () => {
         isFeaturedOnHome: !!col.isFeaturedOnHome,
         displayOrder: col.displayOrder || 0,
         hero: {
-          label: col.hero?.label || "THE MEN'S EDIT",
-          heading: col.hero?.heading || 'BUILT TO STAND OUT.',
-          supportingText: col.hero?.supportingText || 'Everyday comfort. Zero ordinary energy.',
-          desktopBannerUrl: col.hero?.desktopBannerUrl || '',
+          label:
+            col.hero?.label !== undefined
+              ? col.hero.label
+              : col.slug === 'women'
+              ? "THE WOMEN'S EDIT"
+              : col.slug === 'kids'
+              ? "THE KIDS' EDIT"
+              : col.slug === 'unisex'
+              ? "THE UNISEX EDIT"
+              : "THE MEN'S EDIT",
+          heading:
+            col.hero?.heading ||
+            (col.slug === 'women'
+              ? 'EFFORTLESS REBOUND.'
+              : col.slug === 'kids'
+              ? 'BUILT FOR PLAY.'
+              : col.slug === 'unisex'
+              ? 'UNIVERSAL FORM. PURE FUNCTION.'
+              : 'BUILT TO STAND OUT.'),
+          supportingText:
+            col.hero?.supportingText ||
+            (col.slug === 'women'
+              ? 'No laces, no rush — comfort that clocks off exactly when you do.'
+              : col.slug === 'kids'
+              ? 'Featherlight, washable, and ultra-durable comfort for little explorers everywhere.'
+              : col.slug === 'unisex'
+              ? 'Sculpted footwear engineered for all identities, all terrains, and all-day ease.'
+              : 'Everyday comfort. Zero ordinary energy.'),
+          desktopBannerUrl:
+            col.hero?.desktopBannerUrl ||
+            (col.slug === 'women'
+              ? '/images/split/women-collection-image.jpg'
+              : col.slug === 'kids'
+              ? '/images/split/kids-collection-image.jpg'
+              : col.slug === 'unisex'
+              ? '/images/split/unisex-collection-image.jpg'
+              : '/images/split/men-collection-image.jpg'),
           mobileBannerUrl: col.hero?.mobileBannerUrl || '',
           imagePosition: col.hero?.imagePosition || 'center center',
           background: col.hero?.background || 'editorial_minimal',
@@ -179,6 +248,16 @@ export const AdminCollections = () => {
           imageUrl: col.editorialBanner?.imageUrl || '',
           ctaText: col.editorialBanner?.ctaText || '',
           ctaLink: col.editorialBanner?.ctaLink || '',
+        },
+        brandComparison: {
+          isEnabled: !!col.brandComparison?.isEnabled,
+          isPublished: col.brandComparison?.isPublished !== false,
+          heading: col.brandComparison?.heading || 'SEE THE DIFFERENCE',
+          subheading: col.brandComparison?.subheading || '',
+          desktopMediaUrl: col.brandComparison?.desktopMediaUrl || '',
+          mobileMediaUrl: col.brandComparison?.mobileMediaUrl || '',
+          altText: col.brandComparison?.altText || 'Brand comparison',
+          displayOrder: col.brandComparison?.displayOrder || 0,
         },
         seoTitle: col.seoTitle || '',
         seoDescription: col.seoDescription || '',
@@ -215,6 +294,16 @@ export const AdminCollections = () => {
           ctaText: '',
           ctaLink: '',
         },
+        brandComparison: {
+          isEnabled: false,
+          isPublished: true,
+          heading: 'SEE THE DIFFERENCE',
+          subheading: '',
+          desktopMediaUrl: '',
+          mobileMediaUrl: '',
+          altText: 'Brand comparison',
+          displayOrder: 0,
+        },
         seoTitle: '',
         seoDescription: '',
       });
@@ -250,6 +339,17 @@ export const AdminCollections = () => {
     }
   };
 
+  const audienceSlugs = ['women', 'men', 'kids', 'unisex'];
+  const filteredHeroCollections = collections.filter((col) => {
+    if (heroFilter === 'audience') {
+      return audienceSlugs.includes((col.slug || '').toLowerCase());
+    }
+    if (heroFilter === 'drops') {
+      return !audienceSlugs.includes((col.slug || '').toLowerCase());
+    }
+    return true;
+  });
+
   return (
     <div>
       <div className="admin-page-header">
@@ -260,11 +360,24 @@ export const AdminCollections = () => {
           </p>
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
-          {activeTab === 'categories' ? (
+          {activeTab === 'hero-banners' && (
+            <button
+              onClick={() => {
+                const womenCol = collections.find((c) => c.slug === 'women') || collections[0];
+                handleOpenHeroStudio(womenCol);
+              }}
+              className="admin-btn admin-btn-primary"
+              style={{ gap: '6px', backgroundColor: '#0f172a', color: '#ffffff' }}
+            >
+              <Sparkles size={16} color="#d8ff00" /> Open Hero Studio CMS
+            </button>
+          )}
+          {activeTab === 'categories' && (
             <button onClick={() => openCatModal()} className="admin-btn admin-btn-primary" style={{ gap: '6px' }}>
               <Plus size={16} /> New Category
             </button>
-          ) : (
+          )}
+          {activeTab === 'collections' && (
             <button onClick={() => openColModal()} className="admin-btn admin-btn-primary" style={{ gap: '6px' }}>
               <Plus size={16} /> New Collection
             </button>
@@ -279,9 +392,9 @@ export const AdminCollections = () => {
       )}
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid var(--border-subtle)', marginBottom: '20px' }}>
+      <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid var(--border-subtle)', marginBottom: '20px', flexWrap: 'wrap' }}>
         <button
-          onClick={() => setActiveTab('categories')}
+          onClick={() => setActiveTab('hero-banners')}
           style={{
             padding: '10px 18px',
             border: 'none',
@@ -289,11 +402,15 @@ export const AdminCollections = () => {
             fontWeight: 700,
             fontSize: '0.9rem',
             cursor: 'pointer',
-            borderBottom: activeTab === 'categories' ? '2px solid var(--ink-black)' : '2px solid transparent',
-            color: activeTab === 'categories' ? 'var(--ink-black)' : '#888',
+            borderBottom: activeTab === 'hero-banners' ? '2px solid var(--ink-black)' : '2px solid transparent',
+            color: activeTab === 'hero-banners' ? 'var(--ink-black)' : '#888',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
           }}
         >
-          <Layers size={16} style={{ display: 'inline', marginRight: '6px' }} /> Categories ({categories.length})
+          <Sparkles size={16} color={activeTab === 'hero-banners' ? '#0f172a' : '#888'} />
+          Hero Banners CMS (Kids, Men, Women & Drops)
         </button>
         <button
           onClick={() => setActiveTab('collections')}
@@ -306,11 +423,438 @@ export const AdminCollections = () => {
             cursor: 'pointer',
             borderBottom: activeTab === 'collections' ? '2px solid var(--ink-black)' : '2px solid transparent',
             color: activeTab === 'collections' ? 'var(--ink-black)' : '#888',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
           }}
         >
-          <Sparkles size={16} style={{ display: 'inline', marginRight: '6px' }} /> Collections & Drops ({collections.length})
+          <Layout size={16} /> Collections & Drops ({collections.length})
+        </button>
+        <button
+          onClick={() => setActiveTab('categories')}
+          style={{
+            padding: '10px 18px',
+            border: 'none',
+            background: 'none',
+            fontWeight: 700,
+            fontSize: '0.9rem',
+            cursor: 'pointer',
+            borderBottom: activeTab === 'categories' ? '2px solid var(--ink-black)' : '2px solid transparent',
+            color: activeTab === 'categories' ? 'var(--ink-black)' : '#888',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+          }}
+        >
+          <Layers size={16} /> Categories ({categories.length})
         </button>
       </div>
+
+      {/* ── 1. Hero Banners CMS Tab (Kids, Men, Women & Drops) ───────────────── */}
+      {activeTab === 'hero-banners' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {/* Studio Banner Header */}
+          <div
+            style={{
+              backgroundColor: '#0f172a',
+              color: '#ffffff',
+              borderRadius: '12px',
+              padding: '24px 28px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '16px',
+              boxShadow: '0 10px 25px -5px rgba(15, 23, 42, 0.15)',
+            }}
+          >
+            <div style={{ maxWidth: '640px' }}>
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  backgroundColor: 'rgba(216, 255, 0, 0.15)',
+                  color: '#d8ff00',
+                  padding: '4px 12px',
+                  borderRadius: '999px',
+                  fontSize: '0.74rem',
+                  fontWeight: 800,
+                  textTransform: 'uppercase',
+                  marginBottom: '10px',
+                }}
+              >
+                <Sparkles size={12} /> Editorial Section Hero CMS
+              </div>
+              <h2 style={{ fontSize: '1.45rem', fontWeight: 900, margin: '0 0 8px', color: '#ffffff' }}>
+                Manage Collection Hero Banners (Kids, Men & Women)
+              </h2>
+              <p style={{ margin: 0, fontSize: '0.86rem', color: '#94a3b8', lineHeight: 1.5 }}>
+                Directly upload high-resolution images, update sparkle eyebrow badges, change bold headlines, and customize Explore CTAs for every audience page with instant real-time WYSIWYG preview.
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              {['women', 'men', 'kids', 'unisex'].map((slug) => {
+                const targetCol = collections.find((c) => c.slug === slug);
+                const label =
+                  slug === 'women'
+                    ? "Women's Hero"
+                    : slug === 'men'
+                    ? "Men's Hero"
+                    : slug === 'kids'
+                    ? "Kids' Hero"
+                    : 'Unisex Hero';
+                return (
+                  <button
+                    key={slug}
+                    onClick={() => targetCol && handleOpenHeroStudio(targetCol)}
+                    className="admin-btn"
+                    style={{
+                      backgroundColor: '#1e293b',
+                      color: '#ffffff',
+                      border: '1px solid #334155',
+                      padding: '8px 14px',
+                      fontSize: '0.8rem',
+                      fontWeight: 700,
+                      gap: '6px',
+                    }}
+                  >
+                    <Sparkles size={13} color="#d8ff00" /> {label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Filter Pills */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {[
+                { id: 'all', label: `All Sections (${collections.length})` },
+                { id: 'audience', label: 'Audience Sections (Women, Men, Kids, Unisex)' },
+                { id: 'drops', label: 'Curated Drops & Custom Stores' },
+              ].map((pill) => (
+                <button
+                  key={pill.id}
+                  onClick={() => setHeroFilter(pill.id)}
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: '20px',
+                    border: '1px solid',
+                    borderColor: heroFilter === pill.id ? 'var(--ink-black)' : '#cbd5e1',
+                    backgroundColor: heroFilter === pill.id ? 'var(--ink-black)' : '#ffffff',
+                    color: heroFilter === pill.id ? '#ffffff' : '#475569',
+                    fontSize: '0.78rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  {pill.label}
+                </button>
+              ))}
+            </div>
+            <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
+              Showing {filteredHeroCollections.length} banner sections
+            </span>
+          </div>
+
+          {/* Grid of Section Hero Banner Cards */}
+          {loading ? (
+            <div style={{ padding: '60px', textAlign: 'center', color: '#64748b' }}>
+              Loading collection banners...
+            </div>
+          ) : filteredHeroCollections.length === 0 ? (
+            <div
+              style={{
+                padding: '60px',
+                textAlign: 'center',
+                color: '#64748b',
+                backgroundColor: '#ffffff',
+                borderRadius: '12px',
+                border: '1px solid #e2e8f0',
+              }}
+            >
+              No collection hero banners match the filter.
+            </div>
+          ) : (
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))',
+                gap: '20px',
+              }}
+            >
+              {filteredHeroCollections.map((col) => {
+                const hero = col.hero || {};
+                const isHeroVisible = hero.isVisible !== false;
+                const isAudience = ['women', 'men', 'kids', 'unisex'].includes(col.slug);
+
+                return (
+                  <div
+                    key={col._id}
+                    style={{
+                      backgroundColor: '#ffffff',
+                      borderRadius: '14px',
+                      border: '1px solid #e2e8f0',
+                      overflow: 'hidden',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                    }}
+                  >
+                    {/* Card Header */}
+                    <div
+                      style={{
+                        padding: '14px 18px',
+                        borderBottom: '1px solid #f1f5f9',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        backgroundColor: '#fafaf9',
+                      }}
+                    >
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontWeight: 800, fontSize: '0.92rem', color: '#0f172a' }}>
+                            {col.name}
+                          </span>
+                          {isAudience && (
+                            <span
+                              style={{
+                                backgroundColor: '#dcfce7',
+                                color: '#15803d',
+                                fontSize: '0.68rem',
+                                fontWeight: 800,
+                                padding: '2px 6px',
+                                borderRadius: '4px',
+                              }}
+                            >
+                              Core Section
+                            </span>
+                          )}
+                        </div>
+                        <code style={{ fontSize: '0.72rem', color: '#64748b' }}>
+                          /{col.slug}
+                        </code>
+                      </div>
+
+                      <span
+                        style={{
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          padding: '3px 8px',
+                          borderRadius: '999px',
+                          backgroundColor: isHeroVisible ? '#ecfdf5' : '#f1f5f9',
+                          color: isHeroVisible ? '#047857' : '#64748b',
+                          border: `1px solid ${isHeroVisible ? '#a7f3d0' : '#e2e8f0'}`,
+                        }}
+                      >
+                        {isHeroVisible ? '● Live on Store' : '○ Hidden'}
+                      </span>
+                    </div>
+
+                    {/* Card Hero Preview Simulation */}
+                    <div
+                      style={{
+                        padding: '16px',
+                        backgroundColor:
+                          hero.background === 'dark_canvas'
+                            ? '#0f172a'
+                            : hero.background === 'warm_cream'
+                            ? '#f5f0ea'
+                            : '#fbf9f5',
+                        flex: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        position: 'relative',
+                        minHeight: '200px',
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: '1.2fr 0.8fr',
+                          gap: '14px',
+                          alignItems: 'center',
+                        }}
+                      >
+                        {/* Text preview */}
+                        <div>
+                          {hero.label && (
+                            <span
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                fontSize: '0.64rem',
+                                fontWeight: 800,
+                                textTransform: 'uppercase',
+                                color: hero.background === 'dark_canvas' ? '#ffffff' : '#0f172a',
+                                backgroundColor: hero.background === 'dark_canvas' ? '#1e293b' : '#ffffff',
+                                border: `1px solid ${
+                                  hero.background === 'dark_canvas' ? '#334155' : '#e2e8f0'
+                                }`,
+                                padding: '3px 8px',
+                                borderRadius: '999px',
+                                marginBottom: '8px',
+                              }}
+                            >
+                              <Sparkles
+                                size={10}
+                                color={hero.background === 'dark_canvas' ? '#ffffff' : '#0f172a'}
+                              />
+                              {hero.label}
+                            </span>
+                          )}
+                          <div
+                            style={{
+                              fontFamily: 'var(--font-display, sans-serif)',
+                              fontWeight: 900,
+                              fontSize: '1.12rem',
+                              lineHeight: 1.15,
+                              color: hero.background === 'dark_canvas' ? '#ffffff' : '#0f172a',
+                              marginBottom: '6px',
+                            }}
+                          >
+                            {hero.heading || 'BUILT TO STAND OUT.'}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: '0.74rem',
+                              color: hero.background === 'dark_canvas' ? '#94a3b8' : '#64748b',
+                              lineHeight: 1.4,
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden',
+                              marginBottom: '10px',
+                            }}
+                          >
+                            {hero.supportingText || col.description || 'Everyday comfort. Zero ordinary energy.'}
+                          </div>
+                          <span
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              fontSize: '0.7rem',
+                              fontWeight: 700,
+                              backgroundColor: hero.background === 'dark_canvas' ? '#d8ff00' : '#0f172a',
+                              color: hero.background === 'dark_canvas' ? '#0f172a' : '#ffffff',
+                              padding: '5px 12px',
+                              borderRadius: '999px',
+                            }}
+                          >
+                            {hero.ctaText || 'EXPLORE DROP'} <ArrowRight size={11} />
+                          </span>
+                        </div>
+
+                        {/* Image preview */}
+                        <div
+                          style={{
+                            height: '130px',
+                            borderRadius: '10px',
+                            overflow: 'hidden',
+                            backgroundColor: '#e2e8f0',
+                            boxShadow: '0 4px 10px rgba(0, 0, 0, 0.08)',
+                          }}
+                        >
+                          {hero.desktopBannerUrl ? (
+                            <img
+                              src={hero.desktopBannerUrl}
+                              alt={hero.heading || col.name}
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                                objectPosition: hero.imagePosition || 'center center',
+                              }}
+                            />
+                          ) : (
+                            <div
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: '#94a3b8',
+                                gap: '4px',
+                              }}
+                            >
+                              <ImageIcon size={22} />
+                              <span style={{ fontSize: '0.68rem' }}>No image</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Card Footer Actions */}
+                    <div
+                      style={{
+                        padding: '12px 16px',
+                        borderTop: '1px solid #f1f5f9',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        backgroundColor: '#ffffff',
+                      }}
+                    >
+                      <a
+                        href={`/collections/${col.slug}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{
+                          fontSize: '0.75rem',
+                          color: '#475569',
+                          textDecoration: 'none',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          fontWeight: 600,
+                        }}
+                      >
+                        Live Page <ExternalLink size={12} />
+                      </a>
+
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button
+                          onClick={() => openColModal(col)}
+                          className="admin-btn admin-btn-outline"
+                          style={{ padding: '6px 10px', fontSize: '0.75rem' }}
+                          title="Full Taxonomy & SEO Settings"
+                        >
+                          <Edit2 size={13} />
+                        </button>
+                        <button
+                          onClick={() => handleOpenHeroStudio(col)}
+                          className="admin-btn admin-btn-primary"
+                          style={{
+                            padding: '6px 14px',
+                            fontSize: '0.78rem',
+                            fontWeight: 800,
+                            gap: '6px',
+                            backgroundColor: '#0f172a',
+                            color: '#ffffff',
+                          }}
+                        >
+                          <Sparkles size={13} color="#d8ff00" /> Edit Hero Banner
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Categories Tab */}
       {activeTab === 'categories' ? (
@@ -824,6 +1368,22 @@ export const AdminCollections = () => {
                           className="admin-input"
                         />
                       </div>
+
+                      <div className="admin-form-group" style={{ marginBottom: 0 }}>
+                        <label className="admin-label">CTA Link Target</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. #collection-grid"
+                          value={colForm.hero?.ctaLink || ''}
+                          onChange={(e) =>
+                            setColForm({
+                              ...colForm,
+                              hero: { ...colForm.hero, ctaLink: e.target.value },
+                            })
+                          }
+                          className="admin-input"
+                        />
+                      </div>
                     </div>
                   </>
                 )}
@@ -951,6 +1511,135 @@ export const AdminCollections = () => {
                 )}
               </div>
 
+              {/* Brand Comparison ("See the Difference") Collection-level Defaults */}
+              <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: '0.86rem', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Sparkles size={15} /> Brand Comparison Section for Products in this Collection
+                    </div>
+                    <div style={{ fontSize: '0.74rem', color: '#64748b', marginTop: '2px' }}>
+                      Applies to products in this collection unless overridden on the individual product page.
+                    </div>
+                  </div>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={!!colForm.brandComparison?.isEnabled}
+                      onChange={(e) =>
+                        setColForm({
+                          ...colForm,
+                          brandComparison: { ...colForm.brandComparison, isEnabled: e.target.checked },
+                        })
+                      }
+                    />
+                    Enable Collection Comparison
+                  </label>
+                </div>
+
+                {colForm.brandComparison?.isEnabled && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', paddingTop: '10px', borderTop: '1px solid #e2e8f0' }}>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setColForm({
+                            ...colForm,
+                            brandComparison: {
+                              ...colForm.brandComparison,
+                              isEnabled: true,
+                              isPublished: true,
+                              heading: 'SEE THE DIFFERENCE',
+                              subheading: `How CALZARE ${colForm.name || 'collection'} silhouettes compare to standard footwear`,
+                              desktopMediaUrl: 'https://solaworld.in/cdn/shop/files/Battlecard-Web.png?v=1789572716&width=2000',
+                              altText: 'Brand comparison',
+                            },
+                          })
+                        }
+                        className="admin-btn"
+                        style={{ background: 'var(--accent-lime, #d8ff00)', color: '#000', fontSize: '0.72rem', padding: '4px 10px', border: 'none', fontWeight: 700, gap: '4px' }}
+                      >
+                        <Sparkles size={12} /> Load SolaWorld Reference Graphic
+                      </button>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                      <div>
+                        <label className="admin-label">Heading</label>
+                        <input
+                          type="text"
+                          value={colForm.brandComparison?.heading || ''}
+                          onChange={(e) =>
+                            setColForm({
+                              ...colForm,
+                              brandComparison: { ...colForm.brandComparison, heading: e.target.value },
+                            })
+                          }
+                          className="admin-input"
+                          placeholder="e.g. SEE THE DIFFERENCE"
+                        />
+                      </div>
+                      <div>
+                        <label className="admin-label">Alt Text</label>
+                        <input
+                          type="text"
+                          value={colForm.brandComparison?.altText || ''}
+                          onChange={(e) =>
+                            setColForm({
+                              ...colForm,
+                              brandComparison: { ...colForm.brandComparison, altText: e.target.value },
+                            })
+                          }
+                          className="admin-input"
+                          placeholder="e.g. Brand comparison"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="admin-label">Subheading</label>
+                      <input
+                        type="text"
+                        value={colForm.brandComparison?.subheading || ''}
+                        onChange={(e) =>
+                          setColForm({
+                            ...colForm,
+                            brandComparison: { ...colForm.brandComparison, subheading: e.target.value },
+                          })
+                        }
+                        className="admin-input"
+                        placeholder="e.g. How our closed-cell foam compares to standard footwear"
+                      />
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                      <ImageUploadField
+                        label="Desktop Comparison Asset"
+                        value={colForm.brandComparison?.desktopMediaUrl || ''}
+                        onChange={(url) =>
+                          setColForm({
+                            ...colForm,
+                            brandComparison: { ...colForm.brandComparison, desktopMediaUrl: url },
+                          })
+                        }
+                        helperText="Recommended: 2000 × 1218"
+                      />
+                      <ImageUploadField
+                        label="Mobile Comparison Asset (Optional)"
+                        value={colForm.brandComparison?.mobileMediaUrl || ''}
+                        onChange={(url) =>
+                          setColForm({
+                            ...colForm,
+                            brandComparison: { ...colForm.brandComparison, mobileMediaUrl: url },
+                          })
+                        }
+                        helperText="Optional vertical asset"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* SEO & Publication Status */}
               <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '20px' }}>
                 <div style={{ fontWeight: 700, fontSize: '0.86rem', color: '#0f172a', marginBottom: '12px' }}>
@@ -1025,6 +1714,16 @@ export const AdminCollections = () => {
           </div>
         </div>
       )}
+
+      {/* Collection Hero Studio CMS Modal */}
+      <CollectionHeroStudioModal
+        isOpen={heroStudioModalOpen}
+        onClose={() => setHeroStudioModalOpen(false)}
+        collection={heroStudioSelectedCol}
+        collections={collections}
+        onSave={handleSaveHeroStudio}
+        onSelectCollection={(c) => setHeroStudioSelectedCol(c)}
+      />
     </div>
   );
 };

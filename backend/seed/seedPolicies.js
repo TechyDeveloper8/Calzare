@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { CMSPage } from '../models/CMSPage.js';
 import { StoreSetting } from '../models/StoreSetting.js';
+import { NavigationMenu } from '../models/NavigationMenu.js';
 
 dotenv.config();
 
@@ -322,6 +323,276 @@ const returnPolicyHtml = `
 </div>
 `;
 
+const termsPolicyHtml = `
+<div class="legal-policy-document">
+  <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; margin-bottom: 16px;">
+    <div class="policy-header-badge" style="display:inline-block; padding: 4px 12px; background: #e0f2fe; color: #0369a1; border-radius: 9999px; font-weight: 700; font-size: 0.8rem; text-transform: uppercase;">
+      Official Customer Terms
+    </div>
+    <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 600;">Last Updated: 25 October 2026</span>
+  </div>
+
+  <p class="policy-lead" style="font-size: 1.1rem; line-height: 1.7; color: var(--text-primary); margin-bottom: 24px;">
+    Welcome to <strong>CALZARE™</strong>, operated by <strong>Calzare Heels Private Limited</strong>. By accessing or using our website (<a href="https://calzare.in" target="_blank" rel="noopener noreferrer" style="color: var(--ink-black); text-decoration: underline;">calzare.in</a>) and related services, or purchasing products from us, you agree to comply with and be bound by the following Terms and Conditions. Please review them carefully before placing an order.
+  </p>
+
+  <hr style="border: none; border-top: 1px solid var(--border-light); margin: 32px 0;" />
+
+  <section class="policy-section" style="margin-bottom: 32px;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">1. General Agreement & Eligibility</h3>
+    <ul style="padding-left: 20px; line-height: 1.8;">
+      <li>By using this website, you confirm that you are at least 18 years of age or accessing the platform under the direct supervision of a parent or legal guardian.</li>
+      <li>These terms govern all transactions, communications, and interactions between you (the Customer) and Calzare Heels Private Limited.</li>
+      <li>We reserve the right to amend, update, or modify these Terms at any time. Continued use of the website following any changes constitutes acceptance of those revisions.</li>
+    </ul>
+  </section>
+
+  <section class="policy-section" style="margin-bottom: 32px;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">2. Products, Design & Pricing</h3>
+    <ul style="padding-left: 20px; line-height: 1.8;">
+      <li>CALZARE specializes in architectural closed-cell EVA foam footwear engineered for waterproof durability, cushioning rebound, and everyday urban and trail wear.</li>
+      <li>We strive to depict product hues, silhouettes, and material textures as accurately as possible. Slight variances may occur due to individual screen calibration and studio lighting.</li>
+      <li>All prices on the platform are listed in <strong>Indian Rupees (INR)</strong> and are inclusive of applicable Goods and Services Tax (GST) unless explicitly stated otherwise.</li>
+      <li>In the event of an unintended technical error resulting in an incorrect price or product specification, we reserve the right to cancel or amend the affected order and issue a prompt refund.</li>
+    </ul>
+  </section>
+
+  <section class="policy-section" style="margin-bottom: 32px;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">3. Orders, Verification & Acceptance</h3>
+    <ul style="padding-left: 20px; line-height: 1.8;">
+      <li>Placing an order constitutes an offer to purchase. An automated order confirmation email or SMS acknowledges receipt but does not constitute legal acceptance until the shipment is dispatched.</li>
+      <li>For Cash on Delivery (COD) and Partial COD orders, our verification team may reach out via phone call, SMS, or WhatsApp to verify recipient availability and delivery address before dispatch.</li>
+      <li>We reserve the right to decline or cancel orders suspected of fraudulent intent, commercial reselling, or abusive return practices.</li>
+    </ul>
+  </section>
+
+  <section class="policy-section" style="margin-bottom: 32px;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">4. Payment & Security</h3>
+    <ul style="padding-left: 20px; line-height: 1.8;">
+      <li>We support major secure payment methods including UPI (Google Pay, PhonePe, Paytm, BHIM), Net Banking, Credit/Debit Cards (Visa, Mastercard, RuPay, American Express), and Cash on Delivery / Partial COD for serviceable PIN codes.</li>
+      <li>All online card transactions are processed through RBI-approved, PCI-DSS Level 1 compliant payment gateways with bank-grade TLS encryption. CALZARE never stores card numbers or CVV details on its servers.</li>
+    </ul>
+  </section>
+
+  <section class="policy-section" style="margin-bottom: 32px;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">5. Shipping, Delivery & Inspection</h3>
+    <ul style="padding-left: 20px; line-height: 1.8;">
+      <li>Order processing typically requires 1–2 business days. Estimated delivery across India ranges between 3–7 business days depending on location and courier serviceability.</li>
+      <li>Please refer to our dedicated <a href="/shipping" style="color: var(--ink-black); font-weight: 600; text-decoration: underline;">Shipping Policy</a> for full details on dispatch turnaround, delivery tracking, and logistics protocols.</li>
+    </ul>
+  </section>
+
+  <section class="policy-section" style="margin-bottom: 32px;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">6. Exchanges, Returns & Cancellations</h3>
+    <ul style="padding-left: 20px; line-height: 1.8;">
+      <li>Customer size exchanges must be initiated within <strong>3 days of delivery</strong>. A nominal logistics fee of ₹149 applies to customer-requested size swaps to partially offset courier handling.</li>
+      <li>Damaged, defective, or incorrect footwear claims must be reported within <strong>48 hours of delivery</strong> accompanied by photos or an unboxing video. In such cases, replacement or refund is provided at zero fee.</li>
+      <li>Detailed eligibility criteria, inspection procedures, and refund timeframes are governed by our <a href="/returns" style="color: var(--ink-black); font-weight: 600; text-decoration: underline;">Refund, Return & Exchange Policy</a>.</li>
+    </ul>
+  </section>
+
+  <section class="policy-section" style="margin-bottom: 32px;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">7. Intellectual Property</h3>
+    <p style="line-height: 1.8;">
+      All content on this website, including but not limited to brand names, logos, trademarks (CALZARE™), footwear designs, 3D renderings, product photographs, text copy, graphic UI, and underlying software code, is the exclusive proprietary property of <strong>Calzare Heels Private Limited</strong> and is protected under applicable Indian and international copyright, trademark, and intellectual property laws. Any unauthorized reproduction, scraping, modification, or commercial exploitation is strictly prohibited.
+    </p>
+  </section>
+
+  <section class="policy-section" style="margin-bottom: 32px;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">8. User Conduct & Prohibited Uses</h3>
+    <ul style="padding-left: 20px; line-height: 1.8;">
+      <li>You agree not to use the website for any unlawful, harassing, or fraudulent purpose.</li>
+      <li>You may not attempt to probe, scan, or compromise our infrastructure, upload malicious code, or introduce automated scrapers, spiders, or bots without express written permission.</li>
+    </ul>
+  </section>
+
+  <section class="policy-section" style="margin-bottom: 32px;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">9. Limitation of Liability & Governing Law</h3>
+    <ul style="padding-left: 20px; line-height: 1.8;">
+      <li>To the maximum extent permitted by Indian law, Calzare Heels Private Limited shall not be liable for any indirect, incidental, special, or consequential damages resulting from the use or inability to use this platform.</li>
+      <li>These Terms shall be governed by and construed in accordance with the laws of <strong>India</strong>. Any disputes arising out of or related to these terms shall fall under the exclusive jurisdiction of the competent courts in <strong>Bengaluru, Karnataka, India</strong>.</li>
+    </ul>
+  </section>
+
+  <section class="policy-section" style="background: #f8fafc; padding: 24px; border-radius: var(--radius-lg); border: 1px solid var(--border-light);">
+    <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">10. Customer Support & Grievance Redressal</h3>
+    <p style="line-height: 1.8; margin-bottom: 16px;">
+      In accordance with the Consumer Protection (E-Commerce) Rules, 2020 and Information Technology Act, please direct questions, grievances, or legal notices to:
+    </p>
+    <p style="margin: 0; line-height: 1.7; font-size: 0.95rem;">
+      <strong>Brand:</strong> CALZARE™<br />
+      <strong>Company:</strong> Calzare Heels Private Limited<br />
+      <strong>Website:</strong> <a href="https://calzare.in" target="_blank" rel="noopener noreferrer" style="color: var(--ink-black); text-decoration: underline;">calzare.in</a><br />
+      <strong>Support Email:</strong> <a href="mailto:Admin@calzareheels.com" style="color: var(--ink-black); text-decoration: underline;">Admin@calzareheels.com</a><br />
+      <strong>Concierge Desk:</strong> <a href="/contact" style="color: var(--ink-black); text-decoration: underline;">Visit Contact Concierge</a>
+    </p>
+  </section>
+</div>
+`;
+
+const privacyPolicyHtml = `
+<div class="legal-policy-document">
+  <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; margin-bottom: 16px;">
+    <div class="policy-header-badge" style="display:inline-block; padding: 4px 12px; background: #ecfdf5; color: #047857; border-radius: 9999px; font-weight: 700; font-size: 0.8rem; text-transform: uppercase;">
+      Official Privacy Policy
+    </div>
+    <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 600;">Last Updated: 25 October 2026</span>
+  </div>
+
+  <p class="policy-lead" style="font-size: 1.1rem; line-height: 1.7; color: var(--text-primary); margin-bottom: 24px;">
+    At <strong>CALZARE™</strong>, operated by <strong>Calzare Heels Private Limited</strong> (<a href="https://calzare.in" target="_blank" rel="noopener noreferrer" style="color: var(--ink-black); text-decoration: underline;">calzare.in</a>), we value your trust and are committed to safeguarding your personal data. This Privacy Policy details how we collect, handle, store, and protect your information when you browse our storefront or purchase our footwear.
+  </p>
+
+  <hr style="border: none; border-top: 1px solid var(--border-light); margin: 32px 0;" />
+
+  <section class="policy-section" style="margin-bottom: 32px;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">1. Information We Collect</h3>
+    <p style="line-height: 1.8; margin-bottom: 12px;">We collect information that you voluntarily provide to us when interacting with our store:</p>
+    <ul style="padding-left: 20px; line-height: 1.8;">
+      <li><strong>Contact & Identity Data:</strong> Full name, email address, mobile phone number, delivery address, and pincode when placing an order or registering an account.</li>
+      <li><strong>Order & Transaction Records:</strong> Purchased footwear models, size selections, billing details, payment transaction reference numbers, and order timestamps.</li>
+      <li><strong>Customer Service Records:</strong> Communications submitted via our Contact Concierge form, return/exchange claims, unboxing videos, and support inquiries.</li>
+      <li><strong>Device & Browsing Data:</strong> IP address, device type, operating system, browser specifications, and cookie preferences collected to ensure storefront speed and cart persistence.</li>
+    </ul>
+  </section>
+
+  <section class="policy-section" style="margin-bottom: 32px;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">2. How We Use Your Information</h3>
+    <ul style="padding-left: 20px; line-height: 1.8;">
+      <li><strong>Order Fulfillment:</strong> Processing transactions, preparing your package, and facilitating doorstep delivery with our logistics network.</li>
+      <li><strong>Transactional Updates:</strong> Sending real-time tracking links, dispatch notices, and delivery confirmations via SMS, email, and WhatsApp.</li>
+      <li><strong>Support & Returns:</strong> Facilitating our 3-day size exchange process, processing warranty or defect replacements, and addressing customer concierge inquiries.</li>
+      <li><strong>Fraud Detection & Security:</strong> Verifying Cash on Delivery (COD) orders, guarding against duplicate payment charges, and preventing unauthorized account access.</li>
+      <li><strong>Store Improvements:</strong> Analyzing site navigation flows to enhance mobile load speed and optimize checkout usability.</li>
+    </ul>
+  </section>
+
+  <section class="policy-section" style="background: #f0fdf4; padding: 24px; border-radius: var(--radius-lg); border: 1px solid #bbf7d0; margin-bottom: 32px;">
+    <h3 style="font-size: 1.25rem; font-weight: 800; color: #166534; margin-bottom: 12px;">3. Our Zero Data Sale Commitment</h3>
+    <p style="line-height: 1.8; color: #15803d; margin: 0;">
+      <strong>We do not sell, rent, monetize, or trade your personal data to any third-party marketing brokers or advertising networks.</strong> Your personal data is used solely to provide and fulfill the footwear and customer support services you request from CALZARE™.
+    </p>
+  </section>
+
+  <section class="policy-section" style="margin-bottom: 32px;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">4. Trusted Operational Partners & Disclosures</h3>
+    <p style="line-height: 1.8; margin-bottom: 12px;">
+      We share required data strictly with trusted service partners operating under confidentiality agreements:
+    </p>
+    <ul style="padding-left: 20px; line-height: 1.8;">
+      <li><strong>Logistics Providers:</strong> Verified express courier partners (e.g. Shiprocket, Bluedart, Delhivery) who receive your name, address, and phone number exclusively to deliver your shoes.</li>
+      <li><strong>Payment Gateways:</strong> RBI-authorized payment processors who handle financial authorization through encrypted bank tokens.</li>
+      <li><strong>Statutory Authorities:</strong> If compelled by lawful governmental requests, court orders, or regulations under applicable Indian law.</li>
+    </ul>
+  </section>
+
+  <section class="policy-section" style="margin-bottom: 32px;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">5. Data Security & Storage</h3>
+    <ul style="padding-left: 20px; line-height: 1.8;">
+      <li>All data transmissions across <a href="https://calzare.in" target="_blank" rel="noopener noreferrer" style="color: var(--ink-black); text-decoration: underline;">calzare.in</a> are encrypted using industry-standard TLS / HTTPS protocols.</li>
+      <li>Our production databases reside within secure cloud hosting environments with strict role-based access control, monitoring, and regular security patching.</li>
+      <li>Payment card data is tokenized through PCI-DSS Level 1 compliant partners. CALZARE never stores credit/debit card numbers or CVV codes.</li>
+    </ul>
+  </section>
+
+  <section class="policy-section" style="margin-bottom: 32px;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">6. Cookies and Tracking Technologies</h3>
+    <p style="line-height: 1.8;">
+      We use essential cookies to maintain your active shopping cart, remember your size preferences, and keep you signed in. You may configure your web browser to disable or clear cookies; however, note that essential e-commerce functions like checkout cart persistence may be impaired.
+    </p>
+  </section>
+
+  <section class="policy-section" style="margin-bottom: 32px;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">7. Your Rights & Data Choices</h3>
+    <p style="line-height: 1.8;">
+      You have the right to access, update, or request deletion of the personal information we maintain. To submit a data request, change your contact details, or unsubscribe from promotional emails, simply email us at <a href="mailto:Admin@calzareheels.com" style="color: var(--ink-black); font-weight: 600; text-decoration: underline;">Admin@calzareheels.com</a> with your registered email and order number.
+    </p>
+  </section>
+
+  <section class="policy-section" style="background: #f8fafc; padding: 24px; border-radius: var(--radius-lg); border: 1px solid var(--border-light);">
+    <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">8. Grievance Officer & Official Contact</h3>
+    <p style="line-height: 1.8; margin-bottom: 16px;">
+      In accordance with the Information Technology Act, 2000 and the Consumer Protection (E-Commerce) Rules, 2020, please direct any privacy or data grievances to:
+    </p>
+    <p style="margin: 0; line-height: 1.7; font-size: 0.95rem;">
+      <strong>Entity:</strong> Calzare Heels Private Limited<br />
+      <strong>Brand:</strong> CALZARE™<br />
+      <strong>Official Website:</strong> <a href="https://calzare.in" target="_blank" rel="noopener noreferrer" style="color: var(--ink-black); text-decoration: underline;">calzare.in</a><br />
+      <strong>Privacy Contact:</strong> <a href="mailto:Admin@calzareheels.com" style="color: var(--ink-black); text-decoration: underline;">Admin@calzareheels.com</a><br />
+      <strong>Concierge Support:</strong> <a href="/contact" style="color: var(--ink-black); text-decoration: underline;">Contact Concierge Page</a>
+    </p>
+  </section>
+</div>
+`;
+
+const sizeGuideHtml = `
+<div class="legal-policy-document">
+  <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; margin-bottom: 16px;">
+    <div class="policy-header-badge" style="display:inline-block; padding: 4px 12px; background: #e0f2fe; color: #0369a1; border-radius: 9999px; font-weight: 700; font-size: 0.8rem; text-transform: uppercase;">
+      Official Sizing Guide
+    </div>
+    <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 600;">Standard UK / India Fitting</span>
+  </div>
+
+  <p class="policy-lead" style="font-size: 1.1rem; line-height: 1.7; color: var(--text-primary); margin-bottom: 24px;">
+    CALZARE™ closed-cell foam footwear is engineered to anatomical foot proportions. All our models follow standard <strong>UK / Indian Footwear Sizing</strong>. Use this conversion chart and measurement guide to discover your perfect ergonomic fit.
+  </p>
+
+  <hr style="border: none; border-top: 1px solid var(--border-light); margin: 32px 0;" />
+
+  <section class="policy-section" style="margin-bottom: 32px;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--ink-black); margin-bottom: 16px;">Size Conversion Chart</h3>
+    <div style="overflow-x: auto;">
+      <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem; text-align: left; background: #ffffff; border-radius: var(--radius-md); overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <thead>
+          <tr style="background: var(--ink-black); color: #ffffff;">
+            <th style="padding: 14px 16px;">UK / India</th>
+            <th style="padding: 14px 16px;">EU Size</th>
+            <th style="padding: 14px 16px;">US Men</th>
+            <th style="padding: 14px 16px;">US Women</th>
+            <th style="padding: 14px 16px;">Foot Length (CM)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom: 1px solid #e2e8f0;"><td style="padding: 12px 16px; font-weight: 700;">UK 5</td><td style="padding: 12px 16px;">EU 38</td><td style="padding: 12px 16px;">US 6</td><td style="padding: 12px 16px;">US 7</td><td style="padding: 12px 16px;">24.2 cm</td></tr>
+          <tr style="border-bottom: 1px solid #e2e8f0; background: #f8fafc;"><td style="padding: 12px 16px; font-weight: 700;">UK 6</td><td style="padding: 12px 16px;">EU 39</td><td style="padding: 12px 16px;">US 7</td><td style="padding: 12px 16px;">US 8</td><td style="padding: 12px 16px;">25.0 cm</td></tr>
+          <tr style="border-bottom: 1px solid #e2e8f0;"><td style="padding: 12px 16px; font-weight: 700;">UK 7</td><td style="padding: 12px 16px;">EU 41</td><td style="padding: 12px 16px;">US 8</td><td style="padding: 12px 16px;">US 9</td><td style="padding: 12px 16px;">25.8 cm</td></tr>
+          <tr style="border-bottom: 1px solid #e2e8f0; background: #f8fafc;"><td style="padding: 12px 16px; font-weight: 700;">UK 8</td><td style="padding: 12px 16px;">EU 42</td><td style="padding: 12px 16px;">US 9</td><td style="padding: 12px 16px;">US 10</td><td style="padding: 12px 16px;">26.6 cm</td></tr>
+          <tr style="border-bottom: 1px solid #e2e8f0;"><td style="padding: 12px 16px; font-weight: 700;">UK 9</td><td style="padding: 12px 16px;">EU 43</td><td style="padding: 12px 16px;">US 10</td><td style="padding: 12px 16px;">US 11</td><td style="padding: 12px 16px;">27.5 cm</td></tr>
+          <tr><td style="padding: 12px 16px; font-weight: 700;">UK 10</td><td style="padding: 12px 16px;">EU 45</td><td style="padding: 12px 16px;">US 11</td><td style="padding: 12px 16px;">US 12</td><td style="padding: 12px 16px;">28.3 cm</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="policy-section" style="margin-bottom: 32px;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">How to Measure Your Feet at Home</h3>
+    <ol style="padding-left: 20px; line-height: 1.8;">
+      <li>Place a blank sheet of paper flat on a hard floor against a wall.</li>
+      <li>Stand upright with your heel resting gently against the wall.</li>
+      <li>Use a pencil to mark the outermost point of your longest toe on the paper.</li>
+      <li>Measure the distance from the edge of the paper to the marked point in centimeters.</li>
+      <li>Compare your measurement with our chart above to determine your size.</li>
+    </ol>
+    <div style="background: #f8fafc; padding: 18px 22px; border-radius: var(--radius-md); border-left: 4px solid var(--accent-lime); margin-top: 16px;">
+      <p style="margin: 0; font-size: 0.95rem; line-height: 1.6;">
+        <strong>Fit Recommendation:</strong> If you have broader feet or plan on wearing socks frequently with our clogs and sliders, we recommend ordering one size up for optimum all-day comfort.
+      </p>
+    </div>
+  </section>
+
+  <section class="policy-section" style="background: #f8fafc; padding: 24px; border-radius: var(--radius-lg); border: 1px solid var(--border-light);">
+    <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">Need Help or Ordered the Wrong Size?</h3>
+    <p style="line-height: 1.8; margin-bottom: 12px;">
+      Don't worry! We offer a seamless <strong>3-Day Doorstep Size Exchange</strong> service across India.
+    </p>
+    <p style="margin: 0; line-height: 1.7; font-size: 0.95rem;">
+      Connect with our team on our <a href="/contact" style="color: var(--ink-black); font-weight: 600; text-decoration: underline;">Contact Concierge</a> or email <a href="mailto:Admin@calzareheels.com" style="color: var(--ink-black); font-weight: 600; text-decoration: underline;">Admin@calzareheels.com</a> to initiate a size exchange.
+    </p>
+  </section>
+</div>
+`;
+
 async function seedPolicies() {
   try {
     await mongoose.connect(MONGO_URI);
@@ -378,7 +649,99 @@ async function seedPolicies() {
     );
     console.log('[SeedPolicies] Refund Policy created/updated');
 
-    // 4. Update StoreSetting with authoritative company and policy copy defaults
+    // 4. Seed or Update Terms & Conditions (/terms and /terms-and-conditions)
+    for (const slug of ['terms', 'terms-and-conditions']) {
+      await CMSPage.findOneAndUpdate(
+        { slug },
+        {
+          title: 'Terms & Conditions',
+          slug,
+          content: termsPolicyHtml,
+          excerpt: 'Official Terms & Conditions of CALZARE™ operated by Calzare Heels Private Limited. Governing website usage, product purchases, order acceptance, warranties, and consumer rights.',
+          category: 'legal',
+          isPublished: true,
+          metaTitle: 'Terms & Conditions | CALZARE™',
+          metaDescription: 'Review the official Terms & Conditions of CALZARE™ operated by Calzare Heels Private Limited. Clear guidelines on purchases, payments, shipping, exchanges, and customer rights.',
+        },
+        { upsert: true, new: true }
+      );
+    }
+    console.log('[SeedPolicies] Terms & Conditions created/updated');
+
+    // 5. Seed or Update Privacy Policy (/privacy and /privacy-policy)
+    for (const slug of ['privacy', 'privacy-policy']) {
+      await CMSPage.findOneAndUpdate(
+        { slug },
+        {
+          title: 'Privacy Policy',
+          slug,
+          content: privacyPolicyHtml,
+          excerpt: 'Official Privacy Policy of CALZARE™ operated by Calzare Heels Private Limited. We never sell customer records. Zero data sale commitment with bank-grade encryption.',
+          category: 'legal',
+          isPublished: true,
+          metaTitle: 'Privacy Policy | CALZARE™',
+          metaDescription: 'Read how CALZARE™ protects your data. Strict zero data-selling policy, bank-grade encryption, and adherence to Indian IT rules and Consumer Protection policies.',
+        },
+        { upsert: true, new: true }
+      );
+    }
+    console.log('[SeedPolicies] Privacy Policy created/updated');
+
+    // 6. Seed or Update Size Guide (/size-guide)
+    await CMSPage.findOneAndUpdate(
+      { slug: 'size-guide' },
+      {
+        title: 'Official Size Guide & Foot Measurement',
+        slug: 'size-guide',
+        content: sizeGuideHtml,
+        excerpt: 'Find your perfect CALZARE fit with our UK/India size conversion chart and step-by-step home foot measurement instructions.',
+        category: 'guide',
+        isPublished: true,
+        metaTitle: 'Official Size Guide | CALZARE™',
+        metaDescription: 'Find your perfect CALZARE fit with our UK/India size conversion chart and step-by-step home foot measurement instructions.',
+      },
+      { upsert: true, new: true }
+    );
+    console.log('[SeedPolicies] Size Guide created/updated');
+
+    // 7. Seed or Update Navigation Menus for Footer Care & Support, and Policies
+    await NavigationMenu.findOneAndUpdate(
+      { menuKey: 'footer_help' },
+      {
+        menuKey: 'footer_help',
+        title: 'Care & Support',
+        isActive: true,
+        items: [
+          { label: 'Contact Us', url: '/contact', isExternal: false, displayOrder: 0 },
+          { label: 'Track My Order', url: '/track-order', isExternal: false, displayOrder: 1 },
+          { label: 'Official Size Guide', url: '/size-guide', isExternal: false, displayOrder: 2 },
+          { label: 'Frequently Asked Questions', url: '/faq', isExternal: false, displayOrder: 3 },
+          { label: 'About CALZARE', url: '/about', isExternal: false, displayOrder: 4 },
+        ],
+      },
+      { upsert: true, new: true }
+    );
+    console.log('[SeedPolicies] Navigation menu footer_help updated');
+
+    await NavigationMenu.findOneAndUpdate(
+      { menuKey: 'footer_about' },
+      {
+        menuKey: 'footer_about',
+        title: 'Policies',
+        isActive: true,
+        items: [
+          { label: 'Terms & Conditions', url: '/terms', isExternal: false, displayOrder: 0 },
+          { label: 'Privacy Policy', url: '/privacy', isExternal: false, displayOrder: 1 },
+          { label: 'Shipping & Delivery Policy', url: '/shipping', isExternal: false, displayOrder: 2 },
+          { label: 'Return & Exchange Policy', url: '/returns', isExternal: false, displayOrder: 3 },
+          { label: 'Refund Policy', url: '/refund-policy', isExternal: false, displayOrder: 4 },
+        ],
+      },
+      { upsert: true, new: true }
+    );
+    console.log('[SeedPolicies] Navigation menu footer_about updated');
+
+    // 8. Update StoreSetting with authoritative company and policy copy defaults
     let settings = await StoreSetting.findOne();
     if (!settings) {
       settings = new StoreSetting();

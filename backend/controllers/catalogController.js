@@ -160,6 +160,52 @@ export const getCollectionBySlug = async (req, res, next) => {
           editorialBanner: { isEnabled: false },
           isPublished: true,
         };
+      } else if (slug === 'kids') {
+        collection = {
+          name: "KIDS' FOOTWEAR COLLECTION",
+          slug: 'kids',
+          description: 'Playproof, featherlight, and non-slip clogs and slides designed for growing feet, endless jumping, and everyday adventures.',
+          ruleType: 'audience_match',
+          ruleValue: 'Kids',
+          hero: {
+            label: "THE KIDS' EDIT",
+            heading: 'BUILT FOR PLAY.',
+            supportingText: 'Featherlight, washable, and ultra-durable comfort for little explorers everywhere.',
+            desktopBannerUrl: '/images/split/kids-collection-image.jpg',
+            mobileBannerUrl: '',
+            imagePosition: 'center center',
+            background: 'editorial_minimal',
+            ctaText: 'EXPLORE DROP',
+            ctaLink: '#collection-grid',
+            isVisible: true,
+          },
+          categoryShortcuts: [],
+          editorialBanner: { isEnabled: false },
+          isPublished: true,
+        };
+      } else if (slug === 'unisex') {
+        collection = {
+          name: 'UNISEX ARCHITECTURAL SERIES',
+          slug: 'unisex',
+          description: 'Clean lines and universal proportions sculpted in monolithic EVA foam for every foot and every stride.',
+          ruleType: 'audience_match',
+          ruleValue: 'Unisex',
+          hero: {
+            label: 'THE UNISEX EDIT',
+            heading: 'UNIVERSAL FORM. PURE FUNCTION.',
+            supportingText: 'Sculpted footwear engineered for all identities, all terrains, and all-day ease.',
+            desktopBannerUrl: '/images/split/unisex-collection-image.jpg',
+            mobileBannerUrl: '',
+            imagePosition: 'center center',
+            background: 'editorial_minimal',
+            ctaText: 'EXPLORE DROP',
+            ctaLink: '#collection-grid',
+            isVisible: true,
+          },
+          categoryShortcuts: [],
+          editorialBanner: { isEnabled: false },
+          isPublished: true,
+        };
       } else {
         return res.status(404).json({ success: false, message: 'Collection not found' });
       }
@@ -172,7 +218,7 @@ export const getCollectionBySlug = async (req, res, next) => {
       productQuery._id = { $in: collection.manualProductIds };
     } else if (collection.ruleType === 'audience_match' || slug === 'men' || slug === 'women' || slug === 'kids' || slug === 'unisex') {
       const aud = collection.ruleValue || (slug.charAt(0).toUpperCase() + slug.slice(1));
-      if (aud === 'Kids') productQuery.audience = 'Kids';
+      if (aud === 'Kids') productQuery.audience = { $in: ['Kids', 'Unisex'] };
       else if (aud === 'Unisex') productQuery.audience = 'Unisex';
       else productQuery.audience = { $in: [aud, 'Unisex'] };
     } else if (collection._id) {
@@ -211,6 +257,7 @@ export const adminCreateCollection = async (req, res, next) => {
   try {
     const {
       name,
+      slug: customSlug,
       description,
       heroMedia,
       bannerImage,
@@ -227,7 +274,9 @@ export const adminCreateCollection = async (req, res, next) => {
       seoDescription,
       brandComparison,
     } = req.body;
-    const slug = slugify(name, { lower: true, strict: true });
+    const slug = customSlug
+      ? slugify(customSlug, { lower: true, strict: true })
+      : slugify(name, { lower: true, strict: true });
 
     const collection = await Collection.create({
       name,
@@ -284,7 +333,9 @@ export const adminUpdateCollection = async (req, res, next) => {
       if (req.body[f] !== undefined) collection[f] = req.body[f];
     });
 
-    if (req.body.name) {
+    if (req.body.slug) {
+      collection.slug = slugify(req.body.slug, { lower: true, strict: true });
+    } else if (req.body.name && !['men', 'women', 'kids', 'unisex', 'under-999-store'].includes(collection.slug)) {
       collection.slug = slugify(req.body.name, { lower: true, strict: true });
     }
 

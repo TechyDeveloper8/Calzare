@@ -146,6 +146,119 @@ export const getProducts = async (req, res, next) => {
   }
 };
 
+// Helper: Explicit inheritance resolution for PDP Brand Comparison section
+// Priority: Product-specific -> Collection-level -> Global default -> None
+export const resolveBrandComparison = (product, storeSettings, isStaff = false) => {
+  // 1. Product-specific comparison configuration, when one exists.
+  const prodBC = product?.brandComparison;
+  if (prodBC && prodBC.mode === 'disabled') {
+    return {
+      source: 'product',
+      mode: 'disabled',
+      isEnabled: false,
+      isPublished: true,
+      isVisible: false,
+      reason: 'Explicitly disabled at product level',
+    };
+  }
+
+  if (prodBC && prodBC.mode === 'custom') {
+    const hasMedia = Boolean(prodBC.desktopMediaUrl);
+    const isPub = prodBC.isPublished !== false;
+    const isEn = prodBC.isEnabled !== false;
+    const isVisible = isEn && hasMedia && (isPub || isStaff);
+
+    return {
+      source: 'product',
+      mode: 'custom',
+      isEnabled: isEn,
+      isPublished: isPub,
+      isDraft: !isPub,
+      isVisible,
+      heading: prodBC.heading || 'SEE THE DIFFERENCE',
+      subheading: prodBC.subheading || '',
+      desktopMediaUrl: prodBC.desktopMediaUrl || '',
+      mobileMediaUrl: prodBC.mobileMediaUrl || '',
+      altText: prodBC.altText || 'Brand comparison',
+      displayOrder: prodBC.displayOrder || 0,
+    };
+  }
+
+  // 2. Collection-level configuration, if supported and applicable.
+  if (Array.isArray(product?.collections)) {
+    for (const col of product.collections) {
+      const colBC = col?.brandComparison;
+      if (colBC && colBC.isEnabled && colBC.desktopMediaUrl) {
+        const isPub = colBC.isPublished !== false;
+        const isVisible = isPub || isStaff;
+        return {
+          source: 'collection',
+          collectionName: col.name,
+          collectionSlug: col.slug,
+          mode: 'collection',
+          isEnabled: true,
+          isPublished: isPub,
+          isDraft: !isPub,
+          isVisible,
+          heading: colBC.heading || 'SEE THE DIFFERENCE',
+          subheading: colBC.subheading || '',
+          desktopMediaUrl: colBC.desktopMediaUrl || '',
+          mobileMediaUrl: colBC.mobileMediaUrl || '',
+          altText: colBC.altText || 'Brand comparison',
+          displayOrder: colBC.displayOrder || 0,
+        };
+      }
+    }
+  }
+
+  // 3. Global default configuration.
+  const globalBC = storeSettings?.brandComparisonDefault;
+  if (globalBC && globalBC.isEnabled && globalBC.desktopMediaUrl) {
+    let inScope = false;
+    const scope = globalBC.scope || 'all';
+
+    if (scope === 'all') {
+      inScope = true;
+    } else if (scope === 'selected_products') {
+      const prodIdStr = product?._id?.toString();
+      const selectedIds = (globalBC.selectedProductIds || []).map((id) => id?.toString());
+      inScope = selectedIds.includes(prodIdStr);
+    } else if (scope === 'selected_collections') {
+      const prodColIds = (product?.collections || []).map((c) => (c._id ? c._id.toString() : c.toString()));
+      const selectedColIds = (globalBC.selectedCollectionIds || []).map((id) => id?.toString());
+      inScope = prodColIds.some((cId) => selectedColIds.includes(cId));
+    }
+
+    if (inScope) {
+      const isPub = globalBC.isPublished !== false;
+      const isVisible = isPub || isStaff;
+      return {
+        source: 'global',
+        mode: 'global',
+        isEnabled: true,
+        isPublished: isPub,
+        isDraft: !isPub,
+        isVisible,
+        heading: globalBC.heading || 'SEE THE DIFFERENCE',
+        subheading: globalBC.subheading || '',
+        desktopMediaUrl: globalBC.desktopMediaUrl || '',
+        mobileMediaUrl: globalBC.mobileMediaUrl || '',
+        altText: globalBC.altText || 'Brand comparison',
+        displayOrder: globalBC.displayOrder || 0,
+      };
+    }
+  }
+
+  // 4. Default: No valid published configuration exists
+  return {
+    source: 'none',
+    mode: 'none',
+    isEnabled: false,
+    isPublished: true,
+    isVisible: false,
+  };
+};
+
 export const getProductBySlug = async (req, res, next) => {
   try {
     const { slug } = req.params;
@@ -209,6 +322,12 @@ export const getProductBySlug = async (req, res, next) => {
     // Fetch store-wide PDP copy defaults and brand comparison default
     const storeSettings = await StoreSetting.findOne().select('productPageDefaults brandComparisonDefault freeShippingThreshold defaultShippingFee codEnabled codFee');
 
+    const isStaff = Boolean(req.user && ['admin', 'superadmin', 'product_manager'].includes(req.user.role));
+    const effectiveBrandComparison = resolveBrandComparison(product, storeSettings, isStaff);
+    const finalBrandComparison = (isStaff || effectiveBrandComparison?.isVisible)
+      ? (effectiveBrandComparison?.isVisible || isStaff ? (effectiveBrandComparison?.mode === 'disabled' && !isStaff ? null : effectiveBrandComparison) : null)
+      : null;
+
     const productObj = product.toObject({ virtuals: true });
     productObj.relatedProducts = relatedProducts;
 
@@ -218,6 +337,7 @@ export const getProductBySlug = async (req, res, next) => {
       reviews,
       globalDefaults: storeSettings?.productPageDefaults || {},
       brandComparisonDefault: storeSettings?.brandComparisonDefault || null,
+      brandComparison: (!isStaff && (!effectiveBrandComparison?.isVisible || effectiveBrandComparison?.mode === 'disabled')) ? null : effectiveBrandComparison,
       storePolicy: {
         freeShippingThreshold: storeSettings?.freeShippingThreshold || 999,
         defaultShippingFee: storeSettings?.defaultShippingFee || 99,

@@ -63,18 +63,9 @@ export const Header = ({ onOpenSearch }) => {
           boxShadow: isScrolled ? '0 10px 30px -10px rgba(0, 0, 0, 0.05)' : 'none',
         }}
       >
-        <div className="container">
+        <div className="header-fluid-container">
           <div className="nav-container">
-            {/* Mobile Menu Toggle (Visible ONLY on mobile/tablet, hidden on desktop preview) */}
-            <button
-              className="action-icon-btn mobile-menu-btn"
-              onClick={() => setMobileMenuOpen(true)}
-              aria-label="Open mobile navigation menu"
-            >
-              <Menu size={22} />
-            </button>
-
-            {/* Brand Logo - Aligned to Left on Desktop */}
+            {/* Brand Logo - Aligned to Fully Left Side */}
             <Link to="/" className="brand-logo" style={{ textDecoration: 'none' }}>
               {settings?.storeName || 'CALZARE'}
               <span className="brand-logo-dot" />
@@ -115,6 +106,38 @@ export const Header = ({ onOpenSearch }) => {
                 <Search size={20} />
               </button>
 
+              {/* Shopping Bag (Cart) with live count */}
+              <button
+                className="action-icon-btn"
+                onClick={openCart}
+                aria-label={`Shopping bag with ${totalItemsCount} items`}
+                title="Cart"
+                style={{ position: 'relative' }}
+              >
+                <ShoppingBag size={20} />
+                {totalItemsCount > 0 && (
+                  <span
+                    style={{
+                      position: 'absolute',
+                      top: '-4px',
+                      right: '-4px',
+                      background: 'var(--accent-lime)',
+                      color: '#0f0f10',
+                      fontSize: '0.62rem',
+                      fontWeight: 800,
+                      width: '18px',
+                      height: '18px',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    {totalItemsCount}
+                  </span>
+                )}
+              </button>
+
               {/* Wishlist with live count */}
               <Link
                 to="/wishlist"
@@ -146,38 +169,6 @@ export const Header = ({ onOpenSearch }) => {
                   </span>
                 )}
               </Link>
-
-              {/* Shopping Bag with live count */}
-              <button
-                className="action-icon-btn"
-                onClick={openCart}
-                aria-label={`Shopping bag with ${totalItemsCount} items`}
-                title="Cart"
-                style={{ position: 'relative' }}
-              >
-                <ShoppingBag size={20} />
-                {totalItemsCount > 0 && (
-                  <span
-                    style={{
-                      position: 'absolute',
-                      top: '-4px',
-                      right: '-4px',
-                      background: 'var(--accent-lime)',
-                      color: '#0f0f10',
-                      fontSize: '0.62rem',
-                      fontWeight: 800,
-                      width: '18px',
-                      height: '18px',
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    {totalItemsCount}
-                  </span>
-                )}
-              </button>
 
               {/* Account Dropdown */}
               <div className="header-account-wrap" style={{ position: 'relative' }}>
@@ -284,6 +275,16 @@ export const Header = ({ onOpenSearch }) => {
                   </div>
                 )}
               </div>
+
+              {/* Mobile Drawer Trigger (visible on <= 991px) */}
+              <button
+                className="mobile-menu-btn"
+                onClick={() => setMobileMenuOpen(true)}
+                aria-label="Open navigation menu"
+                title="Menu"
+              >
+                <Menu size={22} />
+              </button>
             </div>
           </div>
         </div>

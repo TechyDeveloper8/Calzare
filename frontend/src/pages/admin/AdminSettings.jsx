@@ -16,13 +16,21 @@ import {
   FileText,
   ExternalLink,
   Loader2,
+  Sparkles,
+  Eye,
+  Layers,
+  Search,
 } from 'lucide-react';
+import { ImageUploadField } from '../../components/admin/ImageUploadField.jsx';
 
 export const AdminSettings = () => {
-  const [activeTab, setActiveTab] = useState('general'); // 'general' | 'theme' | 'productPage' | 'subscribers' | 'audit'
+  const [activeTab, setActiveTab] = useState('general'); // 'general' | 'theme' | 'productPage' | 'brandComparison' | 'logistics' | 'subscribers' | 'audit'
   const [settings, setSettings] = useState(null);
   const [subscribers, setSubscribers] = useState([]);
   const [auditLogs, setAuditLogs] = useState([]);
+  const [productsList, setProductsList] = useState([]);
+  const [collectionsList, setCollectionsList] = useState([]);
+  const [searchProdTerm, setSearchProdTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -85,6 +93,19 @@ export const AdminSettings = () => {
       trustBadge3: '100% Genuine CALZARE™ Footwear',
       trustBadge4: 'Cash on Delivery & Partial COD Available',
     },
+    brandComparisonDefault: {
+      isEnabled: false,
+      isPublished: true,
+      heading: 'SEE THE DIFFERENCE',
+      subheading: 'How CALZARE monolithic closed-cell foam compares to standard footwear',
+      desktopMediaUrl: '',
+      mobileMediaUrl: '',
+      altText: 'Brand comparison',
+      displayOrder: 0,
+      scope: 'all',
+      selectedProductIds: [],
+      selectedCollectionIds: [],
+    },
     fship: {
       enabled: true,
       apiKey: '68e1a2b5a61128696f34531432751be18eaea96aea6ea1aa093ff8b54c4b0507',
@@ -98,11 +119,16 @@ export const AdminSettings = () => {
     try {
       setLoading(true);
       setError('');
-      const [setRes, subRes, logRes] = await Promise.all([
+      const [setRes, subRes, logRes, prodRes, colRes] = await Promise.all([
         api.adminGetSettings(),
         api.adminGetSubscribers(),
         api.adminGetAuditLogs(),
+        api.getProducts({ limit: 200 }),
+        api.getCollections(),
       ]);
+
+      if (prodRes?.success) setProductsList(prodRes.products || []);
+      if (colRes?.success) setCollectionsList(colRes.collections || []);
 
       if (setRes.success && setRes.settings) {
         setSettings(setRes.settings);
@@ -157,6 +183,20 @@ export const AdminSettings = () => {
             trustBadge3: '100% Genuine CALZARE™ Footwear',
             trustBadge4: 'Cash on Delivery & Partial COD Available',
             ...(setRes.settings.productPageDefaults || {}),
+          },
+          brandComparisonDefault: {
+            isEnabled: false,
+            isPublished: true,
+            heading: 'SEE THE DIFFERENCE',
+            subheading: 'How CALZARE monolithic closed-cell foam compares to standard footwear',
+            desktopMediaUrl: '',
+            mobileMediaUrl: '',
+            altText: 'Brand comparison',
+            displayOrder: 0,
+            scope: 'all',
+            selectedProductIds: [],
+            selectedCollectionIds: [],
+            ...(setRes.settings.brandComparisonDefault || {}),
           },
           fship: {
             enabled: setRes.settings.fship?.enabled !== false,
@@ -242,7 +282,7 @@ export const AdminSettings = () => {
           </p>
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
-          {(activeTab === 'general' || activeTab === 'theme' || activeTab === 'productPage' || activeTab === 'logistics') && (
+          {(activeTab === 'general' || activeTab === 'theme' || activeTab === 'productPage' || activeTab === 'brandComparison' || activeTab === 'logistics') && (
             <button
               onClick={handleSave}
               disabled={saving}
@@ -268,7 +308,7 @@ export const AdminSettings = () => {
       )}
 
       {/* Settings Navigation Tabs */}
-      <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid var(--border-subtle)', marginBottom: '20px' }}>
+      <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid var(--border-subtle)', marginBottom: '20px', flexWrap: 'wrap' }}>
         <button
           onClick={() => setActiveTab('general')}
           style={{
@@ -313,6 +353,21 @@ export const AdminSettings = () => {
           }}
         >
           <FileText size={15} style={{ display: 'inline', marginRight: '6px' }} /> Product Page Defaults
+        </button>
+        <button
+          onClick={() => setActiveTab('brandComparison')}
+          style={{
+            padding: '10px 18px',
+            border: 'none',
+            background: 'none',
+            fontWeight: 700,
+            fontSize: '0.85rem',
+            cursor: 'pointer',
+            borderBottom: activeTab === 'brandComparison' ? '2px solid var(--ink-black)' : '2px solid transparent',
+            color: activeTab === 'brandComparison' ? 'var(--ink-black)' : '#888',
+          }}
+        >
+          <Sparkles size={15} style={{ display: 'inline', marginRight: '6px' }} /> Brand Comparison ("See the Difference")
         </button>
         <button
           onClick={() => setActiveTab('logistics')}
@@ -970,6 +1025,699 @@ export const AdminSettings = () => {
           <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
             <button type="submit" disabled={saving} className="admin-btn admin-btn-primary" style={{ gap: '6px' }}>
               <Save size={16} /> {saving ? 'Saving...' : 'Save Product Page Defaults'}
+            </button>
+          </div>
+        </form>
+      ) : activeTab === 'brandComparison' ? (
+        /* Tab: Brand Comparison ("See the Difference") */
+        <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          {/* Header Info & Reference Loader Banner */}
+          <div
+            className="admin-card"
+            style={{
+              background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+              color: '#fff',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '16px',
+            }}
+          >
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    background: 'var(--accent-lime, #d8ff00)',
+                    color: '#000',
+                    fontSize: '0.72rem',
+                    fontWeight: 800,
+                    padding: '3px 8px',
+                    borderRadius: '4px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                  }}
+                >
+                  <Sparkles size={12} /> PDP Conversion Module
+                </span>
+                <span
+                  style={{
+                    fontSize: '0.75rem',
+                    color: form.brandComparisonDefault?.isEnabled ? '#86efac' : '#94a3b8',
+                    fontWeight: 600,
+                  }}
+                >
+                  {form.brandComparisonDefault?.isEnabled ? '● Active' : '○ Disabled'}
+                </span>
+                <span
+                  style={{
+                    fontSize: '0.75rem',
+                    color: form.brandComparisonDefault?.isPublished ? '#86efac' : '#fcd34d',
+                    fontWeight: 600,
+                  }}
+                >
+                  [{form.brandComparisonDefault?.isPublished ? 'Published' : 'Draft / Preview Only'}]
+                </span>
+              </div>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 800, margin: '0 0 4px 0', letterSpacing: '-0.02em' }}>
+                “SEE THE DIFFERENCE” — Brand Comparison Section
+              </h2>
+              <p style={{ fontSize: '0.85rem', color: '#cbd5e1', margin: 0, maxWidth: '640px' }}>
+                Display a bold visual battlecard on product pages showing why CALZARE outperforms standard footwear.
+                Preserves complete graphic resolution (2000 × 1218 original aspect ratio), supports independent desktop & mobile assets, and respects 4-tier inheritance rules.
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setForm((prev) => ({
+                    ...prev,
+                    brandComparisonDefault: {
+                      ...prev.brandComparisonDefault,
+                      isEnabled: true,
+                      isPublished: true,
+                      heading: 'SEE THE DIFFERENCE',
+                      subheading: 'How CALZARE monolithic closed-cell foam compares to standard footwear',
+                      desktopMediaUrl: 'https://solaworld.in/cdn/shop/files/Battlecard-Web.png?v=1789572716&width=2000',
+                      altText: 'Brand comparison',
+                    },
+                  }));
+                }}
+                className="admin-btn"
+                style={{
+                  background: 'var(--accent-lime, #d8ff00)',
+                  color: '#000',
+                  fontWeight: 700,
+                  border: 'none',
+                  fontSize: '0.8rem',
+                  gap: '6px',
+                }}
+              >
+                <Sparkles size={14} /> Load SolaWorld Reference Graphic
+              </button>
+
+              {form.brandComparisonDefault?.desktopMediaUrl && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setForm((prev) => ({
+                      ...prev,
+                      brandComparisonDefault: {
+                        ...prev.brandComparisonDefault,
+                        desktopMediaUrl: '',
+                        mobileMediaUrl: '',
+                      },
+                    }));
+                  }}
+                  className="admin-btn admin-btn-outline"
+                  style={{ color: '#fff', borderColor: '#475569', fontSize: '0.8rem' }}
+                >
+                  Clear Media
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Controls Grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+            {/* Card 1: Section State & Publishing */}
+            <div className="admin-card">
+              <h3 className="admin-card-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Sliders size={18} /> Visibility & Publication Status
+              </h3>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={form.brandComparisonDefault?.isEnabled || false}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        brandComparisonDefault: { ...form.brandComparisonDefault, isEnabled: e.target.checked },
+                      })
+                    }
+                    style={{ width: '18px', height: '18px', accentColor: 'var(--ink-black)' }}
+                  />
+                  <div>
+                    <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>Enable Brand Comparison Section</span>
+                    <p style={{ margin: 0, fontSize: '0.78rem', color: '#64748b' }}>
+                      Master toggle. If disabled, the section is completely omitted from storefronts.
+                    </p>
+                  </div>
+                </label>
+
+                <div style={{ paddingTop: '10px', borderTop: '1px solid var(--border-subtle)' }}>
+                  <label className="admin-label">Publication State</label>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setForm({
+                          ...form,
+                          brandComparisonDefault: { ...form.brandComparisonDefault, isPublished: true },
+                        })
+                      }
+                      style={{
+                        flex: 1,
+                        padding: '10px',
+                        border: '1px solid',
+                        borderColor: form.brandComparisonDefault?.isPublished ? '#16a34a' : 'var(--border-subtle)',
+                        background: form.brandComparisonDefault?.isPublished ? '#f0fdf4' : '#fff',
+                        color: form.brandComparisonDefault?.isPublished ? '#16a34a' : '#64748b',
+                        fontWeight: 700,
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '0.85rem',
+                      }}
+                    >
+                      ✓ Published (Live to All)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setForm({
+                          ...form,
+                          brandComparisonDefault: { ...form.brandComparisonDefault, isPublished: false },
+                        })
+                      }
+                      style={{
+                        flex: 1,
+                        padding: '10px',
+                        border: '1px solid',
+                        borderColor: !form.brandComparisonDefault?.isPublished ? '#ca8a04' : 'var(--border-subtle)',
+                        background: !form.brandComparisonDefault?.isPublished ? '#fefce8' : '#fff',
+                        color: !form.brandComparisonDefault?.isPublished ? '#ca8a04' : '#64748b',
+                        fontWeight: 700,
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '0.85rem',
+                      }}
+                    >
+                      ✎ Draft (Admin Preview Only)
+                    </button>
+                  </div>
+                  <p style={{ margin: '8px 0 0 0', fontSize: '0.78rem', color: '#64748b' }}>
+                    Draft changes are visible exclusively to logged-in administrators on product pages with a yellow "Preview" badge.
+                  </p>
+                </div>
+
+                <div style={{ paddingTop: '10px', borderTop: '1px solid var(--border-subtle)' }}>
+                  <label className="admin-label">Display Order on PDP</label>
+                  <input
+                    type="number"
+                    value={form.brandComparisonDefault?.displayOrder ?? 0}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        brandComparisonDefault: { ...form.brandComparisonDefault, displayOrder: parseInt(e.target.value) || 0 },
+                      })
+                    }
+                    className="admin-input"
+                    placeholder="0"
+                  />
+                  <p style={{ margin: '4px 0 0', fontSize: '0.75rem', color: '#888' }}>
+                    Default position is immediately following product benefits & description, preceding customer reviews.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 2: Section Copy & Alt Text */}
+            <div className="admin-card">
+              <h3 className="admin-card-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <FileText size={18} /> Section Copy & Accessibility
+              </h3>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                <div>
+                  <label className="admin-label">Section Heading</label>
+                  <input
+                    type="text"
+                    value={form.brandComparisonDefault?.heading || ''}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        brandComparisonDefault: { ...form.brandComparisonDefault, heading: e.target.value },
+                      })
+                    }
+                    className="admin-input"
+                    placeholder="e.g. SEE THE DIFFERENCE"
+                  />
+                </div>
+
+                <div>
+                  <label className="admin-label">Supporting Text / Subheading</label>
+                  <textarea
+                    rows={2}
+                    value={form.brandComparisonDefault?.subheading || ''}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        brandComparisonDefault: { ...form.brandComparisonDefault, subheading: e.target.value },
+                      })
+                    }
+                    className="admin-textarea"
+                    placeholder="e.g. How CALZARE monolithic closed-cell foam compares to standard footwear"
+                  />
+                </div>
+
+                <div>
+                  <label className="admin-label">Meaningful Image Alt Text (SEO & Screen Readers)</label>
+                  <input
+                    type="text"
+                    value={form.brandComparisonDefault?.altText || ''}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        brandComparisonDefault: { ...form.brandComparisonDefault, altText: e.target.value },
+                      })
+                    }
+                    className="admin-input"
+                    placeholder="e.g. Brand comparison chart highlighting CALZARE features"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 3: Media Assets */}
+          <div className="admin-card">
+            <h3 className="admin-card-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Layers size={18} /> Comparison Media Assets
+            </h3>
+            <p style={{ fontSize: '0.82rem', color: '#64748b', marginTop: '-4px', marginBottom: '16px' }}>
+              Upload new comparison graphics, select from the existing media library, or paste a CDN link.
+              The storefront preserves the original aspect ratio (2000 × 1218) without cropping or distortion.
+            </p>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '24px' }}>
+              <div>
+                <ImageUploadField
+                  label="Desktop Comparison Asset (Primary)"
+                  value={form.brandComparisonDefault?.desktopMediaUrl || ''}
+                  onChange={(url) =>
+                    setForm({
+                      ...form,
+                      brandComparisonDefault: { ...form.brandComparisonDefault, desktopMediaUrl: url },
+                    })
+                  }
+                  helperText="Recommended: 2000 × 1218 PNG or WebP. Serves as responsive baseline for all screens."
+                />
+              </div>
+
+              <div>
+                <ImageUploadField
+                  label="Mobile Comparison Asset (Optional)"
+                  value={form.brandComparisonDefault?.mobileMediaUrl || ''}
+                  onChange={(url) =>
+                    setForm({
+                      ...form,
+                      brandComparisonDefault: { ...form.brandComparisonDefault, mobileMediaUrl: url },
+                    })
+                  }
+                  helperText="Optional vertical or compact mobile graphic. If omitted, the desktop graphic scales down cleanly."
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Card 4: Targeting & Scope Rules */}
+          <div className="admin-card">
+            <h3 className="admin-card-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Shield size={18} /> Scope Targeting & Catalog Rules
+            </h3>
+            <p style={{ fontSize: '0.82rem', color: '#64748b', marginTop: '-4px', marginBottom: '16px' }}>
+              Define where this default brand comparison appears. Note that individual products can override or disable this setting in the Product Editor.
+            </p>
+
+            <div style={{ display: 'flex', gap: '16px', marginBottom: '16px', flexWrap: 'wrap' }}>
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  cursor: 'pointer',
+                  padding: '10px 16px',
+                  borderRadius: '6px',
+                  border: '1px solid',
+                  borderColor: form.brandComparisonDefault?.scope === 'all' ? 'var(--ink-black)' : 'var(--border-subtle)',
+                  background: form.brandComparisonDefault?.scope === 'all' ? '#f8fafc' : '#fff',
+                  fontWeight: 600,
+                  fontSize: '0.85rem',
+                }}
+              >
+                <input
+                  type="radio"
+                  name="scope"
+                  value="all"
+                  checked={!form.brandComparisonDefault?.scope || form.brandComparisonDefault?.scope === 'all'}
+                  onChange={() =>
+                    setForm({
+                      ...form,
+                      brandComparisonDefault: { ...form.brandComparisonDefault, scope: 'all' },
+                    })
+                  }
+                />
+                All Products (Global Store Default)
+              </label>
+
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  cursor: 'pointer',
+                  padding: '10px 16px',
+                  borderRadius: '6px',
+                  border: '1px solid',
+                  borderColor: form.brandComparisonDefault?.scope === 'selected_products' ? 'var(--ink-black)' : 'var(--border-subtle)',
+                  background: form.brandComparisonDefault?.scope === 'selected_products' ? '#f8fafc' : '#fff',
+                  fontWeight: 600,
+                  fontSize: '0.85rem',
+                }}
+              >
+                <input
+                  type="radio"
+                  name="scope"
+                  value="selected_products"
+                  checked={form.brandComparisonDefault?.scope === 'selected_products'}
+                  onChange={() =>
+                    setForm({
+                      ...form,
+                      brandComparisonDefault: { ...form.brandComparisonDefault, scope: 'selected_products' },
+                    })
+                  }
+                />
+                Selected Products Only ({form.brandComparisonDefault?.selectedProductIds?.length || 0})
+              </label>
+
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  cursor: 'pointer',
+                  padding: '10px 16px',
+                  borderRadius: '6px',
+                  border: '1px solid',
+                  borderColor: form.brandComparisonDefault?.scope === 'selected_collections' ? 'var(--ink-black)' : 'var(--border-subtle)',
+                  background: form.brandComparisonDefault?.scope === 'selected_collections' ? '#f8fafc' : '#fff',
+                  fontWeight: 600,
+                  fontSize: '0.85rem',
+                }}
+              >
+                <input
+                  type="radio"
+                  name="scope"
+                  value="selected_collections"
+                  checked={form.brandComparisonDefault?.scope === 'selected_collections'}
+                  onChange={() =>
+                    setForm({
+                      ...form,
+                      brandComparisonDefault: { ...form.brandComparisonDefault, scope: 'selected_collections' },
+                    })
+                  }
+                />
+                Selected Collections Only ({form.brandComparisonDefault?.selectedCollectionIds?.length || 0})
+              </label>
+            </div>
+
+            {/* Product Selector Picker */}
+            {form.brandComparisonDefault?.scope === 'selected_products' && (
+              <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <div style={{ position: 'relative', width: '320px' }}>
+                    <Search size={14} style={{ position: 'absolute', left: '10px', top: '10px', color: '#94a3b8' }} />
+                    <input
+                      type="text"
+                      placeholder="Search products..."
+                      value={searchProdTerm}
+                      onChange={(e) => setSearchProdTerm(e.target.value)}
+                      className="admin-input"
+                      style={{ paddingLeft: '32px', fontSize: '0.82rem' }}
+                    />
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setForm({
+                          ...form,
+                          brandComparisonDefault: {
+                            ...form.brandComparisonDefault,
+                            selectedProductIds: productsList.map((p) => p._id),
+                          },
+                        })
+                      }
+                      className="admin-btn admin-btn-outline"
+                      style={{ fontSize: '0.75rem', padding: '4px 8px' }}
+                    >
+                      Select All
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setForm({
+                          ...form,
+                          brandComparisonDefault: {
+                            ...form.brandComparisonDefault,
+                            selectedProductIds: [],
+                          },
+                        })
+                      }
+                      className="admin-btn admin-btn-outline"
+                      style={{ fontSize: '0.75rem', padding: '4px 8px' }}
+                    >
+                      Clear Selection
+                    </button>
+                  </div>
+                </div>
+
+                <div style={{ maxHeight: '240px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {productsList
+                    .filter((p) =>
+                      !searchProdTerm ||
+                      p.name?.toLowerCase().includes(searchProdTerm.toLowerCase()) ||
+                      p.slug?.toLowerCase().includes(searchProdTerm.toLowerCase())
+                    )
+                    .map((p) => {
+                      const isSelected = form.brandComparisonDefault?.selectedProductIds?.includes(p._id);
+                      return (
+                        <label
+                          key={p._id}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            padding: '8px 12px',
+                            background: isSelected ? '#eff6ff' : '#fff',
+                            borderRadius: '4px',
+                            border: '1px solid',
+                            borderColor: isSelected ? '#93c5fd' : '#e2e8f0',
+                            cursor: 'pointer',
+                            fontSize: '0.82rem',
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={(e) => {
+                              const current = form.brandComparisonDefault?.selectedProductIds || [];
+                              const updated = e.target.checked
+                                ? [...current, p._id]
+                                : current.filter((id) => id !== p._id);
+                              setForm({
+                                ...form,
+                                brandComparisonDefault: {
+                                  ...form.brandComparisonDefault,
+                                  selectedProductIds: updated,
+                                },
+                              });
+                            }}
+                          />
+                          {p.images?.[0]?.url && (
+                            <img
+                              src={p.images[0].url}
+                              alt=""
+                              style={{ width: '28px', height: '28px', objectFit: 'cover', borderRadius: '4px' }}
+                            />
+                          )}
+                          <div style={{ flex: 1 }}>
+                            <strong>{p.name}</strong> <span style={{ color: '#64748b' }}>({p.slug})</span>
+                          </div>
+                          <span style={{ color: '#0f172a', fontWeight: 600 }}>₹{p.price}</span>
+                        </label>
+                      );
+                    })}
+                </div>
+              </div>
+            )}
+
+            {/* Collection Selector Picker */}
+            {form.brandComparisonDefault?.scope === 'selected_collections' && (
+              <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
+                <p style={{ fontSize: '0.8rem', color: '#64748b', margin: '0 0 10px 0' }}>
+                  Products categorized under any selected collection will display this brand comparison:
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '8px' }}>
+                  {collectionsList.map((c) => {
+                    const isSelected = form.brandComparisonDefault?.selectedCollectionIds?.includes(c._id);
+                    return (
+                      <label
+                        key={c._id}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          padding: '8px 12px',
+                          background: isSelected ? '#eff6ff' : '#fff',
+                          borderRadius: '4px',
+                          border: '1px solid',
+                          borderColor: isSelected ? '#93c5fd' : '#e2e8f0',
+                          cursor: 'pointer',
+                          fontSize: '0.82rem',
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={(e) => {
+                            const current = form.brandComparisonDefault?.selectedCollectionIds || [];
+                            const updated = e.target.checked
+                              ? [...current, c._id]
+                              : current.filter((id) => id !== c._id);
+                            setForm({
+                              ...form,
+                              brandComparisonDefault: {
+                                ...form.brandComparisonDefault,
+                                selectedCollectionIds: updated,
+                              },
+                            });
+                          }}
+                        />
+                        <span>{c.name}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Card 5: Real-Time Live Visual Preview */}
+          <div className="admin-card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
+              <div>
+                <h3 className="admin-card-title" style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                  <Eye size={18} /> Storefront Live Preview
+                </h3>
+                <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
+                  Exact rendering simulation of how customers will experience this section on product detail pages.
+                </span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span className={`corp-pill ${form.brandComparisonDefault?.isEnabled ? 'corp-pill-success' : 'corp-pill-danger'}`} style={{ fontSize: '0.72rem' }}>
+                  {form.brandComparisonDefault?.isEnabled ? 'Enabled' : 'Disabled'}
+                </span>
+                <span className={`corp-pill ${form.brandComparisonDefault?.isPublished ? 'corp-pill-info' : 'corp-pill-warning'}`} style={{ fontSize: '0.72rem' }}>
+                  {form.brandComparisonDefault?.isPublished ? 'Published' : 'Draft Mode'}
+                </span>
+              </div>
+            </div>
+
+            <div
+              style={{
+                background: '#09090b',
+                borderRadius: '8px',
+                padding: '32px 20px',
+                border: '1px solid #27272a',
+                color: '#fff',
+              }}
+            >
+              <div style={{ maxWidth: '1100px', margin: '0 auto', textAlign: 'center' }}>
+                <div style={{ display: 'inline-block', background: 'var(--accent-lime, #d8ff00)', color: '#000', fontSize: '0.7rem', fontWeight: 900, padding: '3px 10px', borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>
+                  BRAND COMPARISON
+                </div>
+                <h2 style={{ fontSize: '1.8rem', fontWeight: 900, letterSpacing: '-0.02em', margin: '0 0 6px 0', textTransform: 'uppercase' }}>
+                  {form.brandComparisonDefault?.heading || 'SEE THE DIFFERENCE'}
+                </h2>
+                {form.brandComparisonDefault?.subheading && (
+                  <p style={{ color: '#a1a1aa', fontSize: '0.9rem', maxWidth: '640px', margin: '0 auto 24px auto' }}>
+                    {form.brandComparisonDefault?.subheading}
+                  </p>
+                )}
+
+                {form.brandComparisonDefault?.desktopMediaUrl ? (
+                  <div
+                    style={{
+                      position: 'relative',
+                      borderRadius: '12px',
+                      overflow: 'hidden',
+                      background: '#18181b',
+                      border: '1px solid #27272a',
+                      boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+                    }}
+                  >
+                    {!form.brandComparisonDefault?.isPublished && (
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: '12px',
+                          right: '12px',
+                          background: 'rgba(234, 179, 8, 0.95)',
+                          color: '#000',
+                          padding: '4px 10px',
+                          borderRadius: '4px',
+                          fontSize: '0.75rem',
+                          fontWeight: 800,
+                          zIndex: 2,
+                        }}
+                      >
+                        DRAFT PREVIEW
+                      </div>
+                    )}
+                    <img
+                      src={form.brandComparisonDefault?.desktopMediaUrl}
+                      alt={form.brandComparisonDefault?.altText || 'Brand comparison'}
+                      style={{
+                        width: '100%',
+                        height: 'auto',
+                        aspectRatio: '2000 / 1218',
+                        objectFit: 'contain',
+                        display: 'block',
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div
+                    style={{
+                      border: '2px dashed #3f3f46',
+                      borderRadius: '12px',
+                      padding: '48px 20px',
+                      color: '#71717a',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <Layers size={36} style={{ margin: '0 auto 12px auto', opacity: 0.5 }} />
+                    <p style={{ fontSize: '0.95rem', fontWeight: 600, margin: '0 0 4px 0' }}>No comparison graphic configured</p>
+                    <p style={{ fontSize: '0.8rem', color: '#52525b', margin: 0 }}>
+                      Click "Load SolaWorld Reference Graphic" above or upload an asset to display it here.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
+            <button type="submit" disabled={saving} className="admin-btn admin-btn-primary" style={{ gap: '6px' }}>
+              <Save size={16} /> {saving ? 'Saving...' : 'Save Brand Comparison Settings'}
             </button>
           </div>
         </form>

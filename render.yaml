@@ -1,0 +1,37 @@
+services:
+  - type: web
+    name: calzare-backend
+    runtime: node
+    region: oregon
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: CLIENT_URL
+        value: '*'
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: MONGO_URI
+        sync: false
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: RAZORPAY_WEBHOOK_SECRET
+        sync: false
+      - key: FSHIP_API_KEY
+        value: 68e1a2b5a61128696f34531432751be18eaea96aea6ea1aa093ff8b54c4b0507
+      - key: FSHIP_BASE_URL
+        value: https://capi.fship.in
+      - key: FSHIP_PICKUP_PINCODE
+        value: "560038"
+      - key: STORAGE_TYPE
+        value: local
+      - key: UPLOAD_DIR
+        value: uploads

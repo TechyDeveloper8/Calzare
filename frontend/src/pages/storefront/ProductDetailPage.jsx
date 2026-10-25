@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate, useSearchParams, useOutletContext } from 'react-router-dom';
 import { api } from '../../api/api.js';
+import { useAuth } from '../../context/AuthContext.jsx';
 import { useCart } from '../../context/CartContext.jsx';
 import { useWishlist } from '../../context/WishlistContext.jsx';
 import { ProductCard } from '../../components/common/ProductCard.jsx';
 import { SizeGuideModal } from '../../components/common/SizeGuideModal.jsx';
+import { BrandComparisonSection } from '../../components/common/BrandComparisonSection.jsx';
 import {
   Heart,
   ShoppingBag,
@@ -43,6 +45,7 @@ export const ProductDetailPage = ({ onQuickView: propOnQuickView }) => {
   const { slug } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { isStaff } = useAuth();
   const { addToCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
 
@@ -51,6 +54,7 @@ export const ProductDetailPage = ({ onQuickView: propOnQuickView }) => {
   const [reviews, setReviews] = useState([]);
   const [globalDefaults, setGlobalDefaults] = useState({});
   const [storePolicy, setStorePolicy] = useState({});
+  const [brandComparison, setBrandComparison] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -122,6 +126,7 @@ export const ProductDetailPage = ({ onQuickView: propOnQuickView }) => {
           setReviews(res.reviews || []);
           setGlobalDefaults(res.globalDefaults || {});
           setStorePolicy(res.storePolicy || {});
+          setBrandComparison(res.brandComparison || null);
 
           // Match variant from URL query param ?color=
           const colorQuery = searchParams.get('color');
@@ -1105,6 +1110,16 @@ export const ProductDetailPage = ({ onQuickView: propOnQuickView }) => {
             </div>
           </section>
         ))}
+
+        {/* ==============================================================
+            BRAND COMPARISON ("SEE THE DIFFERENCE") SECTION
+            ============================================================== */}
+        <BrandComparisonSection
+          comparison={brandComparison}
+          isAdmin={isStaff}
+          productId={product?._id}
+          productName={product?.name}
+        />
 
         {/* ==============================================================
             VERIFIED CUSTOMER REVIEWS SECTION

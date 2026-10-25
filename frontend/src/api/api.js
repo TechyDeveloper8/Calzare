@@ -93,6 +93,10 @@ export const api = {
   getJournalArticleBySlug: (slug) => request(`/cms/journal/${slug}`),
   submitContactInquiry: (body) => request('/cms/contact', { method: 'POST', body }),
   getNavigationMenus: () => request('/navigation'),
+  getStoryPage: (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return request(`/story${qs ? `?${qs}` : ''}`);
+  },
 
   // Offers & Public Coupons
   getPublicOffers: () => request('/coupons/public'),
@@ -172,6 +176,17 @@ export const api = {
   adminCreatePage: (body) => request('/cms/admin', { method: 'POST', body }),
   adminUpdatePage: (id, body) => request(`/cms/admin/${id}`, { method: 'PUT', body }),
   adminDeletePage: (id) => request(`/cms/admin/${id}`, { method: 'DELETE' }),
+
+  // Our Story CMS Manager
+  adminGetStoryPage: (slug = 'about-us') => request(`/story/admin?slug=${encodeURIComponent(slug)}`),
+  adminUpdateStoryPage: (body, slug = 'about-us') => request(`/story/admin?slug=${encodeURIComponent(slug)}`, { method: 'PUT', body }),
+  adminAddStorySection: (body, slug = 'about-us') => request(`/story/admin/sections?slug=${encodeURIComponent(slug)}`, { method: 'POST', body }),
+  adminDuplicateStorySection: (sectionId, slug = 'about-us') => request(`/story/admin/sections/${sectionId}/duplicate?slug=${encodeURIComponent(slug)}`, { method: 'POST' }),
+  adminDeleteStorySection: (sectionId, slug = 'about-us') => request(`/story/admin/sections/${sectionId}?slug=${encodeURIComponent(slug)}`, { method: 'DELETE' }),
+  adminReorderStorySections: (orderedIds, slug = 'about-us') => request(`/story/admin/sections/reorder?slug=${encodeURIComponent(slug)}`, { method: 'PUT', body: { orderedIds } }),
+  adminToggleStorySection: (sectionId, slug = 'about-us') => request(`/story/admin/sections/${sectionId}/toggle?slug=${encodeURIComponent(slug)}`, { method: 'PATCH' }),
+  adminPublishStoryPage: (slug = 'about-us') => request(`/story/admin/publish?slug=${encodeURIComponent(slug)}`, { method: 'POST' }),
+  adminUnpublishStoryPage: (slug = 'about-us') => request(`/story/admin/unpublish?slug=${encodeURIComponent(slug)}`, { method: 'POST' }),
 
   // Navigation Menus
   adminGetMenus: () => request('/navigation/admin/all'),

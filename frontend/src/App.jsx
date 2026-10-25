@@ -54,6 +54,7 @@ import { AdminPages } from './pages/admin/AdminPages.jsx';
 import { AdminNavigation } from './pages/admin/AdminNavigation.jsx';
 import { AdminCustomers } from './pages/admin/AdminCustomers.jsx';
 import { AdminSettings } from './pages/admin/AdminSettings.jsx';
+import { AdminOurStoryManager } from './pages/admin/AdminOurStoryManager.jsx';
 
 // Utility: Scroll to top on route navigation
 const ScrollToTop = () => {
@@ -122,18 +123,25 @@ export default function App() {
                   <Route path="/register" element={<RegisterPage />} />
                   <Route path="/track-order" element={<TrackOrderPage />} />
                   <Route path="/about" element={<AboutPage />} />
+                  <Route path="/pages/about-us" element={<AboutPage />} />
+                  <Route path="/our-story" element={<AboutPage />} />
                   <Route path="/contact" element={<ContactPage />} />
                   <Route path="/faq" element={<FaqPage />} />
                   <Route path="/offers" element={<OffersPage />} />
                   <Route path="/journal" element={<JournalPage />} />
                   <Route path="/journal/:slug" element={<JournalDetailPage />} />
                   <Route path="/shipping" element={<CmsContentPage slug="shipping" />} />
+                  <Route path="/shipping-policy" element={<CmsContentPage slug="shipping" />} />
                   <Route path="/returns" element={<CmsContentPage slug="returns" />} />
+                  <Route path="/return-exchange-policy" element={<CmsContentPage slug="returns" />} />
                   <Route path="/refund-policy" element={<CmsContentPage slug="refund-policy" />} />
                   <Route path="/privacy" element={<CmsContentPage slug="privacy" />} />
+                  <Route path="/privacy-policy" element={<CmsContentPage slug="privacy" />} />
                   <Route path="/terms" element={<CmsContentPage slug="terms" />} />
+                  <Route path="/terms-and-conditions" element={<CmsContentPage slug="terms" />} />
                   <Route path="/size-guide" element={<CmsContentPage slug="size-guide" />} />
                   <Route path="/page/:slug" element={<CmsContentPage />} />
+                  <Route path="/pages/:slug" element={<CmsContentPage />} />
                   <Route path="/404" element={<NotFoundPage />} />
                 </Route>
 
@@ -144,6 +152,7 @@ export default function App() {
                 <Route path="/admin" element={<AdminLayout />}>
                   <Route index element={<AdminDashboard />} />
                   <Route path="homepage" element={<AdminHomepageEditor />} />
+                  <Route path="our-story" element={<AdminOurStoryManager />} />
                   <Route path="products" element={<AdminProducts />} />
                   <Route path="products/new" element={<AdminProductForm />} />
                   <Route path="products/edit/:id" element={<AdminProductForm />} />

@@ -77,12 +77,35 @@ export const CollectionPage = ({ preset }) => {
             slug: activeSlug,
             description: 'Everyday comfort. Zero ordinary energy.',
             hero: {
-              label: activeSlug === 'men' ? "THE MEN'S EDIT" : 'COLLECTION',
-              heading: 'BUILT TO STAND OUT.',
-              supportingText: 'Everyday comfort. Zero ordinary energy.',
+              label:
+                activeSlug === 'men'
+                  ? "THE MEN'S EDIT"
+                  : activeSlug === 'women'
+                  ? "THE WOMEN'S EDIT"
+                  : activeSlug === 'kids'
+                  ? "THE KIDS' EDIT"
+                  : 'COLLECTION',
+              heading:
+                activeSlug === 'women'
+                  ? 'EFFORTLESS REBOUND.'
+                  : activeSlug === 'kids'
+                  ? 'BUILT FOR PLAY.'
+                  : 'BUILT TO STAND OUT.',
+              supportingText:
+                activeSlug === 'women'
+                  ? 'No laces, no rush — comfort that clocks off exactly when you do.'
+                  : activeSlug === 'kids'
+                  ? 'Featherlight, washable, and ultra-durable comfort for little explorers everywhere.'
+                  : 'Everyday comfort. Zero ordinary energy.',
               desktopBannerUrl:
                 activeSlug === 'men'
                   ? '/images/split/men-collection-image.jpg'
+                  : activeSlug === 'women'
+                  ? '/images/split/women-collection-image.jpg'
+                  : activeSlug === 'kids'
+                  ? '/images/split/kids-collection-image.jpg'
+                  : activeSlug === 'unisex'
+                  ? '/images/split/unisex-collection-image.jpg'
                   : '/images/split/women-collection-image.jpg',
               mobileBannerUrl: '',
               imagePosition: 'center center',
@@ -270,7 +293,7 @@ export const CollectionPage = ({ preset }) => {
                   </span>
                 )}
                 <h1 className="collection-hero__headline">
-                  {heroConfig.heading || collection?.name || "MEN'S FOOTWEAR EDIT"}
+                  {heroConfig.heading || collection?.name || `${activeSlug.toUpperCase()} EDIT`}
                 </h1>
                 <p className="collection-hero__desc">
                   {heroConfig.supportingText ||
@@ -282,9 +305,9 @@ export const CollectionPage = ({ preset }) => {
                   href={heroConfig.ctaLink || '#collection-grid'}
                   className="collection-hero__cta"
                   onClick={(e) => {
-                    if (heroConfig.ctaLink?.startsWith('#')) {
+                    if (heroConfig.ctaLink?.startsWith('#') || !heroConfig.ctaLink) {
                       e.preventDefault();
-                      const target = document.querySelector(heroConfig.ctaLink);
+                      const target = document.querySelector(heroConfig.ctaLink || '#collection-grid');
                       if (target) target.scrollIntoView({ behavior: 'smooth' });
                     }
                   }}
@@ -302,7 +325,7 @@ export const CollectionPage = ({ preset }) => {
                     )}
                     <img
                       src={heroConfig.desktopBannerUrl}
-                      alt={heroConfig.heading || 'Men Collection Editorial Campaign'}
+                      alt={heroConfig.heading || collection?.name || `${activeSlug} collection banner`}
                       className="collection-hero__img"
                       style={{ objectPosition: heroConfig.imagePosition || 'center center' }}
                     />

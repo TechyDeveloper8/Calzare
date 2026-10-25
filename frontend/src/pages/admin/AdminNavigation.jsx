@@ -123,9 +123,8 @@ export const AdminNavigation = () => {
   const menuTabs = [
     { key: 'header', label: 'Header Navigation' },
     { key: 'announcement_bar', label: 'Top Announcement Bar' },
-    { key: 'footer_shop', label: 'Footer: Shop' },
-    { key: 'footer_help', label: 'Footer: Customer Care' },
-    { key: 'footer_about', label: 'Footer: Brand / About' },
+    { key: 'footer_help', label: 'Footer: Care & Support' },
+    { key: 'footer_about', label: 'Footer: Policies' },
   ];
 
   return (

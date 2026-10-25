@@ -15,8 +15,8 @@ export const ReviewCarouselSection = ({ section }) => {
   return (
     <section style={{ padding: '80px 0', background: '#f5f3ee' }} aria-labelledby="reviews-heading">
       <div className="container">
-        <div className="section-header" style={{ textAlign: 'center', maxWidth: '640px', margin: '0 auto 48px' }}>
-          <h2 id="reviews-heading" className="section-title">
+        <div className="section-header" style={{ textAlign: 'center', maxWidth: '1000px', margin: '0 auto 48px' }}>
+          <h2 id="reviews-heading" className="section-title section-title--single-line">
             {section.title || 'WORDS FROM THE PAVEMENT'}
           </h2>
 

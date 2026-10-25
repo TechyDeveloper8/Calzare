@@ -19,6 +19,7 @@ import {
   ShieldCheck,
   Bell,
   ChevronRight,
+  BookOpen,
 } from 'lucide-react';
 
 export const AdminLayout = () => {
@@ -51,6 +52,7 @@ export const AdminLayout = () => {
       title: 'Content & CMS',
       items: [
         { label: 'Homepage CMS', icon: Sparkles, path: '/admin/homepage' },
+        { label: 'Our Story Manager', icon: BookOpen, path: '/admin/our-story' },
         { label: 'Pages & Policies', icon: FileText, path: '/admin/pages' },
         { label: 'Customer Reviews', icon: Star, path: '/admin/reviews' },
       ],
@@ -80,6 +82,7 @@ export const AdminLayout = () => {
     if (p.includes('/admin/inventory')) return 'Inventory Tracker';
     if (p.includes('/admin/collections')) return 'Collections & Categories';
     if (p.includes('/admin/homepage')) return 'Homepage CMS';
+    if (p.includes('/admin/our-story')) return 'Our Story Manager';
     if (p.includes('/admin/pages')) return 'Pages & Policies';
     if (p.includes('/admin/reviews')) return 'Customer Reviews';
     if (p.includes('/admin/coupons')) return 'Coupons & Promotions';

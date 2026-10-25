@@ -41,9 +41,9 @@ export const BenefitsSection = ({ section }) => {
   return (
     <section style={{ padding: '80px 0 100px', backgroundColor: '#f5f3ee' }} aria-labelledby="benefits-heading">
       <div className="container">
-        <div className="section-header" style={{ textAlign: 'center', maxWidth: '640px', margin: '0 auto 48px' }}>
-          <h2 id="benefits-heading" className="section-title">
-            {section.title || 'THE CALZARE STANDARD & REASSURANCE'}
+        <div className="section-header" style={{ textAlign: 'center', maxWidth: '1000px', margin: '0 auto 48px' }}>
+          <h2 id="benefits-heading" className="section-title section-title--single-line">
+            {section.title || 'THE CALZARE STANDARD'}
           </h2>
           {section.subtitle && <p className="section-subtitle" style={{ margin: '0 auto' }}>{section.subtitle}</p>}
         </div>

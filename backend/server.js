@@ -26,6 +26,7 @@ import navigationRoutes from './routes/navigationRoutes.js';
 import inventoryRoutes from './routes/inventoryRoutes.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
 import settingsRoutes from './routes/settingsRoutes.js';
+import storyRoutes from './routes/storyRoutes.js';
 
 dotenv.config();
 
@@ -44,9 +45,28 @@ app.use(
   })
 );
 app.use(compression());
+const allowedOrigins = process.env.CLIENT_URL
+  ? process.env.CLIENT_URL.split(',').map((u) => u.trim())
+  : ['http://localhost:5173', 'http://127.0.0.1:5173'];
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin: (origin, callback) => {
+      // Allow requests with no origin (e.g. mobile apps, curl, uptime monitors)
+      if (!origin) return callback(null, true);
+      if (
+        process.env.CLIENT_URL === '*' ||
+        allowedOrigins.includes('*') ||
+        allowedOrigins.includes(origin) ||
+        origin.endsWith('.vercel.app') ||
+        origin.endsWith('.onrender.com') ||
+        origin.includes('localhost') ||
+        origin.includes('127.0.0.1')
+      ) {
+        return callback(null, true);
+      }
+      return callback(null, true);
+    },
     credentials: true,
   })
 );
@@ -78,9 +98,10 @@ app.use('/api/v1/navigation', navigationRoutes);
 app.use('/api/v1/inventory', inventoryRoutes);
 app.use('/api/v1/analytics', analyticsRoutes);
 app.use('/api/v1/settings', settingsRoutes);
+app.use('/api/v1/story', storyRoutes);
 
-// Health check endpoint
-app.get('/api/health', (req, res) => {
+// Health check endpoints
+app.get(['/', '/api/health'], (req, res) => {
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),

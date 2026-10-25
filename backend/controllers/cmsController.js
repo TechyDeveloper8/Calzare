@@ -5,7 +5,20 @@ import { logAudit } from '../utils/auditLogger.js';
 
 export const getPageBySlug = async (req, res, next) => {
   try {
-    const page = await CMSPage.findOne({ slug: req.params.slug, isPublished: true });
+    const rawSlug = req.params.slug;
+    const slugAliases = {
+      'terms-and-conditions': ['terms', 'terms-and-conditions'],
+      'terms': ['terms', 'terms-and-conditions'],
+      'privacy-policy': ['privacy', 'privacy-policy'],
+      'privacy': ['privacy', 'privacy-policy'],
+      'shipping-policy': ['shipping', 'shipping-policy'],
+      'shipping': ['shipping', 'shipping-policy'],
+      'return-exchange-policy': ['returns', 'return-exchange-policy'],
+      'returns': ['returns', 'return-exchange-policy'],
+    };
+
+    const targetSlugs = slugAliases[rawSlug] || [rawSlug];
+    const page = await CMSPage.findOne({ slug: { $in: targetSlugs }, isPublished: true });
     if (!page) return res.status(404).json({ success: false, message: 'Page not found' });
     res.json({ success: true, page });
   } catch (error) {

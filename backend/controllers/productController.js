@@ -1,10 +1,13 @@
+import mongoose from 'mongoose';
 import { Product } from '../models/Product.js';
 import { ProductVariant } from '../models/ProductVariant.js';
 import { Category } from '../models/Category.js';
 import { Collection } from '../models/Collection.js';
 import { Review } from '../models/Review.js';
 import { Order } from '../models/Order.js';
+import { StoreSetting } from '../models/StoreSetting.js';
 import { logAudit } from '../utils/auditLogger.js';
+import { fshipService } from '../services/fshipService.js';
 import slugify from 'slugify';
 
 export const getProducts = async (req, res, next) => {
@@ -18,6 +21,7 @@ export const getProducts = async (req, res, next) => {
       maxPrice,
       color,
       size,
+      availability,
       search,
       sort = 'featured',
       page = 1,
@@ -90,6 +94,17 @@ export const getProducts = async (req, res, next) => {
       query._id = { ...(query._id ? { $in: matchingVariants.filter((id) => query._id.$in?.includes(id)) } : { $in: matchingVariants }) };
     }
 
+    // Filter by Availability (in stock vs all)
+    if (availability === 'in_stock') {
+      const inStockProductIds = await ProductVariant.find({
+        isActive: true,
+        'sizes.stock': { $gt: 0 },
+      }).distinct('productId');
+      query._id = query._id
+        ? { $in: inStockProductIds.filter((id) => query._id.$in?.some((existing) => (existing.equals ? existing.equals(id) : String(existing) === String(id)))) }
+        : { $in: inStockProductIds };
+    }
+
     // Sorting
     let sortOption = { isFeatured: -1, createdAt: -1 };
     if (sort === 'bestselling') {
@@ -134,10 +149,16 @@ export const getProducts = async (req, res, next) => {
 export const getProductBySlug = async (req, res, next) => {
   try {
     const { slug } = req.params;
-    const product = await Product.findOne({ slug })
+    const isObjectId = mongoose.Types.ObjectId.isValid(slug);
+    const query = isObjectId ? { $or: [{ slug }, { _id: slug }] } : { slug };
+    const product = await Product.findOne(query)
       .populate('category', 'name slug')
-      .populate('collections', 'name slug')
-      .populate('relatedProducts', 'name slug baseRegularPrice baseSalePrice defaultImages')
+      .populate('collections', 'name slug brandComparison')
+      .populate({
+        path: 'relatedProducts',
+        select: 'name slug baseRegularPrice baseSalePrice defaultImages productType brand isBestseller isNewArrival',
+        populate: { path: 'variants', select: 'colorName colorHex regularPrice salePrice images' },
+      })
       .populate({
         path: 'variants',
         match: { isActive: true },
@@ -152,13 +173,93 @@ export const getProductBySlug = async (req, res, next) => {
     product.viewsCount = (product.viewsCount || 0) + 1;
     await product.save({ validateBeforeSave: false });
 
+    // Ensure at least 4 related products are returned for rich recommendation carousels
+    let relatedProducts = product.relatedProducts ? [...product.relatedProducts] : [];
+    if (relatedProducts.length < 4) {
+      const existingIds = [product._id, ...relatedProducts.map((p) => p._id)];
+      const categoryFilter = product.category?._id ? { category: product.category._id } : {};
+      
+      let additional = await Product.find({
+        _id: { $nin: existingIds },
+        status: 'published',
+        ...categoryFilter,
+      })
+        .select('name slug baseRegularPrice baseSalePrice defaultImages productType brand isBestseller isNewArrival')
+        .populate('variants', 'colorName colorHex regularPrice salePrice images')
+        .limit(4 - relatedProducts.length);
+
+      if (relatedProducts.length + additional.length < 4) {
+        const allExisting = [...existingIds, ...additional.map((p) => p._id)];
+        const genericAdditional = await Product.find({
+          _id: { $nin: allExisting },
+          status: 'published',
+        })
+          .select('name slug baseRegularPrice baseSalePrice defaultImages productType brand isBestseller isNewArrival')
+          .populate('variants', 'colorName colorHex regularPrice salePrice images')
+          .limit(4 - (relatedProducts.length + additional.length));
+        additional = [...additional, ...genericAdditional];
+      }
+
+      relatedProducts = [...relatedProducts, ...additional];
+    }
+
     // Fetch approved reviews
     const reviews = await Review.find({ product: product._id, status: 'approved' }).sort({ createdAt: -1 });
 
+    // Fetch store-wide PDP copy defaults and brand comparison default
+    const storeSettings = await StoreSetting.findOne().select('productPageDefaults brandComparisonDefault freeShippingThreshold defaultShippingFee codEnabled codFee');
+
+    const productObj = product.toObject({ virtuals: true });
+    productObj.relatedProducts = relatedProducts;
+
     res.json({
       success: true,
-      product,
+      product: productObj,
       reviews,
+      globalDefaults: storeSettings?.productPageDefaults || {},
+      brandComparisonDefault: storeSettings?.brandComparisonDefault || null,
+      storePolicy: {
+        freeShippingThreshold: storeSettings?.freeShippingThreshold || 999,
+        defaultShippingFee: storeSettings?.defaultShippingFee || 99,
+        codEnabled: storeSettings?.codEnabled !== false,
+        codFee: storeSettings?.codFee || 49,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const checkDeliveryPincode = async (req, res, next) => {
+  try {
+    const { pincode } = req.params;
+    const cleanPincode = String(pincode || '').trim();
+
+    // Indian postal code validation: 6 digits, first digit 1-9
+    const pinRegex = /^[1-9][0-9]{5}$/;
+    if (!pinRegex.test(cleanPincode)) {
+      return res.status(400).json({
+        success: false,
+        serviceable: false,
+        message: 'Please enter a valid 6-digit Indian postal code.',
+      });
+    }
+
+    const storeSetting = await StoreSetting.findOne().lean();
+    const freeShippingThreshold = storeSetting?.freeShippingThreshold || 999;
+    const codEnabled = storeSetting?.codEnabled !== false;
+
+    // Use FShip logistics service client
+    const fshipResult = await fshipService.checkServiceability({
+      deliveryPincode: cleanPincode,
+      pickupPincode: storeSetting?.fship?.pickupPincode || '560038',
+      weightKg: 0.5,
+      cod: codEnabled,
+    });
+
+    res.json({
+      ...fshipResult,
+      freeShippingThreshold,
     });
   } catch (error) {
     next(error);
@@ -192,9 +293,11 @@ export const adminCreateProduct = async (req, res, next) => {
   try {
     const {
       name,
+      slug: customSlug,
       sku,
       barcode,
       brand,
+      tagline,
       shortDescription,
       description,
       features,
@@ -213,14 +316,34 @@ export const adminCreateProduct = async (req, res, next) => {
       status,
       isFeatured,
       isBestseller,
+      isNewArrival,
       defaultImages,
       videoUrl,
       seoTitle,
       seoDescription,
+      seoKeywords,
+      ogTitle,
+      ogDescription,
+      ogImage,
+      customCopy,
+      storytellingBlocks,
+      richFeatures,
+      materialsAndCare,
+      specifications,
+      sizeGuideConfig,
+      sizeChart,
+      faqs,
+      relatedProducts,
+      brandComparison,
       initialVariants, // optional array of color variants to create simultaneously
     } = req.body;
 
-    const slug = slugify(name, { lower: true, strict: true }) + '-' + Math.floor(1000 + Math.random() * 9000);
+    const baseSlug = customSlug
+      ? slugify(customSlug, { lower: true, strict: true })
+      : slugify(name, { lower: true, strict: true });
+    const slug = customSlug
+      ? baseSlug
+      : `${baseSlug}-${Math.floor(1000 + Math.random() * 9000)}`;
 
     const product = await Product.create({
       name,
@@ -228,6 +351,7 @@ export const adminCreateProduct = async (req, res, next) => {
       sku: sku.toUpperCase(),
       barcode,
       brand: brand || 'CALZARE',
+      tagline: tagline || '',
       shortDescription,
       description,
       features: features || [],
@@ -246,10 +370,25 @@ export const adminCreateProduct = async (req, res, next) => {
       status: status || 'published',
       isFeatured: !!isFeatured,
       isBestseller: !!isBestseller,
+      isNewArrival: isNewArrival !== undefined ? !!isNewArrival : true,
       defaultImages: defaultImages || [],
       videoUrl,
       seoTitle: seoTitle || name,
       seoDescription: seoDescription || shortDescription,
+      seoKeywords: seoKeywords || [],
+      ogTitle: ogTitle || seoTitle || name,
+      ogDescription: ogDescription || seoDescription || shortDescription,
+      ogImage: ogImage || defaultImages?.[0]?.url || '',
+      customCopy: customCopy || {},
+      storytellingBlocks: storytellingBlocks || [],
+      richFeatures: richFeatures || [],
+      materialsAndCare: materialsAndCare || {},
+      specifications: specifications || [],
+      sizeGuideConfig: sizeGuideConfig || {},
+      sizeChart: sizeChart || undefined,
+      faqs: faqs || [],
+      relatedProducts: relatedProducts || [],
+      brandComparison: brandComparison || {},
     });
 
     // Create initial variants if passed
@@ -290,10 +429,15 @@ export const adminUpdateProduct = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }
 
+    if (req.body.slug && req.body.slug !== product.slug) {
+      product.slug = slugify(req.body.slug, { lower: true, strict: true });
+    }
+
     const updatableFields = [
       'name',
       'barcode',
       'brand',
+      'tagline',
       'shortDescription',
       'description',
       'features',
@@ -301,6 +445,7 @@ export const adminUpdateProduct = async (req, res, next) => {
       'soleMaterial',
       'closureType',
       'weightGrams',
+      'warranty',
       'category',
       'subcategory',
       'collections',
@@ -317,7 +462,20 @@ export const adminUpdateProduct = async (req, res, next) => {
       'videoUrl',
       'seoTitle',
       'seoDescription',
+      'seoKeywords',
+      'ogTitle',
+      'ogDescription',
+      'ogImage',
       'relatedProducts',
+      'customCopy',
+      'storytellingBlocks',
+      'richFeatures',
+      'materialsAndCare',
+      'specifications',
+      'sizeGuideConfig',
+      'sizeChart',
+      'faqs',
+      'brandComparison',
     ];
 
     updatableFields.forEach((field) => {
@@ -327,6 +485,35 @@ export const adminUpdateProduct = async (req, res, next) => {
     });
 
     await product.save();
+
+    // Sync color variants if provided
+    if (req.body.initialVariants && Array.isArray(req.body.initialVariants)) {
+      for (const v of req.body.initialVariants) {
+        if (v._id) {
+          await ProductVariant.findByIdAndUpdate(v._id, {
+            colorName: v.colorName,
+            colorHex: v.colorHex,
+            variantSku: (v.variantSku || `${product.sku}-${(v.colorName || 'CLR').slice(0, 3)}`).toUpperCase(),
+            regularPrice: v.regularPrice || product.baseRegularPrice,
+            salePrice: v.salePrice || product.baseSalePrice,
+            images: v.images || product.defaultImages,
+            sizes: v.sizes,
+          });
+        } else {
+          await ProductVariant.create({
+            productId: product._id,
+            colorName: v.colorName,
+            colorHex: v.colorHex || '#111111',
+            variantSku: (v.variantSku || `${product.sku}-${(v.colorName || 'CLR').slice(0, 3)}`).toUpperCase(),
+            regularPrice: v.regularPrice || product.baseRegularPrice,
+            salePrice: v.salePrice || product.baseSalePrice,
+            images: v.images || product.defaultImages,
+            sizes: v.sizes,
+          });
+        }
+      }
+    }
+
     await logAudit(req, 'UPDATE_PRODUCT', 'Product', product._id, { changes: req.body });
 
     const updated = await Product.findById(product._id).populate('variants');

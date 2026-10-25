@@ -46,7 +46,6 @@ export const WishlistPage = () => {
   return (
     <div style={{ padding: '60px 0 120px' }}>
       <div className="container">
-        <span className="section-eyebrow">SAVED SILHOUETTES // {wishlist.length} STYLES</span>
         <h1 style={{ fontSize: 'clamp(2.4rem, 5vw, 4rem)', marginBottom: '40px' }}>YOUR WISHLIST</h1>
 
         {products.length > 0 ? (

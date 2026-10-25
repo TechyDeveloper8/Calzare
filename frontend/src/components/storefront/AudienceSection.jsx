@@ -1,73 +1,180 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowUpRight } from 'lucide-react';
 
-export const AudienceSection = ({ section }) => {
-  const config = section.config || {};
-  const cards = config.audienceCards || [
-    {
-      title: 'WOMEN',
-      tagline: 'Sculpted contours & bold vibrant silhouettes.',
-      imageUrl: 'https://images.unsplash.com/photo-1514989940723-e8e51635b782?auto=format&fit=crop&w=800&q=80',
-      ctaLabel: 'EXPLORE WOMEN',
-      link: '/women',
-      badge: 'CURATED',
-    },
-    {
-      title: 'MEN',
-      tagline: 'High-traction outdoor & rugged everyday mules.',
-      imageUrl: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=800&q=80',
-      ctaLabel: 'EXPLORE MEN',
-      link: '/men',
-      badge: 'POPULAR',
-    },
-    {
-      title: 'KIDS',
-      tagline: 'Featherweight, indestructible foam for playground champions.',
-      imageUrl: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&q=80',
-      ctaLabel: 'EXPLORE KIDS',
-      link: '/kids',
-      badge: 'MINI SIZES',
-    },
-    {
-      title: 'UNISEX',
-      tagline: 'Pure architectural foam with universal ergonomics.',
-      imageUrl: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=800&q=80',
-      ctaLabel: 'EXPLORE UNISEX',
-      link: '/unisex',
-      badge: 'CORE LINE',
-    },
-  ];
+export const AudienceSection = ({ section, isPreview = false }) => {
+  const config = section?.config || {};
+  
+  // Support both categoryPanels and audienceCards keys for complete CMS compatibility
+  const sourcePanels = config.categoryPanels?.length
+    ? config.categoryPanels
+    : config.audienceCards?.length
+    ? config.audienceCards
+    : [
+        {
+          id: 'panel_women',
+          title: 'Women',
+          text: 'No laces, no rush — comfort that clocks off exactly when you do.',
+          tagline: 'No laces, no rush — comfort that clocks off exactly when you do.',
+          ctaLabel: 'Shop Women',
+          link: '/collections/women',
+          imageUrl: '/images/split/women-collection-image.jpg',
+          altText: 'Shop Women',
+          order: 0,
+          isEnabled: true,
+          isPublished: true,
+          objectPosition: 'center bottom',
+          textAlign: 'left',
+        },
+        {
+          id: 'panel_men',
+          title: 'Men',
+          text: 'Stairs, streets, wherever next.\nSola moves at your pace.',
+          tagline: 'Stairs, streets, wherever next.\nSola moves at your pace.',
+          ctaLabel: 'Shop Men',
+          link: '/collections/men',
+          imageUrl: '/images/split/men-collection-image.jpg',
+          altText: 'Shop Men',
+          order: 1,
+          isEnabled: true,
+          isPublished: true,
+          objectPosition: 'center bottom',
+          textAlign: 'left',
+        },
+        {
+          id: 'panel_kids',
+          title: 'Kids',
+          text: 'Little steps. Big personality. Comfort made for every adventure.',
+          tagline: 'Little steps. Big personality. Comfort made for every adventure.',
+          ctaLabel: 'Shop Kids',
+          link: '/collections/kids',
+          imageUrl: '/images/split/kids-collection-image.jpg',
+          altText: 'Shop Kids',
+          order: 2,
+          isEnabled: true,
+          isPublished: true,
+          objectPosition: 'center bottom',
+          textAlign: 'left',
+        },
+        {
+          id: 'panel_unisex',
+          title: 'Unisex',
+          text: 'No labels. No limits. Just comfort that moves with you.',
+          tagline: 'No labels. No limits. Just comfort that moves with you.',
+          ctaLabel: 'Shop Unisex',
+          link: '/collections/unisex',
+          imageUrl: '/images/split/unisex-collection-image.jpg',
+          altText: 'Shop Unisex',
+          order: 3,
+          isEnabled: true,
+          isPublished: true,
+          objectPosition: 'center bottom',
+          textAlign: 'left',
+        },
+      ];
+
+  // Filter panels based on visibility unless inside admin preview mode
+  const visiblePanels = sourcePanels
+    .filter((p) => {
+      if (isPreview) return true;
+      return p.isEnabled !== false && p.isPublished !== false;
+    })
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+  if (visiblePanels.length === 0) return null;
+
+  const isFourColLayout = config.layoutVariant === '4_columns' || (visiblePanels.length === 4 && config.layoutVariant === 'four_columns_wide');
 
   return (
-    <section style={{ padding: '60px 0 100px' }}>
-      <div className="container">
-        <div className="section-header">
-          {section.eyebrow && <span className="section-eyebrow">{section.eyebrow}</span>}
-          <h2 className="section-title">{section.title || 'DESIGNED FOR EVERY STRIDE'}</h2>
-          {section.subtitle && <p className="section-subtitle">{section.subtitle}</p>}
-        </div>
+    <section
+      className="shopify-section handoff-shop-split-section"
+      id={section?.sectionKey || 'handoff_shop_split'}
+      aria-label="Shop by Category"
+    >
+      <section
+        className={`handoff-shop-split ${isFourColLayout ? 'handoff-shop-split--4col' : ''}`}
+        id={`HandoffShopSplit-${section?._id || 'split'}`}
+      >
+        {visiblePanels.map((panel, idx) => {
+          const isLeft = idx % 2 === 0;
+          const displayCopy = panel.text || panel.tagline || '';
 
-        <div className="audience-grid">
-          {cards.map((card, idx) => (
-            <Link key={idx} to={card.link || '/shop'} className="audience-card">
-              <img src={card.imageUrl} alt={card.title} className="audience-card-bg" loading="lazy" />
-              <div className="audience-card-overlay">
-                {card.badge && (
-                  <span className="badge-lime" style={{ alignSelf: 'flex-start', marginBottom: '12px' }}>
-                    {card.badge}
-                  </span>
-                )}
-                <h3 className="audience-card-title">{card.title}</h3>
-                <p className="audience-card-desc">{card.tagline}</p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800, fontSize: '0.9rem', color: 'var(--accent-lime)' }}>
-                  {card.ctaLabel || 'EXPLORE'} <ArrowUpRight size={18} />
+          return (
+            <article
+              key={panel.id || panel._id || idx}
+              className={`handoff-shop-split__panel ${
+                isLeft ? 'handoff-shop-split__panel--left' : 'handoff-shop-split__panel--right'
+              }`}
+            >
+              {/* Media Container with responsive picture & lazy loading */}
+              <div className="handoff-shop-split__media">
+                <picture>
+                  {panel.mobileImageUrl && (
+                    <source media="(max-width: 749px)" srcSet={panel.mobileImageUrl} />
+                  )}
+                  <img
+                    src={panel.imageUrl}
+                    alt={panel.altText || panel.title || `Shop ${panel.title}`}
+                    loading="lazy"
+                    decoding="async"
+                    className="handoff-shop-split__img"
+                    style={{
+                      objectPosition: panel.objectPosition || 'center bottom',
+                    }}
+                    onError={(e) => {
+                      // Fallback placeholder if custom image URL breaks
+                      e.currentTarget.src =
+                        'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=1200&q=80';
+                    }}
+                  />
+                </picture>
+              </div>
+
+              {/* Bottom Editorial Content Overlay */}
+              <div className="handoff-shop-split__content">
+                <div
+                  className="handoff-shop-split__bottom"
+                  style={{
+                    textAlign: panel.textAlign || 'left',
+                    alignItems:
+                      panel.textAlign === 'center'
+                        ? 'center'
+                        : panel.textAlign === 'right'
+                        ? 'flex-end'
+                        : 'flex-start',
+                  }}
+                >
+                  <p className="handoff-shop-split__text">
+                    {displayCopy.split('\n').map((line, lIdx, arr) => (
+                      <React.Fragment key={lIdx}>
+                        {line}
+                        {lIdx < arr.length - 1 && <br />}
+                      </React.Fragment>
+                    ))}
+                  </p>
+
+                  {panel.link && (panel.link.startsWith('http://') || panel.link.startsWith('https://')) ? (
+                    <a
+                      className="handoff-btn handoff-shop-split__cta"
+                      href={panel.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {panel.ctaLabel || `Shop ${panel.title || 'Category'}`}
+                    </a>
+                  ) : (
+                    <Link
+                      className="handoff-btn handoff-shop-split__cta"
+                      to={panel.link || `/collections/${(panel.title || 'shop').toLowerCase()}`}
+                    >
+                      {panel.ctaLabel || `Shop ${panel.title || 'Category'}`}
+                    </Link>
+                  )}
                 </div>
               </div>
-            </Link>
-          ))}
-        </div>
-      </div>
+            </article>
+          );
+        })}
+      </section>
     </section>
   );
 };

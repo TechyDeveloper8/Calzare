@@ -6,6 +6,7 @@ import {
   getOrderById,
   adminGetAllOrders,
   adminUpdateOrderStatus,
+  adminShipWithFShip,
   adminCancelOrder,
   razorpayWebhook,
   trackOrder,
@@ -31,6 +32,7 @@ router.get('/:id', optionalAuth, getOrderById);
 // Admin fulfillment
 router.get('/admin/all', protect, authorize('admin', 'superadmin', 'order_manager'), adminGetAllOrders);
 router.put('/admin/:id/status', protect, authorize('admin', 'superadmin', 'order_manager'), adminUpdateOrderStatus);
+router.post('/admin/:id/fship-ship', protect, authorize('admin', 'superadmin', 'order_manager'), adminShipWithFShip);
 router.put('/admin/:id/cancel', protect, authorize('admin', 'superadmin', 'order_manager'), adminCancelOrder);
 
 export default router;

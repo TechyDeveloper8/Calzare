@@ -8,10 +8,11 @@
     "start": "node server.js",
     "dev": "node --watch server.js",
     "seed": "node seed/seedData.js",
-    "test": "node --test tests/**/*.test.js"
+    "test": "node --test --test-concurrency=1 tests/ecommerce.test.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
+    "calzare-ecommerce-root": "file:..",
     "compression": "^1.7.5",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",

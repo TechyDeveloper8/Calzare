@@ -2,6 +2,7 @@ import { StoreSetting } from '../models/StoreSetting.js';
 import { NewsletterSubscriber } from '../models/NewsletterSubscriber.js';
 import { AuditLog } from '../models/AuditLog.js';
 import { logAudit } from '../utils/auditLogger.js';
+import { fshipService } from '../services/fshipService.js';
 
 export const getPublicSettings = async (req, res, next) => {
   try {
@@ -15,6 +16,8 @@ export const getPublicSettings = async (req, res, next) => {
       settings: {
         storeName: settings.storeName,
         tagline: settings.tagline,
+        legalCompanyName: settings.legalCompanyName,
+        websiteUrl: settings.websiteUrl,
         contactEmail: settings.contactEmail,
         contactPhone: settings.contactPhone,
         businessAddress: settings.businessAddress,
@@ -29,6 +32,9 @@ export const getPublicSettings = async (req, res, next) => {
         themeTokens: settings.themeTokens,
         googleAnalyticsId: settings.googleAnalyticsId,
         metaPixelId: settings.metaPixelId,
+        productPageDefaults: settings.productPageDefaults || {},
+        brandComparisonDefault: settings.brandComparisonDefault || {},
+        fshipEnabled: settings.fship?.enabled !== false,
       },
     });
   } catch (error) {
@@ -58,6 +64,8 @@ export const adminUpdateSettings = async (req, res, next) => {
     const fields = [
       'storeName',
       'tagline',
+      'legalCompanyName',
+      'websiteUrl',
       'contactEmail',
       'contactPhone',
       'businessAddress',
@@ -70,10 +78,13 @@ export const adminUpdateSettings = async (req, res, next) => {
       'taxRatePercentage',
       'razorpayEnabled',
       'razorpayKeyId',
+      'fship',
       'themeTokens',
       'googleAnalyticsId',
       'metaPixelId',
       'googleSearchConsoleVerification',
+      'productPageDefaults',
+      'brandComparisonDefault',
     ];
 
     fields.forEach((f) => {
@@ -84,6 +95,16 @@ export const adminUpdateSettings = async (req, res, next) => {
     await logAudit(req, 'UPDATE_SETTINGS', 'StoreSetting', settings._id, req.body);
 
     res.json({ success: true, settings, message: 'Store settings saved successfully' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const adminTestFshipConnection = async (req, res, next) => {
+  try {
+    const { apiKey, baseUrl } = req.body;
+    const result = await fshipService.testConnection(apiKey, baseUrl);
+    res.json(result);
   } catch (error) {
     next(error);
   }

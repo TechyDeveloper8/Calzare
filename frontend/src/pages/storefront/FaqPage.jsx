@@ -114,7 +114,6 @@ export const FaqPage = () => {
       <div className="container" style={{ maxWidth: '920px' }}>
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '44px' }}>
-          <span className="section-eyebrow">KNOWLEDGE BASE // COMMON INQUIRIES</span>
           <h1
             style={{
               fontSize: 'clamp(2.4rem, 5vw, 3.8rem)',

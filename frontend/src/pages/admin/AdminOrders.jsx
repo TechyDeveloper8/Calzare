@@ -38,6 +38,27 @@ export const AdminOrders = () => {
   const [trackingNumber, setTrackingNumber] = useState('');
   const [updating, setUpdating] = useState(false);
   const [updateMessage, setUpdateMessage] = useState('');
+  const [shippingWithFship, setShippingWithFship] = useState(false);
+
+  const handleShipWithFShip = async (orderId) => {
+    try {
+      setShippingWithFship(true);
+      setUpdateMessage('');
+      const res = await api.adminShipWithFShip(orderId);
+      if (res.success) {
+        setUpdateMessage(`Shipment generated via FShip! Courier: ${res.fship?.courierName || 'Assigned Carrier'}, AWB: ${res.fship?.waybill}`);
+        setSelectedOrder(res.order);
+        setOrders(orders.map((o) => (o._id === res.order._id ? res.order : o)));
+        setUpdateStatus(res.order.orderStatus);
+        setCourierName(res.order.trackingInfo?.carrier || '');
+        setTrackingNumber(res.order.trackingInfo?.trackingNumber || '');
+      }
+    } catch (err) {
+      setUpdateMessage(err.message || 'Failed to dispatch order with FShip');
+    } finally {
+      setShippingWithFship(false);
+    }
+  };
 
   // Cancel order modal
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
@@ -535,9 +556,33 @@ export const AdminOrders = () => {
 
               {/* Status & Fulfillment Controller */}
               <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '14px', marginBottom: '16px' }}>
-                <div style={{ fontSize: '0.82rem', fontWeight: 600, color: '#0f172a', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Truck size={14} color="#2563eb" /> Logistics & Carrier Assignment
+                <div style={{ fontSize: '0.82rem', fontWeight: 600, color: '#0f172a', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Truck size={14} color="#2563eb" /> Logistics & Carrier Assignment
+                  </div>
+                  {selectedOrder.trackingInfo?.trackingNumber && (
+                    <span className="corp-pill corp-pill-success" style={{ fontSize: '0.7rem' }}>
+                      AWB Active: {selectedOrder.trackingInfo.trackingNumber}
+                    </span>
+                  )}
                 </div>
+
+                {selectedOrder.trackingInfo?.trackingNumber && (
+                  <div style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: '6px', padding: '10px 12px', marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                    <div style={{ fontSize: '0.8rem', color: '#065f46' }}>
+                      <strong>Assigned Carrier:</strong> {selectedOrder.trackingInfo?.carrier || selectedOrder.trackingInfo?.courierName || 'FShip Network'} &bull; AWB: <span style={{ fontFamily: 'monospace', fontWeight: 700 }}>{selectedOrder.trackingInfo.trackingNumber}</span>
+                    </div>
+                    <a
+                      href={selectedOrder.trackingInfo?.trackingUrl || `https://app.fship.in`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="admin-btn admin-btn-outline"
+                      style={{ fontSize: '0.74rem', padding: '3px 8px', gap: '4px', textDecoration: 'none' }}
+                    >
+                      <ExternalLink size={12} /> Track on FShip
+                    </a>
+                  </div>
+                )}
 
                 {updateMessage && (
                   <div
@@ -594,7 +639,7 @@ export const AdminOrders = () => {
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
                     <div>
                       {selectedOrder.orderStatus !== 'cancelled' && (
                         <button
@@ -614,14 +659,28 @@ export const AdminOrders = () => {
                         </button>
                       )}
                     </div>
-                    <button
-                      type="submit"
-                      className="admin-btn admin-btn-primary"
-                      disabled={updating || selectedOrder.orderStatus === 'cancelled'}
-                      style={{ fontSize: '0.78rem', padding: '6px 12px' }}
-                    >
-                      {updating ? 'Saving...' : 'Update Fulfillment'}
-                    </button>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      {selectedOrder.orderStatus !== 'shipped' && selectedOrder.orderStatus !== 'delivered' && selectedOrder.orderStatus !== 'cancelled' && (
+                        <button
+                          type="button"
+                          onClick={() => handleShipWithFShip(selectedOrder._id)}
+                          disabled={shippingWithFship}
+                          className="admin-btn admin-btn-secondary"
+                          style={{ fontSize: '0.78rem', padding: '6px 12px', background: '#0f172a', color: '#fff', border: 'none', gap: '6px' }}
+                          title="Generate AWB via FShip aggregator"
+                        >
+                          <Truck size={13} color="#d8ff00" /> {shippingWithFship ? 'Booking AWB...' : 'Ship with FShip'}
+                        </button>
+                      )}
+                      <button
+                        type="submit"
+                        className="admin-btn admin-btn-primary"
+                        disabled={updating || selectedOrder.orderStatus === 'cancelled'}
+                        style={{ fontSize: '0.78rem', padding: '6px 12px' }}
+                      >
+                        {updating ? 'Saving...' : 'Update Fulfillment'}
+                      </button>
+                    </div>
                   </div>
                 </form>
               </div>

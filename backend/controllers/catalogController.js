@@ -107,24 +107,92 @@ export const getCollections = async (req, res, next) => {
 
 export const getCollectionBySlug = async (req, res, next) => {
   try {
-    const collection = await Collection.findOne({ slug: req.params.slug, isPublished: true });
-    if (!collection) return res.status(404).json({ success: false, message: 'Collection not found' });
+    const slug = (req.params.slug || '').toLowerCase();
+    let collection = await Collection.findOne({ slug, isPublished: true });
+
+    // Fallback preset metadata for audience collections if not yet persisted in database
+    if (!collection) {
+      if (slug === 'men') {
+        collection = {
+          name: "MEN'S FOOTWEAR EDIT",
+          slug: 'men',
+          description: 'Everyday comfort. Zero ordinary energy.',
+          ruleType: 'audience_match',
+          ruleValue: 'Men',
+          hero: {
+            label: "THE MEN'S EDIT",
+            heading: 'BUILT TO STAND OUT.',
+            supportingText: 'Everyday comfort. Zero ordinary energy.',
+            desktopBannerUrl: '/images/split/men-collection-image.jpg',
+            mobileBannerUrl: '',
+            imagePosition: 'center center',
+            background: 'editorial_minimal',
+            ctaText: 'EXPLORE DROP',
+            ctaLink: '#collection-grid',
+            isVisible: true,
+          },
+          categoryShortcuts: [],
+          editorialBanner: { isEnabled: false },
+          seoTitle: "Men's Footwear | CALZARE",
+          seoDescription: "Discover CALZARE Men's collection: ergonomic clogs, slides, and sandals engineered for all-day comfort and street-ready style.",
+          isPublished: true,
+        };
+      } else if (slug === 'women') {
+        collection = {
+          name: "WOMEN'S FOOTWEAR EDIT",
+          slug: 'women',
+          description: 'Ultra-lightweight platform mules, pastel clogs, and ergonomic rebound slides crafted for effortless everyday street style.',
+          ruleType: 'audience_match',
+          ruleValue: 'Women',
+          hero: {
+            label: "THE WOMEN'S EDIT",
+            heading: 'EFFORTLESS REBOUND.',
+            supportingText: 'No laces, no rush — comfort that clocks off exactly when you do.',
+            desktopBannerUrl: '/images/split/women-collection-image.jpg',
+            mobileBannerUrl: '',
+            imagePosition: 'center center',
+            background: 'editorial_minimal',
+            ctaText: 'EXPLORE DROP',
+            ctaLink: '#collection-grid',
+            isVisible: true,
+          },
+          categoryShortcuts: [],
+          editorialBanner: { isEnabled: false },
+          isPublished: true,
+        };
+      } else {
+        return res.status(404).json({ success: false, message: 'Collection not found' });
+      }
+    }
 
     let productQuery = { status: 'published' };
     if (collection.ruleType === 'price_under') {
       productQuery.baseSalePrice = { $lte: Number(collection.ruleValue) || 999 };
     } else if (collection.ruleType === 'manual' && collection.manualProductIds?.length) {
       productQuery._id = { $in: collection.manualProductIds };
-    } else {
+    } else if (collection.ruleType === 'audience_match' || slug === 'men' || slug === 'women' || slug === 'kids' || slug === 'unisex') {
+      const aud = collection.ruleValue || (slug.charAt(0).toUpperCase() + slug.slice(1));
+      if (aud === 'Kids') productQuery.audience = 'Kids';
+      else if (aud === 'Unisex') productQuery.audience = 'Unisex';
+      else productQuery.audience = { $in: [aud, 'Unisex'] };
+    } else if (collection._id) {
       productQuery.collections = collection._id;
     }
 
-    const products = await Product.find(productQuery)
-      .populate('variants')
-      .populate('category', 'name slug')
-      .sort({ salesCount: -1, createdAt: -1 });
+    const [products, allCategories] = await Promise.all([
+      Product.find(productQuery)
+        .populate('variants')
+        .populate('category', 'name slug')
+        .sort({ salesCount: -1, createdAt: -1 }),
+      Category.find({ isActive: { $ne: false } }).sort({ displayOrder: 1 }),
+    ]);
 
-    res.json({ success: true, collection, products });
+    res.json({
+      success: true,
+      collection,
+      products,
+      categories: allCategories,
+    });
   } catch (error) {
     next(error);
   }
@@ -141,7 +209,24 @@ export const adminGetAllCollections = async (req, res, next) => {
 
 export const adminCreateCollection = async (req, res, next) => {
   try {
-    const { name, description, heroMedia, bannerImage, displayOrder, isPublished, isFeaturedOnHome, ruleType, ruleValue, manualProductIds, seoTitle, seoDescription } = req.body;
+    const {
+      name,
+      description,
+      heroMedia,
+      bannerImage,
+      displayOrder,
+      isPublished,
+      isFeaturedOnHome,
+      ruleType,
+      ruleValue,
+      manualProductIds,
+      hero,
+      categoryShortcuts,
+      editorialBanner,
+      seoTitle,
+      seoDescription,
+      brandComparison,
+    } = req.body;
     const slug = slugify(name, { lower: true, strict: true });
 
     const collection = await Collection.create({
@@ -156,8 +241,12 @@ export const adminCreateCollection = async (req, res, next) => {
       ruleType: ruleType || 'manual',
       ruleValue,
       manualProductIds: manualProductIds || [],
+      hero: hero || {},
+      categoryShortcuts: categoryShortcuts || [],
+      editorialBanner: editorialBanner || {},
       seoTitle: seoTitle || name,
       seoDescription: seoDescription || description,
+      brandComparison: brandComparison || {},
     });
 
     await logAudit(req, 'CREATE_COLLECTION', 'Collection', collection._id, { name, slug });
@@ -183,8 +272,12 @@ export const adminUpdateCollection = async (req, res, next) => {
       'ruleType',
       'ruleValue',
       'manualProductIds',
+      'hero',
+      'categoryShortcuts',
+      'editorialBanner',
       'seoTitle',
       'seoDescription',
+      'brandComparison',
     ];
 
     fields.forEach((f) => {

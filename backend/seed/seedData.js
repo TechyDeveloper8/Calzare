@@ -1152,7 +1152,7 @@ const seedDatabase = async () => {
         sectionType: 'hero',
         title: '0% BORING.\n100% AIR.',
         subtitle: 'Dual-density closed cell waterproof foam. Sculpted for pavement poets and real life strides.',
-        eyebrow: 'CALZARE SS26 // ARCHITECTURAL FOAM',
+        eyebrow: '',
         displayOrder: 0,
         isEnabled: true,
         config: {
@@ -1200,7 +1200,7 @@ const seedDatabase = async () => {
         sectionType: 'bestsellers',
         title: 'CROWD FAVORITES',
         subtitle: 'The silhouettes moving fastest off our shelves this season.',
-        eyebrow: 'BESTSELLER DROP',
+        eyebrow: '',
         displayOrder: 2,
         isEnabled: true,
         config: {
@@ -1217,7 +1217,7 @@ const seedDatabase = async () => {
         sectionType: 'audience_cards',
         title: 'DESIGNED FOR EVERY STRIDE',
         subtitle: 'Pick your silhouette designed with zero gender limits.',
-        eyebrow: 'AUDIENCE MATRIX',
+        eyebrow: '',
         displayOrder: 3,
         isEnabled: true,
         config: {
@@ -1268,7 +1268,7 @@ const seedDatabase = async () => {
         sectionType: 'affordable_store',
         title: 'THE UNDER ₹999 STORE',
         subtitle: 'High performance foam shouldn’t cost a week’s wage. Premium daily comfort at honest prices.',
-        eyebrow: 'VALUE DROP',
+        eyebrow: '',
         displayOrder: 4,
         isEnabled: true,
         config: {
@@ -1286,7 +1286,7 @@ const seedDatabase = async () => {
         sectionType: 'storytelling',
         title: 'BUILT FOR REAL LIFE & WILD PERSONALITIES',
         subtitle: 'Why we engineered the CloudFootbed from scratch.',
-        eyebrow: 'EDITORIAL ESSAY',
+        eyebrow: '',
         displayOrder: 5,
         isEnabled: true,
         config: {
@@ -1310,7 +1310,7 @@ const seedDatabase = async () => {
         sectionType: 'category_discovery',
         title: 'CHOOSE YOUR SILHOUETTE',
         subtitle: 'Tailored for every occasion, terrain, and state of mind.',
-        eyebrow: 'CATEGORY TILES',
+        eyebrow: '',
         displayOrder: 6,
         isEnabled: true,
         config: {
@@ -1352,7 +1352,7 @@ const seedDatabase = async () => {
         sectionType: 'reviews',
         title: 'WORDS FROM THE PAVEMENT',
         subtitle: 'Honest reviews from customers walking in real rain, heat, and city transit.',
-        eyebrow: 'COMMUNITY VOICE',
+        eyebrow: '',
         displayOrder: 7,
         isEnabled: true,
         config: {
@@ -1365,7 +1365,7 @@ const seedDatabase = async () => {
         sectionType: 'benefits',
         title: 'THE CALZARE STANDARD',
         subtitle: 'Built with science. Tested with life.',
-        eyebrow: 'WHY CALZARE',
+        eyebrow: '',
         displayOrder: 8,
         isEnabled: true,
         config: {
@@ -1403,7 +1403,7 @@ const seedDatabase = async () => {
         sectionType: 'newsletter',
         title: 'DON’T MISS THE NEXT DROP.',
         subtitle: 'Sign up for early drop notifications, secret colorways, and VIP discount access.',
-        eyebrow: 'INSIDER CLUB',
+        eyebrow: '',
         displayOrder: 9,
         isEnabled: true,
         config: {

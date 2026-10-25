@@ -51,7 +51,6 @@ export const OrderSuccessPage = () => {
           <div style={{ width: '72px', height: '72px', borderRadius: '50%', background: '#dcfce7', color: '#166534', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
             <CheckCircle2 size={40} />
           </div>
-          <span className="section-eyebrow">ORDER CONFIRMATION</span>
           <h1 style={{ fontSize: 'clamp(2.2rem, 5vw, 3.4rem)', marginBottom: '12px' }}>
             THANK YOU FOR YOUR STRIDE.
           </h1>

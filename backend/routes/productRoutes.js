@@ -2,6 +2,7 @@ import express from 'express';
 import {
   getProducts,
   getProductBySlug,
+  checkDeliveryPincode,
   searchProducts,
   adminCreateProduct,
   adminUpdateProduct,
@@ -17,6 +18,7 @@ const router = express.Router();
 // Public catalogue routes
 router.get('/', getProducts);
 router.get('/search', searchProducts);
+router.get('/check-delivery/:pincode', checkDeliveryPincode);
 router.get('/:slug', getProductBySlug);
 
 // Protected Admin product and variant routes

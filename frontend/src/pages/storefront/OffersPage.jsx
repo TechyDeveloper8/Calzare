@@ -72,7 +72,6 @@ export const OffersPage = () => {
       <div className="container" style={{ maxWidth: '1020px' }}>
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '50px' }}>
-          <span className="section-eyebrow">COMMUNITY DEALS // EXCLUSIVE CODES</span>
           <h1
             style={{
               fontSize: 'clamp(2.4rem, 5vw, 4rem)',

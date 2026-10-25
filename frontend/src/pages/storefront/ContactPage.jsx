@@ -70,7 +70,6 @@ export const ContactPage = () => {
       <div className="container" style={{ maxWidth: '1080px' }}>
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '50px' }}>
-          <span className="section-eyebrow">CONCIERGE & SUPPORT // STUDIO HELPDESK</span>
           <h1
             style={{
               fontSize: 'clamp(2.4rem, 5vw, 4rem)',

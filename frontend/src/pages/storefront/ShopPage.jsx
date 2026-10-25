@@ -99,7 +99,6 @@ export const ShopPage = ({ onQuickView }) => {
         {/* Page Heading & Filter Trigger */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '32px', flexWrap: 'wrap', gap: '20px' }}>
           <div>
-            <span className="section-eyebrow">CATALOGUE // {pagination.total} SILHOUETTES</span>
             <h1 style={{ fontSize: 'clamp(2.4rem, 5vw, 4.2rem)', margin: 0 }}>FOOTWEAR COLLECTION</h1>
           </div>
 

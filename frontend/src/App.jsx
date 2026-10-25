@@ -13,6 +13,7 @@ import { Header } from './components/common/Header.jsx';
 import { Footer } from './components/common/Footer.jsx';
 import { CartDrawer } from './components/common/CartDrawer.jsx';
 import { SearchModal } from './components/common/SearchModal.jsx';
+import { QuickViewModal } from './components/common/QuickViewModal.jsx';
 
 // Storefront Pages
 import { HomePage } from './pages/storefront/HomePage.jsx';
@@ -47,7 +48,6 @@ import { AdminProductForm } from './pages/admin/AdminProductForm.jsx';
 import { AdminCollections } from './pages/admin/AdminCollections.jsx';
 import { AdminOrders } from './pages/admin/AdminOrders.jsx';
 import { AdminInventory } from './pages/admin/AdminInventory.jsx';
-import { AdminMediaManager } from './pages/admin/AdminMediaManager.jsx';
 import { AdminCoupons } from './pages/admin/AdminCoupons.jsx';
 import { AdminReviews } from './pages/admin/AdminReviews.jsx';
 import { AdminPages } from './pages/admin/AdminPages.jsx';
@@ -67,17 +67,23 @@ const ScrollToTop = () => {
 // Storefront Layout Wrapper
 const StorefrontLayout = () => {
   const [searchOpen, setSearchOpen] = useState(false);
+  const [quickViewProduct, setQuickViewProduct] = useState(null);
 
   return (
     <div className="storefront-app-shell">
       <AnnouncementBar />
       <Header onOpenSearch={() => setSearchOpen(true)} />
       <main className="storefront-main-content">
-        <Outlet />
+        <Outlet context={{ onQuickView: (p) => setQuickViewProduct(p) }} />
       </main>
       <Footer />
       <CartDrawer />
       <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+      <QuickViewModal
+        product={quickViewProduct}
+        isOpen={Boolean(quickViewProduct)}
+        onClose={() => setQuickViewProduct(null)}
+      />
     </div>
   );
 };
@@ -144,7 +150,7 @@ export default function App() {
                   <Route path="collections" element={<AdminCollections />} />
                   <Route path="orders" element={<AdminOrders />} />
                   <Route path="inventory" element={<AdminInventory />} />
-                  <Route path="media" element={<AdminMediaManager />} />
+                  <Route path="media" element={<Navigate to="/admin/products" replace />} />
                   <Route path="coupons" element={<AdminCoupons />} />
                   <Route path="reviews" element={<AdminReviews />} />
                   <Route path="pages" element={<AdminPages />} />

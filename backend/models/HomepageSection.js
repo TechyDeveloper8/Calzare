@@ -18,6 +18,7 @@ const homepageSectionSchema = new mongoose.Schema(
         'ticker',
         'bestsellers',
         'audience_cards',
+        'shop_split',
         'affordable_store',
         'storytelling',
         'category_discovery',
@@ -85,30 +86,56 @@ const homepageSectionSchema = new mongoose.Schema(
       maxProducts: { type: Number, default: 8 },
       columnsDesktop: { type: Number, default: 4 },
       columnsMobile: { type: Number, default: 2 },
+      sortBy: { type: String, default: 'price_asc' },
+      campaignBadge: { type: String, default: '' },
+      focalPoint: { type: String, default: 'center' },
+      overlayTint: { type: String, default: 'rgba(0, 0, 0, 0.45)' },
 
-      // Audience cards
+      // Audience cards & Shop Split Panels
       audienceCards: [
         {
           id: { type: String },
           title: { type: String },
           tagline: { type: String },
+          text: { type: String },
           imageUrl: { type: String },
+          mobileImageUrl: { type: String },
+          altText: { type: String },
           ctaLabel: { type: String },
           link: { type: String },
           badge: { type: String },
+          objectPosition: { type: String, default: 'center bottom' },
+          textAlign: { type: String, default: 'left' },
+          contrastMode: { type: String, default: 'shadow_gradient' }, // 'shadow_gradient', 'dark_overlay', 'none'
+          isEnabled: { type: Boolean, default: true },
+          isPublished: { type: Boolean, default: true },
+          order: { type: Number, default: 0 },
+        },
+      ],
+      categoryPanels: [
+        {
+          id: { type: String },
+          title: { type: String },
+          text: { type: String },
+          tagline: { type: String },
+          imageUrl: { type: String },
+          mobileImageUrl: { type: String },
+          altText: { type: String },
+          ctaLabel: { type: String },
+          link: { type: String },
+          objectPosition: { type: String, default: 'center bottom' },
+          textAlign: { type: String, default: 'left' },
+          contrastMode: { type: String, default: 'shadow_gradient' },
+          isEnabled: { type: Boolean, default: true },
+          isPublished: { type: Boolean, default: true },
+          order: { type: Number, default: 0 },
         },
       ],
 
       // Storytelling & Brand Blocks
       storytelling: {
-        headline: { type: String },
-        quote: { type: String },
-        bodyText: { type: String },
-        signature: { type: String },
-        primaryImageUrl: { type: String },
-        secondaryImageUrl: { type: String },
-        ctaLabel: { type: String },
-        ctaLink: { type: String },
+        type: mongoose.Schema.Types.Mixed,
+        default: {},
       },
 
       // Category discovery cards

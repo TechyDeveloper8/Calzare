@@ -1,0 +1,415 @@
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+import { CMSPage } from '../models/CMSPage.js';
+import { StoreSetting } from '../models/StoreSetting.js';
+
+dotenv.config();
+
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/calzare_ecommerce';
+
+const shippingPolicyHtml = `
+<div class="legal-policy-document">
+  <div class="policy-header-badge" style="display:inline-block; padding: 4px 12px; background: #e0f2fe; color: #0369a1; border-radius: 9999px; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 16px;">
+    Official Store Policy
+  </div>
+  
+  <p class="policy-lead" style="font-size: 1.1rem; line-height: 1.7; color: var(--text-primary); margin-bottom: 24px;">
+    At <strong>CALZARE™</strong>, operated by <strong>Calzare Heels Private Limited</strong>, we aim to deliver your footwear safely and efficiently across India. Please read our Shipping Policy to understand how orders are processed, dispatched, and delivered.
+  </p>
+
+  <hr style="border: none; border-top: 1px solid var(--border-light); margin: 32px 0;" />
+
+  <section class="policy-section" style="margin-bottom: 32px;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">1. Order Processing Time</h3>
+    <ul style="padding-left: 20px; line-height: 1.8;">
+      <li>Orders are generally processed within <strong>1–2 business days</strong> after order confirmation and successful payment, where applicable.</li>
+      <li>Orders placed on Sundays or public holidays will be processed on the next working day.</li>
+      <li>Once your order is dispatched, you will receive shipping confirmation and tracking details via SMS, email, or WhatsApp, where available.</li>
+    </ul>
+  </section>
+
+  <section class="policy-section" style="margin-bottom: 32px;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">2. Shipping Time & Delivery</h3>
+    <ul style="padding-left: 20px; line-height: 1.8;">
+      <li>The estimated delivery time is <strong>3–7 business days after dispatch</strong>, depending on your delivery location and courier service.</li>
+      <li>Deliveries to remote locations may take longer.</li>
+      <li><strong>Delivery timelines are estimates only and are not guaranteed.</strong></li>
+      <li>Delays may occur due to weather conditions, courier disruptions, public holidays, or other circumstances beyond our reasonable control.</li>
+    </ul>
+  </section>
+
+  <section class="policy-section" style="margin-bottom: 32px;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">3. Shipping Charges</h3>
+    <ul style="padding-left: 20px; line-height: 1.8;">
+      <li>Applicable shipping charges, if any, will be displayed at checkout before you place your order.</li>
+      <li>Promotional free-shipping offers will be subject to the terms and conditions specified at the time of the offer.</li>
+      <li>Any shipping offer may be subject to minimum order values or location-based restrictions, where disclosed.</li>
+    </ul>
+  </section>
+
+  <section class="policy-section" style="margin-bottom: 32px;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">4. Shipping Locations</h3>
+    <ul style="padding-left: 20px; line-height: 1.8;">
+      <li><strong>CALZARE™</strong> currently aims to deliver orders across serviceable locations in India.</li>
+      <li>Delivery availability depends on courier serviceability for the PIN code provided at checkout.</li>
+      <li>International shipping is not available unless specifically announced on our website.</li>
+    </ul>
+  </section>
+
+  <section class="policy-section" style="margin-bottom: 32px;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">5. Order Tracking</h3>
+    <p style="line-height: 1.8;">
+      Once your order has been dispatched, we will share the tracking details through the contact information provided during checkout, where supported by the courier partner. You can use the tracking number or tracking link to monitor your shipment until delivery.
+    </p>
+  </section>
+
+  <section class="policy-section" style="margin-bottom: 32px;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">6. Delayed or Lost Shipments</h3>
+    <p style="line-height: 1.8;">
+      If your order is significantly delayed or appears to be lost in transit, please contact our customer support team. We will coordinate with the relevant courier partner to investigate the shipment and assist you with the next steps. Delivery delays caused by courier partners or circumstances beyond our reasonable control may be outside our direct control. However, we will make reasonable efforts to help resolve the issue.
+    </p>
+  </section>
+
+  <section class="policy-section" style="margin-bottom: 32px;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">7. Incorrect Address or Failed Delivery</h3>
+    <ul style="padding-left: 20px; line-height: 1.8;">
+      <li>Please ensure that your shipping address, PIN code, phone number, and other delivery details are accurate at checkout.</li>
+      <li><strong>CALZARE™</strong> cannot guarantee successful delivery if incorrect or incomplete information is provided.</li>
+      <li>If a shipment is returned because of an incorrect address, an unavailable recipient, or repeated unsuccessful delivery attempts, we may contact you to arrange the next steps.</li>
+      <li>Any additional shipping charges, where applicable, will be communicated to you before a re-shipment is arranged.</li>
+    </ul>
+  </section>
+
+  <section class="policy-section" style="margin-bottom: 32px;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">8. Cash on Delivery (COD)</h3>
+    <ul style="padding-left: 20px; line-height: 1.8;">
+      <li>Cash on Delivery (COD) is available only for eligible orders and serviceable PIN codes.</li>
+      <li>COD availability may depend on the order value, delivery location, courier partner, and verification requirements.</li>
+      <li>We may contact customers to confirm COD orders before dispatch.</li>
+      <li>We reserve the right to restrict COD for certain orders or locations where permitted by applicable law.</li>
+    </ul>
+  </section>
+
+  <section class="policy-section" style="margin-bottom: 32px;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">9. Partial COD and Order Confirmation</h3>
+    <p style="line-height: 1.8; margin-bottom: 12px;">
+      Where a partial payment or advance payment option is offered at checkout, the applicable amount and remaining balance will be displayed before order confirmation.
+    </p>
+    <ul style="padding-left: 20px; line-height: 1.8;">
+      <li>Any advance payment will be processed according to the terms disclosed at checkout.</li>
+      <li>If a customer refuses delivery or an order is returned undelivered, any refund of the advance payment will be handled in accordance with our Refund and Cancellation Policy and applicable law.</li>
+      <li>Any applicable deductions must be lawful, reasonable, and disclosed to the customer before purchase.</li>
+    </ul>
+  </section>
+
+  <section class="policy-section" style="margin-bottom: 32px;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">10. Damaged Packages During Transit</h3>
+    <p style="line-height: 1.8; margin-bottom: 12px;">
+      If your package appears visibly damaged at the time of delivery:
+    </p>
+    <ul style="padding-left: 20px; line-height: 1.8;">
+      <li>Where possible, document the damage with photographs or videos before opening the package.</li>
+      <li>If the package is severely damaged or appears tampered with, report the issue to the delivery personnel and contact our customer support team promptly.</li>
+      <li><strong>Please notify us within 48 hours of delivery</strong>, with your order number and supporting photographs or videos, so we can investigate the issue.</li>
+    </ul>
+    <p style="line-height: 1.8; font-style: italic; margin-top: 8px;">Please retain the original packaging until the matter has been resolved.</p>
+  </section>
+
+  <section class="policy-section" style="background: #f8fafc; padding: 24px; border-radius: var(--radius-lg); border: 1px solid var(--border-light);">
+    <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">11. Contact Us</h3>
+    <p style="line-height: 1.8; margin-bottom: 16px;">
+      For questions about shipping, delivery delays, tracking, or returned shipments, please contact us:
+    </p>
+    <p style="margin: 0; line-height: 1.7; font-size: 0.95rem;">
+      <strong>Brand:</strong> CALZARE™<br />
+      <strong>Company:</strong> Calzare Heels Private Limited<br />
+      <strong>Website:</strong> <a href="https://calzare.in" target="_blank" rel="noopener noreferrer" style="color: var(--ink-black); text-decoration: underline;">calzare.in</a><br />
+      <strong>Email:</strong> <a href="mailto:Admin@calzareheels.com" style="color: var(--ink-black); text-decoration: underline;">Admin@calzareheels.com</a>
+    </p>
+  </section>
+
+  <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 32px;">
+    <em>This policy should be read together with our Terms and Conditions, Cancellation Policy, and Refund and Return Policy.</em>
+  </p>
+</div>
+`;
+
+const returnPolicyHtml = `
+<div class="legal-policy-document">
+  <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; margin-bottom: 16px;">
+    <div class="policy-header-badge" style="display:inline-block; padding: 4px 12px; background: #fef3c7; color: #b45309; border-radius: 9999px; font-weight: 700; font-size: 0.8rem; text-transform: uppercase;">
+      Official Customer Policy
+    </div>
+    <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 600;">Last Updated: 22 October 2026</span>
+  </div>
+
+  <p class="policy-lead" style="font-size: 1.1rem; line-height: 1.7; color: var(--text-primary); margin-bottom: 24px;">
+    At <strong>CALZARE™</strong>, operated by <strong>Calzare Heels Private Limited</strong>, we are committed to delivering quality footwear and providing a transparent shopping experience. Please read this policy carefully before placing an order on <a href="https://calzare.in" target="_blank" rel="noopener noreferrer" style="color: var(--ink-black); text-decoration: underline;">Calzare.in</a>.
+  </p>
+
+  <hr style="border: none; border-top: 1px solid var(--border-light); margin: 32px 0;" />
+
+  <section class="policy-section" style="margin-bottom: 32px;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">1. Unboxing Video Requirement</h3>
+    <p style="line-height: 1.8; margin-bottom: 12px;">
+      We recommend recording a continuous, unedited unboxing video for every order, starting before the package is opened and clearly showing the shipping label, packaging, and product.
+    </p>
+    <ul style="padding-left: 20px; line-height: 1.8;">
+      <li>An unboxing video helps us verify claims involving damaged, defective, missing, or incorrect products.</li>
+      <li>Please retain the original packaging until your complaint has been resolved.</li>
+      <li>If you do not have an unboxing video, you may submit photographs and other available evidence. The absence of a video will not automatically remove rights available under applicable law.</li>
+    </ul>
+  </section>
+
+  <section class="policy-section" style="margin-bottom: 32px;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">2. Returns and Exchanges</h3>
+    <p style="line-height: 1.8; margin-bottom: 16px;">
+      We accept eligible return or exchange requests in the following circumstances:
+    </p>
+    
+    <div style="background: #f8fafc; padding: 20px; border-radius: var(--radius-md); border-left: 4px solid #ef4444; margin-bottom: 18px;">
+      <h4 style="font-size: 1.1rem; font-weight: 800; color: var(--ink-black); margin-bottom: 8px;">Damaged, Defective, or Incorrect Products</h4>
+      <ul style="padding-left: 20px; line-height: 1.7; margin: 0;">
+        <li>If you receive a damaged, defective, or incorrect product, contact us <strong>within 48 hours of delivery</strong>, preferably with photographs or an unboxing video.</li>
+        <li>After verification, we will arrange an appropriate resolution, such as a replacement, exchange, or refund, as applicable.</li>
+        <li><strong>No return or replacement shipping fee will be charged</strong> where the issue is attributable to CALZARE™.</li>
+      </ul>
+    </div>
+
+    <div style="background: #f8fafc; padding: 20px; border-radius: var(--radius-md); border-left: 4px solid var(--accent-lime); margin-bottom: 18px;">
+      <h4 style="font-size: 1.1rem; font-weight: 800; color: var(--ink-black); margin-bottom: 8px;">Size or Fit Issues</h4>
+      <ul style="padding-left: 20px; line-height: 1.7; margin: 0;">
+        <li>Size exchange requests must be submitted <strong>within 3 days of delivery</strong>.</li>
+        <li>The product must be unused, unworn outdoors, and returned with its original packaging, tags, and accessories.</li>
+        <li>Exchanges are subject to stock availability.</li>
+        <li>A disclosed exchange fee of <strong>₹149</strong> may apply to eligible customer-requested size exchanges to help cover shipping and logistics costs.</li>
+        <li>The exchange fee will not apply where the exchange is required to correct a defective or incorrect product attributable to CALZARE™.</li>
+      </ul>
+    </div>
+
+    <div style="background: #f8fafc; padding: 20px; border-radius: var(--radius-md); border-left: 4px solid #64748b;">
+      <h4 style="font-size: 1.1rem; font-weight: 800; color: var(--ink-black); margin-bottom: 8px;">Change of Mind</h4>
+      <ul style="padding-left: 20px; line-height: 1.7; margin: 0;">
+        <li>Returns or exchanges requested solely because of a change of preference may be accepted only where expressly offered for the relevant product.</li>
+        <li>Products marked as final sale will be subject to the conditions disclosed on the product page, without limiting any rights available under applicable law.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="policy-section" style="margin-bottom: 32px;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">3. Return Eligibility</h3>
+    <p style="line-height: 1.8;">For a standard size exchange or other eligible return:</p>
+    <ul style="padding-left: 20px; line-height: 1.8;">
+      <li>Submit the request within the applicable return window.</li>
+      <li>Keep the footwear unused and in resalable condition.</li>
+      <li>Include the original box, tags, accessories, and packaging, where supplied.</li>
+      <li>Provide the order number and any requested supporting information.</li>
+    </ul>
+    <p style="line-height: 1.8; color: var(--text-muted); font-size: 0.92rem;">
+      <em>Products showing outdoor wear, customer-caused damage, or alterations may be ineligible for a change-of-mind return or size exchange. This does not limit claims relating to manufacturing defects or other rights under applicable law.</em>
+    </p>
+  </section>
+
+  <section class="policy-section" style="margin-bottom: 32px;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">4. How to Request a Return or Exchange</h3>
+    <ol style="padding-left: 20px; line-height: 1.8;">
+      <li>Contact our customer support team using the details published on our website.</li>
+      <li>Provide your order number and registered phone number or email address.</li>
+      <li>Explain the reason for your request and provide photographs or an unboxing video where available.</li>
+      <li>Our team will review the request and confirm the next steps.</li>
+      <li>If approved, we will arrange a pickup or provide return instructions, depending on serviceability.</li>
+      <li>Once the returned product is received and inspected, we will notify you of the outcome and applicable resolution.</li>
+    </ol>
+    <p style="font-weight: 700; color: #dc2626; margin-top: 8px;">Please do not send products to an address that has not been confirmed by our team.</p>
+  </section>
+
+  <section class="policy-section" style="margin-bottom: 32px;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">5. Refund Method and Processing Time</h3>
+    <p style="line-height: 1.8;">Where a refund is approved:</p>
+    <ul style="padding-left: 20px; line-height: 1.8;">
+      <li>Prepaid orders will generally be refunded to the original payment method.</li>
+      <li>For COD orders, we may request bank account or other payment details needed to process the refund securely.</li>
+      <li>We aim to initiate approved refunds within <strong>7–10 business days</strong> after the refund decision or completion of the required inspection, as applicable.</li>
+      <li>The time taken for funds to appear in your account may depend on your bank or payment provider.</li>
+      <li>Refunds will be processed in accordance with applicable law and the circumstances of the claim.</li>
+    </ul>
+    <p style="line-height: 1.8; margin-top: 8px;">Where a replacement or exchange is agreed upon and legally permissible, we will communicate the arrangement before proceeding.</p>
+  </section>
+
+  <section class="policy-section" style="margin-bottom: 32px;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">6. Exchange Fees</h3>
+    <p style="line-height: 1.8;">
+      For eligible customer-requested size or preference-based exchanges, an exchange fee of <strong>₹149</strong> may apply to help cover shipping and logistics costs.
+    </p>
+    <ul style="padding-left: 20px; line-height: 1.8;">
+      <li>The fee will be disclosed before the customer confirms the exchange.</li>
+      <li>The fee will not apply to replacements or exchanges required to correct a damaged, defective, or incorrect product attributable to CALZARE™.</li>
+      <li>Any fee charged will be subject to applicable law.</li>
+    </ul>
+  </section>
+
+  <section class="policy-section" style="margin-bottom: 32px;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">7. Order Cancellations</h3>
+    <ul style="padding-left: 20px; line-height: 1.8;">
+      <li>Customers may request cancellation before dispatch by contacting us as soon as possible.</li>
+      <li>Once an order has been dispatched, cancellation may no longer be possible through the standard cancellation process. Customers may contact us for available options.</li>
+      <li>Approved cancellations of prepaid orders will be refunded to the original payment method, subject to applicable law.</li>
+      <li>For partial COD orders, the advance payment will be handled according to the terms disclosed at checkout and applicable law.</li>
+      <li>Any cancellation charge must be disclosed before purchase and must be legally permissible. No undisclosed charge will be imposed, and no payment will be retained contrary to applicable law.</li>
+    </ul>
+  </section>
+
+  <section class="policy-section" style="margin-bottom: 32px;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">8. Cash on Delivery (COD) and Partial COD</h3>
+    <p style="line-height: 1.8; margin-bottom: 12px;">
+      COD and Partial COD may be available for eligible orders and serviceable PIN codes. For Partial COD orders, the customer pays an advance amount at checkout, with the remaining balance payable upon delivery.
+    </p>
+    <div style="background: #fffbeb; padding: 20px; border-radius: var(--radius-md); border: 1px solid #fde68a;">
+      <h4 style="font-size: 1.05rem; font-weight: 800; color: #92400e; margin-bottom: 8px;">Partial COD — Refused or Undelivered Orders</h4>
+      <ul style="padding-left: 20px; line-height: 1.7; margin: 0; color: #78350f;">
+        <li>If a customer refuses to accept the order at the doorstep or fails to accept delivery after the applicable delivery attempts, the shipment may be returned to origin (RTO).</li>
+        <li>The partial payment collected at checkout is intended to cover shipping, return-logistics, and order-handling costs. If the customer refuses delivery for reasons attributable to the customer, this advance payment will be non-refundable to the extent permitted by applicable law and the terms disclosed at checkout.</li>
+        <li>The advance payment will not be treated as non-refundable where the product is defective, incorrect, the delivery failure is attributable to CALZARE™, or a refund is otherwise required under applicable law.</li>
+        <li>If the customer requests re-shipment after an RTO, a re-shipment charge of <strong>₹300</strong> may apply. The applicable charge will be communicated before re-dispatch and must be legally permissible.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="policy-section" style="margin-bottom: 32px;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">9. Return to Origin (RTO), Re-shipment and Cancellation After Dispatch</h3>
+    <p style="line-height: 1.8;">
+      A shipment may be returned to origin if the customer is unavailable, unreachable, has provided an incorrect or incomplete address, refuses delivery, or cannot receive the package after the applicable delivery attempts.
+    </p>
+    <ul style="padding-left: 20px; line-height: 1.8;">
+      <li><strong>Re-shipment After RTO:</strong> If a customer requests re-shipment after an RTO, a re-shipment charge of <strong>₹300</strong> may apply where the customer is responsible for the failed delivery and the charge is lawful and properly disclosed. No re-shipment charge will apply where the failed delivery is attributable to an error by CALZARE™ or its fulfilment process.</li>
+      <li><strong>Fully Prepaid Orders Refused at Doorstep:</strong> If a customer has already paid the full order amount but refuses delivery for reasons attributable to the customer, resulting in an RTO, <strong>₹300 may be deducted</strong> from the refund toward shipping and return-logistics costs, provided the charge was disclosed before purchase and is legally permissible. The ₹300 deduction will not apply where the product is defective or incorrect, or the delivery failure is attributable to CALZARE™.</li>
+      <li><strong>Partial COD Orders Returned to Origin:</strong> The advance payment and the ₹300 re-shipment charge are separate matters. CALZARE™ will not automatically apply both an advance-payment forfeiture and an additional deduction without considering the circumstances, disclosed terms, and applicable law.</li>
+    </ul>
+  </section>
+
+  <section class="policy-section" style="margin-bottom: 32px;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">10. Final Sale and Clearance Products</h3>
+    <ul style="padding-left: 20px; line-height: 1.8;">
+      <li>Products clearly marked as final sale or clearance may be ineligible for returns or exchanges based on size or preference.</li>
+      <li>Any restrictions will be disclosed on the relevant product page before purchase.</li>
+      <li>Final-sale status does not exclude remedies required by applicable law for defective, damaged, incorrect, or misrepresented products.</li>
+    </ul>
+  </section>
+
+  <section class="policy-section" style="margin-bottom: 32px;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">11. Gift Cards and Store Credit</h3>
+    <p style="line-height: 1.8;">
+      If store credit or a gift card is offered as a resolution, we will communicate its value, validity, and redemption conditions before the customer accepts it. Store credit will not replace a refund where a refund is required under applicable law.
+    </p>
+  </section>
+
+  <section class="policy-section" style="background: #f8fafc; padding: 24px; border-radius: var(--radius-lg); border: 1px solid var(--border-light);">
+    <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--ink-black); margin-bottom: 12px;">12. Contact Us</h3>
+    <p style="line-height: 1.8; margin-bottom: 16px;">
+      For return, exchange, cancellation, or refund requests, please contact us using our official support details:
+    </p>
+    <p style="margin: 0; line-height: 1.7; font-size: 0.95rem;">
+      <strong>Brand:</strong> CALZARE™<br />
+      <strong>Company:</strong> Calzare Heels Private Limited<br />
+      <strong>Website:</strong> <a href="https://calzare.in" target="_blank" rel="noopener noreferrer" style="color: var(--ink-black); text-decoration: underline;">calzare.in</a><br />
+      <strong>Email:</strong> <a href="mailto:Admin@calzareheels.com" style="color: var(--ink-black); text-decoration: underline;">Admin@calzareheels.com</a>
+    </p>
+  </section>
+
+  <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 32px;">
+    <em>This policy should be read together with our Shipping Policy, Terms and Conditions, and Privacy Policy.</em>
+  </p>
+</div>
+`;
+
+async function seedPolicies() {
+  try {
+    await mongoose.connect(MONGO_URI);
+    console.log('[SeedPolicies] Connected to MongoDB');
+
+    // 1. Seed or Update Shipping Policy
+    await CMSPage.findOneAndUpdate(
+      { slug: 'shipping' },
+      {
+        title: 'Shipping Policy',
+        slug: 'shipping',
+        content: shippingPolicyHtml,
+        excerpt: 'Official Shipping Policy of CALZARE™ operated by Calzare Heels Private Limited. Processing turnaround 1–2 business days, estimated delivery 3–7 business days across India.',
+        category: 'policy',
+        isPublished: true,
+        metaTitle: 'Shipping Policy | CALZARE™',
+        metaDescription: 'Read the official Shipping Policy of CALZARE™ operated by Calzare Heels Private Limited. Processing turnaround 1–2 business days, estimated delivery 3–7 business days across India.',
+      },
+      { upsert: true, new: true }
+    );
+    console.log('[SeedPolicies] Shipping Policy created/updated');
+
+    // 2. Seed or Update Returns & Exchange Policy (/returns)
+    await CMSPage.findOneAndUpdate(
+      { slug: 'returns' },
+      {
+        title: 'Refund, Return & Exchange Policy',
+        slug: 'returns',
+        content: returnPolicyHtml,
+        excerpt: 'Official Refund, Return & Exchange Policy of CALZARE™ operated by Calzare Heels Private Limited. 3-day size exchange window, ₹149 exchange fee, 48-hour damaged/defective claim notice.',
+        category: 'policy',
+        isPublished: true,
+        metaTitle: 'Refund, Return & Exchange Policy | CALZARE™',
+        metaDescription: 'Read the official Refund, Return & Exchange Policy of CALZARE™ operated by Calzare Heels Private Limited. 3-day size exchange window, ₹149 exchange fee, 48-hour damaged/defective claim notice.',
+      },
+      { upsert: true, new: true }
+    );
+    console.log('[SeedPolicies] Returns Policy created/updated');
+
+    // 3. Seed or Update Refund Policy (/refund-policy)
+    await CMSPage.findOneAndUpdate(
+      { slug: 'refund-policy' },
+      {
+        title: 'Refund, Return & Exchange Policy',
+        slug: 'refund-policy',
+        content: returnPolicyHtml,
+        excerpt: 'Official Refund, Return & Exchange Policy of CALZARE™ operated by Calzare Heels Private Limited. 3-day size exchange window, ₹149 exchange fee, 48-hour damaged/defective claim notice.',
+        category: 'policy',
+        isPublished: true,
+        metaTitle: 'Refund Policy | CALZARE™',
+        metaDescription: 'Read the official Refund, Return & Exchange Policy of CALZARE™ operated by Calzare Heels Private Limited. 3-day size exchange window, ₹149 exchange fee, 48-hour damaged/defective claim notice.',
+      },
+      { upsert: true, new: true }
+    );
+    console.log('[SeedPolicies] Refund Policy created/updated');
+
+    // 4. Update StoreSetting with authoritative company and policy copy defaults
+    let settings = await StoreSetting.findOne();
+    if (!settings) {
+      settings = new StoreSetting();
+    }
+    settings.legalCompanyName = 'Calzare Heels Private Limited';
+    settings.storeName = 'CALZARE';
+    settings.websiteUrl = 'calzare.in';
+    settings.contactEmail = 'Admin@calzareheels.com';
+    settings.productPageDefaults = {
+      ...(settings.productPageDefaults || {}),
+      shippingHeading: 'Shipping & Delivery',
+      dispatchInfo: 'Orders are processed within 1–2 business days. Estimated delivery time is 3–7 business days after dispatch across India.',
+      deliveryGuidance: 'Tracking link sent via SMS/Email upon dispatch. Real-time courier updates available for serviceable PIN codes.',
+      codMessage: 'Cash on Delivery (COD) & Partial COD available for eligible PIN codes across India.',
+      returnsHeading: 'Refund, Return & Exchange Policy',
+      returnPolicy: 'Size exchange requests must be submitted within 3 days of delivery (disclosed exchange fee of ₹149 applies to help cover shipping & logistics). Damaged or defective items must be reported within 48 hours with photos or an unboxing video. No fee applies when attributable to CALZARE™.',
+      trustBadge1: 'Free Express Shipping Across India',
+      trustBadge2: '3-Day Doorstep Size Exchange (₹149 Fee)',
+      trustBadge3: '100% Genuine CALZARE™ Footwear',
+      trustBadge4: 'Cash on Delivery & Partial COD Available',
+    };
+
+    await settings.save();
+    console.log('[SeedPolicies] StoreSetting updated with authoritative policy defaults');
+
+    await mongoose.disconnect();
+    console.log('[SeedPolicies] Completed successfully');
+  } catch (err) {
+    console.error('[SeedPolicies] Error:', err);
+    process.exit(1);
+  }
+}
+
+seedPolicies();

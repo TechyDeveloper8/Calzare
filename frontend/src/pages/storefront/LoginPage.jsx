@@ -39,7 +39,6 @@ export const LoginPage = () => {
         }}
       >
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <span className="section-eyebrow">MEMBER ACCESS</span>
           <h1 style={{ fontSize: '2rem', margin: '4px 0 8px' }}>SIGN IN</h1>
           <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
             Access saved addresses and order history.

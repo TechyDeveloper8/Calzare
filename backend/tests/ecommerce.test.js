@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import { verifyRazorpaySignature } from '../utils/razorpayHelper.js';
 
-const BASE_URL = 'http://127.0.0.1:5000/api/v1';
+const BASE_URL = process.env.TEST_API_URL || 'http://127.0.0.1:5000/api/v1';
 
 test('1. Razorpay Cryptographic HMAC-SHA256 Signature Verification', async (t) => {
   const secret = process.env.RAZORPAY_KEY_SECRET || 'calzareRazorpaySecretTest98765';

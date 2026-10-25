@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, Eye, ShoppingBag } from 'lucide-react';
+import { Heart, Eye, ShoppingBag, Check } from 'lucide-react';
 import { useWishlist } from '../../context/WishlistContext.jsx';
 import { useCart } from '../../context/CartContext.jsx';
 
@@ -13,9 +13,10 @@ export const ProductCard = ({ product, onQuickView }) => {
 
   // Active color variant state (defaults to first variant or product base)
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
+  const [quickAddSuccess, setQuickAddSuccess] = useState(false);
   const activeVariant = variants[selectedVariantIndex] || null;
 
-  // Active image derived from active variant or product default
+  // Active images derived from active variant or product default
   const activeImages = activeVariant?.images?.length
     ? activeVariant.images
     : product.defaultImages?.length
@@ -24,40 +25,74 @@ export const ProductCard = ({ product, onQuickView }) => {
 
   const currentPrice = activeVariant?.salePrice || product.baseSalePrice;
   const regularPrice = activeVariant?.regularPrice || product.baseRegularPrice;
-  const discountPercent = regularPrice > currentPrice ? Math.round(((regularPrice - currentPrice) / regularPrice) * 100) : 0;
+  const discountPercent =
+    regularPrice > currentPrice ? Math.round(((regularPrice - currentPrice) / regularPrice) * 100) : 0;
 
-  // Handle quick add (adds first in-stock size of current color)
+  // Inventory-aware checks
+  const availableSizes = activeVariant?.sizes?.filter((s) => s.stock > 0) || [];
+  const isAvailable = availableSizes.length > 0;
+  const isBestseller = product.isBestseller || product.salesCount > 30;
+  const isNew = product.isNewArrival && !isBestseller;
+
+  // Quick add: adds first in-stock size of current colorway
   const handleQuickAdd = async (e) => {
     e.preventDefault();
     e.stopPropagation();
 
-    if (!activeVariant) {
+    if (!isAvailable) {
       if (onQuickView) onQuickView(product);
       return;
     }
 
-    const availableSize = activeVariant.sizes?.find((s) => s.stock > 0);
+    const availableSize = availableSizes[0];
     if (availableSize) {
-      await addToCart(product._id, activeVariant._id, availableSize.size, 1);
+      await addToCart(product._id, activeVariant?._id, availableSize.size, 1);
+      setQuickAddSuccess(true);
+      setTimeout(() => setQuickAddSuccess(false), 2000);
     } else {
       if (onQuickView) onQuickView(product);
     }
   };
 
+  const primaryImg = activeImages[0]?.url;
+  const secondaryImg = activeImages[1]?.url || (activeImages.length > 1 ? activeImages[1]?.url : null);
+
   return (
     <div className="product-card">
-      <Link to={`/product/${product.slug}`} className="product-card-media">
+      <Link to={`/product/${product.slug}`} className="product-card-media" aria-label={`View ${product.name}`}>
+        {/* Primary Image */}
         <img
-          src={activeImages[0]?.url}
+          src={primaryImg}
           alt={product.name}
-          className="product-card-img"
+          className={`product-card-img ${secondaryImg ? 'has-hover' : ''}`}
           loading="lazy"
         />
 
+        {/* Secondary Image on Hover */}
+        {secondaryImg && (
+          <img
+            src={secondaryImg}
+            alt={`${product.name} alternate view`}
+            className="product-card-img-hover"
+            loading="lazy"
+          />
+        )}
+
         {/* Top Badges */}
         <div className="card-top-badges">
-          {product.isBestseller && <span className="badge-lime">🔥 BESTSELLER</span>}
-          {product.isNewArrival && !product.isBestseller && <span className="badge-black">⚡ NEW ARRIVAL</span>}
+          {!isAvailable ? (
+            <span className="badge-black" style={{ background: '#0f0f10', color: '#ffffff' }}>
+              SOLD OUT
+            </span>
+          ) : (
+            <>
+              {isBestseller && <span className="badge-lime">🔥 BESTSELLER</span>}
+              {isNew && <span className="badge-black">⚡ NEW ARRIVAL</span>}
+              {discountPercent >= 20 && !isBestseller && !isNew && (
+                <span className="badge-lime">{discountPercent}% OFF</span>
+              )}
+            </>
+          )}
         </div>
 
         {/* Wishlist Heart Button */}
@@ -68,24 +103,58 @@ export const ProductCard = ({ product, onQuickView }) => {
             e.stopPropagation();
             toggleWishlist(product._id);
           }}
-          aria-label="Toggle wishlist"
+          aria-label={isFavorited ? 'Remove from wishlist' : 'Save to wishlist'}
+          title="Wishlist"
         >
           <Heart size={18} fill={isFavorited ? 'currentColor' : 'none'} />
         </button>
 
-        {/* Quick Actions on Hover */}
+        {/* Quick Actions overlay on hover */}
         <div className="card-quick-actions">
-          <button className="btn-card-quickadd" onClick={handleQuickAdd}>
-            + QUICK ADD
+          <button
+            type="button"
+            className="btn-card-quickadd"
+            onClick={handleQuickAdd}
+            disabled={!isAvailable}
+            style={{
+              opacity: isAvailable ? 1 : 0.7,
+              cursor: isAvailable ? 'pointer' : 'default',
+            }}
+          >
+            {quickAddSuccess ? (
+              <>
+                <Check size={14} /> ADDED
+              </>
+            ) : isAvailable ? (
+              '+ QUICK ADD'
+            ) : (
+              'OUT OF STOCK'
+            )}
           </button>
+
+          {onQuickView && (
+            <button
+              type="button"
+              className="btn-card-quickview"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onQuickView(product);
+              }}
+              title="Quick view product specs"
+              aria-label="Quick View"
+            >
+              <Eye size={14} />
+            </button>
+          )}
         </div>
       </Link>
 
       <div className="product-card-body">
         {/* Color Swatches */}
         {variants.length > 1 && (
-          <div className="card-swatches-row">
-            {variants.slice(0, 5).map((v, idx) => (
+          <div className="card-swatches-row" role="radiogroup" aria-label="Available Colorways">
+            {variants.slice(0, 6).map((v, idx) => (
               <button
                 key={idx}
                 type="button"
@@ -97,12 +166,13 @@ export const ProductCard = ({ product, onQuickView }) => {
                   setSelectedVariantIndex(idx);
                 }}
                 title={v.colorName}
+                aria-label={v.colorName}
               >
                 <div className="swatch-fill" style={{ backgroundColor: v.colorHex || '#111111' }} />
               </button>
             ))}
-            {variants.length > 5 && (
-              <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>+{variants.length - 5}</span>
+            {variants.length > 6 && (
+              <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>+{variants.length - 6}</span>
             )}
           </div>
         )}
@@ -112,9 +182,9 @@ export const ProductCard = ({ product, onQuickView }) => {
           <h3 className="product-card-title">{product.name}</h3>
         </Link>
 
-        {/* Category / Material tag */}
-        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '12px' }}>
-          {activeVariant ? activeVariant.colorName : product.material?.split('/')[0] || 'Dual EVA Foam'}
+        {/* Category / Color subtitle */}
+        <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)', marginBottom: '8px' }}>
+          {activeVariant ? activeVariant.colorName : product.material?.split('/')[0] || 'Waterproof Cushion Foam'}
         </div>
 
         {/* Pricing */}

@@ -35,12 +35,11 @@ export const CategoryDiscoverySection = ({ section }) => {
     <section style={{ padding: '60px 0 100px' }}>
       <div className="container">
         <div className="section-header">
-          {section.eyebrow && <span className="section-eyebrow">{section.eyebrow}</span>}
           <h2 className="section-title">{section.title || 'CHOOSE YOUR SILHOUETTE'}</h2>
           {section.subtitle && <p className="section-subtitle">{section.subtitle}</p>}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
           {tiles.map((tile, idx) => (
             <Link
               key={idx}

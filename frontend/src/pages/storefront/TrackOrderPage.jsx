@@ -93,7 +93,6 @@ export const TrackOrderPage = () => {
       <div className="container" style={{ maxWidth: '920px' }}>
         {/* Header Breadcrumb / Title */}
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-          <span className="section-eyebrow">ORDER LOOKUP // LIVE DISPATCH TELEMETRY</span>
           <h1
             style={{
               fontSize: 'clamp(2.4rem, 5vw, 3.8rem)',

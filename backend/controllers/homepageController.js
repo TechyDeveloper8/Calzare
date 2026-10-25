@@ -1,5 +1,6 @@
 import { HomepageSection } from '../models/HomepageSection.js';
 import { Product } from '../models/Product.js';
+import { Collection } from '../models/Collection.js';
 import { Review } from '../models/Review.js';
 import { logAudit } from '../utils/auditLogger.js';
 
@@ -44,23 +45,67 @@ export const getPublishedHomepage = async (req, res, next) => {
 
         // 2. Affordable Collection / Price-based Storefront (e.g., ₹999 Store)
         if (sec.sectionType === 'affordable_store') {
-          const cap = sec.config?.priceCap || 999;
-          const limit = sec.config?.maxProducts || 8;
-          const affordableProducts = await Product.find({
+          const cap = Number(sec.config?.priceCap) || 999;
+          const limit = Number(sec.config?.maxProducts) || 8;
+          let productQuery = {
             status: 'published',
             baseSalePrice: { $lte: cap },
-          })
-            .sort({ baseSalePrice: 1, salesCount: -1 })
+          };
+
+          // Manual product selection mode
+          if (sec.config?.productSource === 'manual_select' && sec.config?.selectedProductIds?.length) {
+            productQuery._id = { $in: sec.config.selectedProductIds };
+          } else if (sec.config?.collectionSlug) {
+            // Filter by collection if specified
+            const matchedColl = await Collection.findOne({ slug: sec.config.collectionSlug, isPublished: true });
+            if (matchedColl) {
+              if (matchedColl.ruleType === 'price_under') {
+                const collCap = Number(matchedColl.ruleValue) || cap;
+                productQuery.baseSalePrice = { $lte: Math.min(cap, collCap) };
+              } else if (matchedColl.ruleType === 'manual' && matchedColl.manualProductIds?.length) {
+                productQuery._id = { $in: matchedColl.manualProductIds };
+              } else {
+                productQuery.collections = matchedColl._id;
+              }
+            }
+          }
+
+          // Sorting options
+          const sortOption =
+            sec.config?.sortBy === 'price_asc'
+              ? { baseSalePrice: 1 }
+              : sec.config?.sortBy === 'price_desc'
+              ? { baseSalePrice: -1 }
+              : sec.config?.sortBy === 'newest'
+              ? { createdAt: -1 }
+              : { baseSalePrice: 1, salesCount: -1 };
+
+          let affordableProducts = await Product.find(productQuery)
+            .sort(sortOption)
             .limit(limit)
             .populate('variants')
             .populate('category', 'name slug');
 
+          // If manual select, preserve admin specified order
+          if (sec.config?.productSource === 'manual_select' && sec.config?.selectedProductIds?.length) {
+            const idMap = new Map(affordableProducts.map((p) => [p._id.toString(), p]));
+            affordableProducts = sec.config.selectedProductIds
+              .map((id) => idMap.get(id?.toString() || id))
+              .filter(Boolean);
+          }
+
           item.dynamicProducts = affordableProducts;
-          // Actual minimum price derived from database
-          const minProduct = await Product.findOne({ status: 'published', baseSalePrice: { $lte: cap } })
+
+          // Actual minimum price derived authoritatively from database
+          const minProduct = await Product.findOne(productQuery)
             .sort({ baseSalePrice: 1 })
             .select('baseSalePrice');
-          item.actualStartingPrice = minProduct ? minProduct.baseSalePrice : cap;
+
+          item.actualStartingPrice = minProduct
+            ? minProduct.baseSalePrice
+            : affordableProducts.length > 0
+            ? Math.min(...affordableProducts.map((p) => p.baseSalePrice))
+            : cap;
         }
 
         // 3. Customer Reviews Section
@@ -149,7 +194,14 @@ export const adminUpdateSection = async (req, res, next) => {
     if (scheduledEnd !== undefined) section.scheduledEnd = scheduledEnd;
 
     if (config) {
-      section.config = { ...section.config, ...config };
+      const existingConfig = section.config ? (section.config.toObject ? section.config.toObject() : section.config) : {};
+      const mergedConfig = { ...existingConfig, ...config };
+      for (const [k, v] of Object.entries(mergedConfig)) {
+        if (v === undefined || v === 'undefined') {
+          delete mergedConfig[k];
+        }
+      }
+      section.config = mergedConfig;
     }
 
     section.publishedVersion = (section.publishedVersion || 1) + 1;

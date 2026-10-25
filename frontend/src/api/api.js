@@ -59,6 +59,8 @@ export const api = {
     return request(`/products${qs ? `?${qs}` : ''}`);
   },
   getProductBySlug: (slug) => request(`/products/${slug}`),
+  checkDelivery: (pincode) => request(`/products/check-delivery/${encodeURIComponent(pincode)}`),
+  checkDeliveryPincode: (pincode) => request(`/products/check-delivery/${encodeURIComponent(pincode)}`),
   searchProducts: (q) => request(`/products/search?q=${encodeURIComponent(q)}`),
   getCategories: () => request('/catalog/categories'),
   getCollections: () => request('/catalog/collections'),
@@ -113,6 +115,7 @@ export const api = {
   adminDeleteSection: (id) => request(`/homepage/admin/sections/${id}`, { method: 'DELETE' }),
 
   // Products & Variants Manager
+  adminGetProductById: (id) => request(`/products/${id}`),
   adminCreateProduct: (body) => request('/products', { method: 'POST', body }),
   adminUpdateProduct: (id, body) => request(`/products/${id}`, { method: 'PUT', body }),
   adminDeleteProduct: (id) => request(`/products/${id}`, { method: 'DELETE' }),
@@ -137,6 +140,7 @@ export const api = {
     return request(`/orders/admin/all${qs ? `?${qs}` : ''}`);
   },
   adminUpdateOrderStatus: (id, body) => request(`/orders/admin/${id}/status`, { method: 'PUT', body }),
+  adminShipWithFShip: (id) => request(`/orders/admin/${id}/fship-ship`, { method: 'POST' }),
   adminCancelOrder: (id, body) => request(`/orders/admin/${id}/cancel`, { method: 'PUT', body }),
 
   // Inventory Tracker
@@ -183,6 +187,7 @@ export const api = {
   // Store Settings & Audit Logs
   adminGetSettings: () => request('/settings/admin'),
   adminUpdateSettings: (body) => request('/settings/admin', { method: 'PUT', body }),
+  adminTestFshipConnection: (body) => request('/settings/admin/test-fship', { method: 'POST', body }),
   adminGetSubscribers: () => request('/settings/subscribers'),
   adminGetAuditLogs: () => request('/settings/audit-logs'),
 };

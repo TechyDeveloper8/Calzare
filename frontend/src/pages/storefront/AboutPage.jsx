@@ -17,7 +17,6 @@ export const AboutPage = () => {
       <div className="container" style={{ maxWidth: '1080px' }}>
         {/* Editorial Hero Header */}
         <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-          <span className="section-eyebrow">THE GENESIS // ARCHITECTURAL FOAM</span>
           <h1
             style={{
               fontSize: 'clamp(2.8rem, 6vw, 4.8rem)',
@@ -133,7 +132,6 @@ export const AboutPage = () => {
           }}
         >
           <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-            <span className="section-eyebrow">OUR DESIGN PHILOSOPHY</span>
             <h2
               style={{
                 fontSize: 'clamp(1.8rem, 4vw, 2.8rem)',
@@ -163,7 +161,6 @@ export const AboutPage = () => {
         {/* 4 Pillars Grid */}
         <div style={{ marginBottom: '80px' }}>
           <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-            <span className="section-eyebrow">THE CALZARE STANDARD</span>
             <h2 style={{ fontSize: '2.4rem', marginTop: '8px' }}>BUILT DIFFERENT BY DESIGN</h2>
           </div>
 

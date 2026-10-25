@@ -36,6 +36,8 @@ export const uploadMedia = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
+      url: uploadedAssets[0]?.url,
+      urls: uploadedAssets.map((a) => a.url),
       assets: uploadedAssets,
       asset: uploadedAssets[0],
       message: 'Media uploaded successfully',

@@ -41,7 +41,6 @@ export const RegisterPage = () => {
         }}
       >
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <span className="section-eyebrow">NEW STRIDER</span>
           <h1 style={{ fontSize: '2rem', margin: '4px 0 8px' }}>CREATE ACCOUNT</h1>
           <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
             Join the club for fast checkout and drop announcements.

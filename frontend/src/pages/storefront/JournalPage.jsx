@@ -48,7 +48,6 @@ export const JournalPage = () => {
       <div className="container" style={{ maxWidth: '1120px' }}>
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '56px' }}>
-          <span className="section-eyebrow">EDITORIAL // STREETWEAR & FOAM DIARIES</span>
           <h1
             style={{
               fontSize: 'clamp(2.5rem, 6vw, 4.2rem)',

@@ -9,7 +9,7 @@ router.post(
   '/upload',
   protect,
   authorize('admin', 'superadmin', 'editor', 'product_manager'),
-  upload.array('files', 10),
+  upload.any(),
   uploadMedia
 );
 

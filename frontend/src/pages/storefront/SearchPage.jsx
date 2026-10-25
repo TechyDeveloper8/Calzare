@@ -48,7 +48,6 @@ export const SearchPage = () => {
       <div className="container">
         {/* Header Search Input */}
         <div style={{ maxWidth: '680px', margin: '0 auto 48px', textAlign: 'center' }}>
-          <span className="section-eyebrow">CATALOG DISCOVERY // REAL-TIME QUERY</span>
           <h1
             style={{
               fontSize: 'clamp(2.4rem, 5vw, 3.8rem)',

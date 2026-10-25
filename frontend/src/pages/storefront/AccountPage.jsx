@@ -81,7 +81,6 @@ export const AccountPage = () => {
       <div className="container">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px', flexWrap: 'wrap', gap: '16px' }}>
           <div>
-            <span className="section-eyebrow">CUSTOMER PORTAL</span>
             <h1 style={{ fontSize: 'clamp(2.2rem, 5vw, 3.8rem)', margin: 0 }}>WELCOME, {user.name}</h1>
           </div>
           <button

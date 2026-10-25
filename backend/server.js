@@ -35,6 +35,9 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+// Crucial for reverse proxies (Render, Cloudflare, Vercel) to properly resolve client IPs and rate limits
+app.set('trust proxy', 1);
+
 // Connect Database
 connectDB();
 
@@ -44,7 +47,12 @@ app.use(
     crossOriginResourcePolicy: { policy: 'cross-origin' },
   })
 );
-app.use(compression());
+app.use(
+  compression({
+    level: 6,
+    threshold: 1024,
+  })
+);
 const allowedOrigins = process.env.CLIENT_URL
   ? process.env.CLIENT_URL.split(',').map((u) => u.trim())
   : ['http://localhost:5173', 'http://127.0.0.1:5173'];
@@ -100,13 +108,22 @@ app.use('/api/v1/analytics', analyticsRoutes);
 app.use('/api/v1/settings', settingsRoutes);
 app.use('/api/v1/story', storyRoutes);
 
-// Health check endpoints
+import { cacheService } from './services/cacheService.js';
+
+// Health check and real-time concurrency metrics endpoint
 app.get(['/', '/api/health'], (req, res) => {
+  const memory = process.memoryUsage();
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
     uptimeSeconds: Math.floor(process.uptime()),
     service: 'CALZARE Footwear Engine v1.0.0',
+    cache: cacheService.getStats(),
+    memory: {
+      rssMb: Math.round(memory.rss / (1024 * 1024)),
+      heapUsedMb: Math.round(memory.heapUsed / (1024 * 1024)),
+      heapTotalMb: Math.round(memory.heapTotal / (1024 * 1024)),
+    },
   });
 });
 
@@ -119,6 +136,11 @@ const server = app.listen(PORT, () => {
   console.log(`[CALZARE Server] Running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
   console.log(`[CALZARE Server] REST API prefix: /api/v1`);
 });
+
+// Tuning TCP keep-alive for reverse proxies (Render, Cloudflare, NGINX)
+// Ensures socket reuse and prevents 502/ECONNRESET during high concurrency bursts
+server.keepAliveTimeout = 65000; // 65 seconds (must be higher than reverse proxy timeout)
+server.headersTimeout = 66000;   // 66 seconds
 
 process.on('unhandledRejection', (err) => {
   console.error(`[Unhandled Rejection] ${err.message}`);

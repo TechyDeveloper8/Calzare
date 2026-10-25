@@ -21,9 +21,11 @@ router.post('/track', trackOrder);
 // Razorpay asynchronous server-to-server webhook callback
 router.post('/webhook/razorpay', razorpayWebhook);
 
+import { checkoutLimiter } from '../middleware/rateLimiter.js';
+
 // Order creation & payment verification (supports guests and authenticated customers)
-router.post('/checkout', optionalAuth, createOrder);
-router.post('/verify-payment', optionalAuth, verifyPayment);
+router.post('/checkout', checkoutLimiter, optionalAuth, createOrder);
+router.post('/verify-payment', checkoutLimiter, optionalAuth, verifyPayment);
 
 // Customer order history & detail
 router.get('/my-orders', protect, getMyOrders);

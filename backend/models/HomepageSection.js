@@ -169,4 +169,7 @@ const homepageSectionSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+homepageSectionSchema.index({ isEnabled: 1, displayOrder: 1 });
+homepageSectionSchema.index({ isEnabled: 1, sectionType: 1 });
+
 export const HomepageSection = mongoose.model('HomepageSection', homepageSectionSchema);

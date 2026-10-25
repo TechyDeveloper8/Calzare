@@ -70,4 +70,7 @@ const collectionSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+collectionSchema.index({ isPublished: 1, displayOrder: 1 });
+collectionSchema.index({ slug: 1, isPublished: 1 });
+
 export const Collection = mongoose.model('Collection', collectionSchema);

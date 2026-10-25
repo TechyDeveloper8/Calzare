@@ -282,9 +282,8 @@ export const getProductBySlug = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }
 
-    // Increment view counter
-    product.viewsCount = (product.viewsCount || 0) + 1;
-    await product.save({ validateBeforeSave: false });
+    // Increment view counter asynchronously without blocking response
+    Product.updateOne({ _id: product._id }, { $inc: { viewsCount: 1 } }).exec().catch(() => {});
 
     // Ensure at least 4 related products are returned for rich recommendation carousels
     let relatedProducts = product.relatedProducts ? [...product.relatedProducts] : [];
@@ -299,7 +298,8 @@ export const getProductBySlug = async (req, res, next) => {
       })
         .select('name slug baseRegularPrice baseSalePrice defaultImages productType brand isBestseller isNewArrival')
         .populate('variants', 'colorName colorHex regularPrice salePrice images')
-        .limit(4 - relatedProducts.length);
+        .limit(4 - relatedProducts.length)
+        .lean();
 
       if (relatedProducts.length + additional.length < 4) {
         const allExisting = [...existingIds, ...additional.map((p) => p._id)];
@@ -309,7 +309,8 @@ export const getProductBySlug = async (req, res, next) => {
         })
           .select('name slug baseRegularPrice baseSalePrice defaultImages productType brand isBestseller isNewArrival')
           .populate('variants', 'colorName colorHex regularPrice salePrice images')
-          .limit(4 - (relatedProducts.length + additional.length));
+          .limit(4 - (relatedProducts.length + additional.length))
+          .lean();
         additional = [...additional, ...genericAdditional];
       }
 

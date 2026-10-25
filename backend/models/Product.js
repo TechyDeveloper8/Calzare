@@ -225,4 +225,11 @@ productSchema.virtual('variants', {
   foreignField: 'productId',
 });
 
+// High-concurrency compound query indexes
+productSchema.index({ status: 1, isFeatured: -1, createdAt: -1 });
+productSchema.index({ status: 1, salesCount: -1, averageRating: -1 });
+productSchema.index({ status: 1, audience: 1, baseSalePrice: 1 });
+productSchema.index({ status: 1, category: 1 });
+productSchema.index({ status: 1, baseSalePrice: 1 });
+
 export const Product = mongoose.model('Product', productSchema);

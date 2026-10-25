@@ -180,9 +180,9 @@ export const Header = ({ onOpenSearch }) => {
               </button>
 
               {/* Account Dropdown */}
-              <div style={{ position: 'relative' }}>
+              <div className="header-account-wrap" style={{ position: 'relative' }}>
                 <button
-                  className="action-icon-btn"
+                  className="action-icon-btn header-account-btn"
                   onClick={() => setAccountMenuOpen(!accountMenuOpen)}
                   aria-label="User Account"
                   title="Account"

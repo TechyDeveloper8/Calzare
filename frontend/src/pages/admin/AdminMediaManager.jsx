@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { api } from '../../api/api.js';
+import { api, getAssetUrl } from '../../api/api.js';
 import {
   Image as ImageIcon,
   Upload,
@@ -77,7 +77,7 @@ export const AdminMediaManager = () => {
 
   const copyToClipboard = (url, id) => {
     // If relative path, prepend window.location.origin
-    const fullUrl = url.startsWith('http') ? url : `${window.location.origin}${url}`;
+    const fullUrl = getAssetUrl(url);
     navigator.clipboard.writeText(fullUrl);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
@@ -226,13 +226,13 @@ export const AdminMediaManager = () => {
               >
                 {asset.fileType === 'video' ? (
                   <video
-                    src={asset.url}
+                    src={getAssetUrl(asset.url)}
                     muted
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   />
                 ) : (
                   <img
-                    src={asset.url}
+                    src={getAssetUrl(asset.url)}
                     alt={asset.altText || asset.title}
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     loading="lazy"

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { api } from '../../api/api.js';
+import { api, getAssetUrl } from '../../api/api.js';
 import { Plus, Edit, Trash2, Search, ExternalLink, Loader2, Package, RefreshCw } from 'lucide-react';
 
 export const AdminProducts = () => {
@@ -142,7 +142,7 @@ export const AdminProducts = () => {
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                           <img
-                            src={img}
+                            src={getAssetUrl(img)}
                             alt=""
                             style={{
                               width: '40px',

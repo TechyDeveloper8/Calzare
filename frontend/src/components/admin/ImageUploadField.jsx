@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { api } from '../../api/api.js';
+import { api, getAssetUrl } from '../../api/api.js';
 import {
   Upload,
   Image as ImageIcon,
@@ -56,7 +56,7 @@ export const ImageUploadField = ({
       if (res.success) {
         const uploadedUrl = res.url || res.assets?.[0]?.url || res.asset?.url;
         if (uploadedUrl) {
-          onChange(uploadedUrl);
+          onChange(getAssetUrl(uploadedUrl));
         } else {
           throw new Error('Upload succeeded but no URL was returned.');
         }
@@ -221,7 +221,7 @@ export const ImageUploadField = ({
           }}
         >
           <img
-            src={value}
+            src={getAssetUrl(value)}
             alt="Preview"
             style={{
               maxWidth: '100%',
@@ -408,7 +408,7 @@ export const ImageUploadField = ({
         isOpen={showMediaModal}
         onClose={() => setShowMediaModal(false)}
         onSelect={(url) => {
-          onChange(url);
+          onChange(getAssetUrl(url));
           setShowMediaModal(false);
         }}
         title={`Select Asset for ${label || 'Field'}`}
@@ -450,7 +450,7 @@ export const MultiImageUploadField = ({
       if (res.success) {
         const uploadedAssets = res.assets || (res.asset ? [res.asset] : []);
         const newImages = uploadedAssets.map((asset, idx) => ({
-          url: asset.url,
+          url: getAssetUrl(asset.url),
           alt: asset.altText || asset.title || 'Product Photo',
           isMain: images.length === 0 && idx === 0,
         }));
@@ -589,7 +589,7 @@ export const MultiImageUploadField = ({
             }}
           >
             <img
-              src={img.url}
+              src={getAssetUrl(img.url)}
               alt={img.alt || `Product ${idx + 1}`}
               style={{
                 maxWidth: '100%',

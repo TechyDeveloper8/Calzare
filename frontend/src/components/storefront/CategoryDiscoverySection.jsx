@@ -1,3 +1,4 @@
+import { getAssetUrl } from '../../api/api.js';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight } from 'lucide-react';
@@ -130,7 +131,7 @@ export const CategoryDiscoverySection = ({ section }) => {
                 >
                   <img
                     src={
-                      tile.imageUrl?.trim() ||
+                      getAssetUrl(tile.imageUrl?.trim()) ||
                       'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=800&q=80'
                     }
                     alt={tile.title || 'Footwear Silhouette'}

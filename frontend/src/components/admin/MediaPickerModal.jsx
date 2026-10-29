@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { api } from '../../api/api.js';
+import { api, getAssetUrl } from '../../api/api.js';
 import {
   Image as ImageIcon,
   Search,
@@ -62,7 +62,7 @@ export const MediaPickerModal = ({ isOpen, onClose, onSelect, title = 'Select fr
       if (res.success) {
         const uploadedUrl = res.url || res.assets?.[0]?.url || res.asset?.url;
         if (uploadedUrl) {
-          onSelect(uploadedUrl);
+          onSelect(getAssetUrl(uploadedUrl));
           onClose();
         }
       }
@@ -263,7 +263,7 @@ export const MediaPickerModal = ({ isOpen, onClose, onSelect, title = 'Select fr
                 <div
                   key={asset._id}
                   onClick={() => {
-                    onSelect(asset.url);
+                    onSelect(getAssetUrl(asset.url));
                     onClose();
                   }}
                   style={{
@@ -298,7 +298,7 @@ export const MediaPickerModal = ({ isOpen, onClose, onSelect, title = 'Select fr
                     }}
                   >
                     <img
-                      src={asset.url}
+                      src={getAssetUrl(asset.url)}
                       alt={asset.altText || asset.title}
                       style={{
                         maxWidth: '100%',

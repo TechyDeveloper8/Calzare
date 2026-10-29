@@ -7,6 +7,37 @@ const API_BASE = rawApiRoot
   ? `${rawApiRoot.replace(/\/+$/, '').replace(/\/api\/v1$/, '')}/api/v1`
   : '/api/v1';
 
+/**
+ * Universal Asset URL Formatter
+ * Converts relative upload paths (e.g. /uploads/image.jpg) into authoritative absolute URLs
+ * pointing to the backend host (Render or local backend server).
+ */
+export const getAssetUrl = (url) => {
+  if (!url || typeof url !== 'string') return '';
+  const trimmed = url.trim();
+  if (!trimmed) return '';
+
+  if (
+    trimmed.startsWith('http://') ||
+    trimmed.startsWith('https://') ||
+    trimmed.startsWith('data:') ||
+    trimmed.startsWith('blob:')
+  ) {
+    return trimmed;
+  }
+
+  const backendHost = (
+    import.meta.env.VITE_API_URL ||
+    import.meta.env.VITE_API_BASE_URL ||
+    (import.meta.env.PROD ? 'https://calzare.onrender.com' : 'http://localhost:5000')
+  )
+    .replace(/\/+$/, '')
+    .replace(/\/api(\/v1)?\/?$/, '');
+
+  const normalizedPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+  return `${backendHost}${normalizedPath}`;
+};
+
 // Helper to get auth token
 const getAuthHeaders = () => {
   const token = localStorage.getItem('calzare_token');

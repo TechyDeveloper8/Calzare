@@ -3,6 +3,23 @@ import path from 'path';
 import fs from 'fs';
 import { logAudit } from '../utils/auditLogger.js';
 
+export const getBackendBaseUrl = (req) => {
+  if (process.env.BACKEND_URL) {
+    return process.env.BACKEND_URL.replace(/\/+$/, '');
+  }
+  if (process.env.RENDER_EXTERNAL_URL) {
+    return process.env.RENDER_EXTERNAL_URL.replace(/\/+$/, '');
+  }
+  if (req) {
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+    const host = req.headers['x-forwarded-host'] || req.get('host');
+    if (host) {
+      return `${protocol}://${host}`.replace(/\/+$/, '');
+    }
+  }
+  return 'https://calzare.onrender.com';
+};
+
 export const uploadMedia = async (req, res, next) => {
   try {
     if (!req.file && (!req.files || req.files.length === 0)) {
@@ -11,10 +28,11 @@ export const uploadMedia = async (req, res, next) => {
 
     const files = req.files || [req.file];
     const uploadedAssets = [];
+    const baseUrl = getBackendBaseUrl(req);
 
     for (const file of files) {
       const isVideo = file.mimetype.startsWith('video/');
-      const fileUrl = `/uploads/${file.filename}`;
+      const fileUrl = `${baseUrl}/uploads/${file.filename}`;
 
       const asset = await MediaAsset.create({
         title: path.parse(file.originalname).name,
@@ -66,9 +84,18 @@ export const getMediaAssets = async (req, res, next) => {
       .skip((page - 1) * limit)
       .limit(limit);
 
+    const baseUrl = getBackendBaseUrl(req);
+    const normalizedAssets = assets.map((asset) => {
+      const obj = asset.toObject ? asset.toObject() : { ...asset };
+      if (obj.url && obj.url.startsWith('/uploads/')) {
+        obj.url = `${baseUrl}${obj.url}`;
+      }
+      return obj;
+    });
+
     res.json({
       success: true,
-      assets,
+      assets: normalizedAssets,
       pagination: { total, page, pages: Math.ceil(total / limit) },
     });
   } catch (error) {

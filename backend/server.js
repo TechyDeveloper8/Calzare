@@ -85,8 +85,18 @@ if (process.env.NODE_ENV !== 'production') {
   app.use(morgan('dev'));
 }
 
-// Serve Uploaded Media Files statically
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Serve Uploaded Media Files statically with cross-origin headers
+app.use(
+  '/uploads',
+  (req, res, next) => {
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    next();
+  },
+  express.static(path.join(__dirname, 'uploads'), {
+    maxAge: '7d',
+  })
+);
 
 // General rate limiter for API routes
 app.use('/api', apiLimiter);

@@ -25,9 +25,11 @@ export const ImageUploadField = ({
   onChange,
   label = 'Image',
   description = '',
-  aspectRatio = 'auto', // 'square' | 'banner' | 'hero' | 'auto'
+  aspectRatio = 'auto',
   compact = false,
   required = false,
+  previewHeight,
+  objectFit = 'contain',
 }) => {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
@@ -210,21 +212,26 @@ export const ImageUploadField = ({
             borderRadius: '8px',
             overflow: 'hidden',
             border: '1px solid #e2e8f0',
-            background: '#0f172a',
+            background: '#f8fafc',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            height: getAspectHeight(),
+            height: previewHeight ? (typeof previewHeight === 'number' ? `${previewHeight}px` : previewHeight) : getAspectHeight(),
+            padding: objectFit === 'cover' ? '0' : '8px',
           }}
         >
           <img
             src={value}
             alt="Preview"
             style={{
-              width: '100%',
-              height: '100%',
-              objectFit: aspectRatio === 'square' || compact ? 'cover' : 'contain',
-              background: '#f8fafc',
+              maxWidth: '100%',
+              maxHeight: '100%',
+              width: objectFit === 'cover' ? '100%' : 'auto',
+              height: objectFit === 'cover' ? '100%' : 'auto',
+              objectFit: objectFit || 'contain',
+              objectPosition: 'center',
+              display: 'block',
+              margin: 'auto',
             }}
             onError={(e) => {
               e.currentTarget.src =
@@ -571,19 +578,29 @@ export const MultiImageUploadField = ({
               position: 'relative',
               borderRadius: '8px',
               overflow: 'hidden',
-              background: '#ffffff',
+              background: '#f8fafc',
               border: img.isMain ? '2px solid #2563eb' : '1px solid #cbd5e1',
               boxShadow: img.isMain ? '0 0 0 2px rgba(37, 99, 235, 0.2)' : 'none',
               aspectRatio: '1',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              padding: '6px',
             }}
           >
             <img
               src={img.url}
               alt={img.alt || `Product ${idx + 1}`}
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              style={{
+                maxWidth: '100%',
+                maxHeight: '100%',
+                width: 'auto',
+                height: 'auto',
+                objectFit: 'contain',
+                objectPosition: 'center',
+                display: 'block',
+                margin: 'auto',
+              }}
               onError={(e) => {
                 e.currentTarget.src =
                   'https://placehold.co/200x200/f1f5f9/64748b?text=Broken+Image';

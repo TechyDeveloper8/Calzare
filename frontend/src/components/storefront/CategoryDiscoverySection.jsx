@@ -116,7 +116,18 @@ export const CategoryDiscoverySection = ({ section }) => {
 
             const content = (
               <>
-                <div style={{ height: '230px', overflow: 'hidden', background: '#f5f3ee', position: 'relative' }}>
+                <div
+                  style={{
+                    height: '240px',
+                    overflow: 'hidden',
+                    background: '#f8fafc',
+                    position: 'relative',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: tile.imageFit === 'cover' ? '0' : '16px',
+                  }}
+                >
                   <img
                     src={
                       tile.imageUrl?.trim() ||
@@ -124,10 +135,15 @@ export const CategoryDiscoverySection = ({ section }) => {
                     }
                     alt={tile.title || 'Footwear Silhouette'}
                     style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
+                      maxWidth: '100%',
+                      maxHeight: '100%',
+                      width: tile.imageFit === 'cover' ? '100%' : 'auto',
+                      height: tile.imageFit === 'cover' ? '100%' : 'auto',
+                      objectFit: tile.imageFit || 'contain',
+                      objectPosition: 'center',
                       transition: 'transform 0.4s ease',
+                      display: 'block',
+                      margin: 'auto',
                     }}
                     loading="lazy"
                   />

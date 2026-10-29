@@ -1757,13 +1757,26 @@ export const AdminHomepageEditor = () => {
                               />
                             </div>
 
+                            <div className="admin-form-group" style={{ marginBottom: 0 }}>
+                              <label className="admin-label">Image Fitting in Card</label>
+                              <select
+                                value={tile.imageFit || 'contain'}
+                                onChange={(e) => handleUpdateCategoryTile(tIdx, 'imageFit', e.target.value)}
+                                className="admin-select"
+                              >
+                                <option value="contain">Auto-Fit to Div (Full Silhouette Visible - Recommended)</option>
+                                <option value="cover">Fill Div Edge-to-Edge (Cover)</option>
+                              </select>
+                            </div>
+
                             <div className="admin-form-group" style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
                               <ImageUploadField
                                 label="Silhouette Image"
-                                description="Upload an image or paste a URL for this silhouette card"
+                                description="Upload an image or paste a URL — automatically fits cleanly inside the card frame"
                                 value={tile.imageUrl || ''}
                                 onChange={(url) => handleUpdateCategoryTile(tIdx, 'imageUrl', url)}
-                                previewHeight={120}
+                                previewHeight={140}
+                                objectFit={tile.imageFit || 'contain'}
                               />
                             </div>
                           </div>

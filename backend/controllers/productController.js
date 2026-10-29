@@ -6,6 +6,10 @@ import { Collection } from '../models/Collection.js';
 import { Review } from '../models/Review.js';
 import { Order } from '../models/Order.js';
 import { StoreSetting } from '../models/StoreSetting.js';
+import { InventoryMovement } from '../models/InventoryMovement.js';
+import { Cart } from '../models/Cart.js';
+import { Wishlist } from '../models/Wishlist.js';
+import { HomepageSection } from '../models/HomepageSection.js';
 import { logAudit } from '../utils/auditLogger.js';
 import { fshipService } from '../services/fshipService.js';
 import slugify from 'slugify';
@@ -651,24 +655,83 @@ export const adminDeleteProduct = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }
 
-    // Safety check: verify if historical orders exist
-    const orderCount = await Order.countDocuments({ 'items.product': product._id });
-    if (orderCount > 0) {
-      // Soft-archive instead of deleting to protect audit history
-      product.status = 'archived';
-      await product.save();
-      await logAudit(req, 'ARCHIVE_PRODUCT', 'Product', product._id, { reason: 'Has historical orders' });
-      return res.json({
-        success: true,
-        message: 'Product archived rather than permanently deleted because historical orders reference it.',
-      });
-    }
+    // 1. Collect all variant IDs for this product
+    const variants = await ProductVariant.find({ productId: product._id }).select('_id');
+    const variantIds = variants.map((v) => v._id);
 
-    await ProductVariant.deleteMany({ productId: product._id });
+    // 2. Cascade delete all inventory movement records for this product and its variants
+    const invRes = await InventoryMovement.deleteMany({
+      $or: [
+        { product: product._id },
+        { variant: { $in: variantIds } },
+      ],
+    });
+
+    // 3. Cascade delete all product variants (stock records)
+    const varRes = await ProductVariant.deleteMany({ productId: product._id });
+
+    // 4. Cascade delete all customer reviews for this product
+    const revRes = await Review.deleteMany({ product: product._id });
+
+    // 5. Clean up active shopping carts referencing this product or its variants
+    await Cart.updateMany(
+      {},
+      {
+        $pull: {
+          items: {
+            $or: [
+              { product: product._id },
+              { variant: { $in: variantIds } },
+            ],
+          },
+        },
+      }
+    );
+
+    // 6. Clean up customer wishlists referencing this product
+    await Wishlist.updateMany(
+      {},
+      { $pull: { products: product._id } }
+    );
+
+    // 7. Clean up manual curation in Collections
+    await Collection.updateMany(
+      {},
+      { $pull: { manualProductIds: product._id } }
+    );
+
+    // 8. Clean up homepage section manual selections
+    await HomepageSection.updateMany(
+      {},
+      { $pull: { 'config.selectedProductIds': product._id } }
+    );
+
+    // 9. Clean up store settings brand comparison references
+    await StoreSetting.updateMany(
+      {},
+      { $pull: { 'brandComparisonDefault.selectedProductIds': product._id } }
+    );
+
+    // 10. Permanently delete the product document
     await product.deleteOne();
 
-    await logAudit(req, 'DELETE_PRODUCT', 'Product', req.params.id);
-    res.json({ success: true, message: 'Product and variants deleted permanently' });
+    await logAudit(req, 'DELETE_PRODUCT', 'Product', req.params.id, {
+      name: product.name,
+      sku: product.sku,
+      variantsDeleted: varRes.deletedCount,
+      inventoryMovementsDeleted: invRes.deletedCount,
+      reviewsDeleted: revRes.deletedCount,
+    });
+
+    res.json({
+      success: true,
+      message: `Product "${product.name}", ${varRes.deletedCount} variants, and ${invRes.deletedCount} inventory records deleted permanently from database`,
+      stats: {
+        variantsDeleted: varRes.deletedCount,
+        inventoryMovementsDeleted: invRes.deletedCount,
+        reviewsDeleted: revRes.deletedCount,
+      },
+    });
   } catch (error) {
     next(error);
   }
@@ -745,9 +808,31 @@ export const adminDeleteVariant = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Variant not found' });
     }
 
+    // 1. Cascade delete all inventory movement records for this variant
+    const invRes = await InventoryMovement.deleteMany({ variant: variant._id });
+
+    // 2. Remove this variant from all active shopping carts
+    await Cart.updateMany({}, { $pull: { items: { variant: variant._id } } });
+
+    // 3. Remove variant from parent Product.variants array if referenced
+    await Product.findByIdAndUpdate(variant.productId, { $pull: { variants: variant._id } });
+
+    // 4. Delete the variant document itself
     await variant.deleteOne();
-    await logAudit(req, 'DELETE_VARIANT', 'ProductVariant', req.params.variantId);
-    res.json({ success: true, message: 'Color variant deleted successfully' });
+
+    await logAudit(req, 'DELETE_VARIANT', 'ProductVariant', req.params.variantId, {
+      variantSku: variant.variantSku,
+      colorName: variant.colorName,
+      inventoryMovementsDeleted: invRes.deletedCount,
+    });
+
+    res.json({
+      success: true,
+      message: `Color variant "${variant.colorName}" and ${invRes.deletedCount} associated inventory records deleted permanently`,
+      stats: {
+        inventoryMovementsDeleted: invRes.deletedCount,
+      },
+    });
   } catch (error) {
     next(error);
   }

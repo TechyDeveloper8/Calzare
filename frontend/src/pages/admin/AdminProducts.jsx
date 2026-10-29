@@ -32,7 +32,7 @@ export const AdminProducts = () => {
   }, [searchTerm, audienceFilter]);
 
   const handleDelete = async (id, name) => {
-    if (!window.confirm(`Are you sure you want to delete or archive product "${name}"?`)) return;
+    if (!window.confirm(`Are you sure you want to permanently delete product "${name}"?`)) return;
     try {
       const res = await api.adminDeleteProduct(id);
       alert(res.message);

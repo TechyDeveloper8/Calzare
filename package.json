@@ -13,6 +13,7 @@
     "client": "npm --prefix frontend run dev",
     "seed": "npm --prefix backend run seed",
     "test": "npm --prefix backend test",
-    "clean:seed": "npm --prefix backend run clean:seed"
+    "clean:seed": "npm --prefix backend run clean:seed",
+    "clean:atlas": "npm --prefix backend run clean:atlas"
   }
 }

@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import bcrypt from 'bcryptjs';
 import { Product } from '../models/Product.js';
 import { ProductVariant } from '../models/ProductVariant.js';
 import { Order } from '../models/Order.js';
@@ -18,21 +19,37 @@ import { StoreSetting } from '../models/StoreSetting.js';
 
 dotenv.config();
 
+// Support CLI argument for remote MongoDB Atlas URI:
+// e.g. node scripts/purgeSeedData.js "mongodb+srv://<user>:<password>@cluster0.mongodb.net/dbname"
+const cliUri = process.argv.find(
+  (arg) => arg.startsWith('mongodb://') || arg.startsWith('mongodb+srv://')
+);
+
 const MONGO_URI =
+  cliUri ||
   process.env.MONGO_URI ||
   process.env.MONGODB_URI ||
   'mongodb://127.0.0.1:27017/calzare_ecommerce';
 
+const isAtlas = MONGO_URI.includes('mongodb+srv') || MONGO_URI.includes('.mongodb.net');
+
 const purgeSeedData = async () => {
-  const includeCategories = process.argv.includes('--include-categories');
+  const includeCategories = process.argv.includes('--include-categories') || process.argv.includes('--all');
 
   console.log('====================================================');
-  console.log('   CALZARE Production Seed & Test Data Purge Tool   ');
+  console.log('   CALZARE Production Seed & Data Purge Tool        ');
   console.log('====================================================');
-  console.log(`Connecting to: ${MONGO_URI.replace(/\/\/.*@/, '//<credentials>@')}`);
+  if (isAtlas) {
+    console.log('[Target Environment] MongoDB Atlas Cloud Cluster Detected');
+  } else {
+    console.log('[Target Environment] Local MongoDB Instance Detected');
+  }
+  console.log(`Connecting to: ${MONGO_URI.replace(/\/\/([^:]+):([^@]+)@/, '//$1:*****@')}\n`);
 
   try {
-    await mongoose.connect(MONGO_URI);
+    await mongoose.connect(MONGO_URI, {
+      serverSelectionTimeoutMS: 15000,
+    });
     console.log('[Connected] MongoDB connection established successfully.\n');
 
     const results = {};
@@ -41,25 +58,25 @@ const purgeSeedData = async () => {
     const prodRes = await Product.deleteMany({});
     results['Products'] = prodRes.deletedCount;
 
-    // 2. Purge Product Variants
+    // 2. Purge Product Variants (Stock items)
     const varRes = await ProductVariant.deleteMany({});
     results['Product Variants'] = varRes.deletedCount;
 
-    // 3. Purge Test Orders
+    // 3. Purge Inventory Movements (Stock history)
+    const invRes = await InventoryMovement.deleteMany({});
+    results['Inventory Movements'] = invRes.deletedCount;
+
+    // 4. Purge Test Orders
     const ordRes = await Order.deleteMany({});
     results['Orders (Test)'] = ordRes.deletedCount;
 
-    // 4. Purge Test Support Inquiries
+    // 5. Purge Test Support Inquiries
     const inqRes = await SupportInquiry.deleteMany({});
     results['Support Inquiries (Test)'] = inqRes.deletedCount;
 
-    // 5. Purge Seed Reviews
+    // 6. Purge Reviews
     const revRes = await Review.deleteMany({});
     results['Reviews (Seed)'] = revRes.deletedCount;
-
-    // 6. Purge Inventory Movements
-    const invRes = await InventoryMovement.deleteMany({});
-    results['Inventory Movements'] = invRes.deletedCount;
 
     // 7. Purge Carts
     const cartRes = await Cart.deleteMany({});
@@ -77,9 +94,9 @@ const purgeSeedData = async () => {
     const coupRes = await Coupon.deleteMany({});
     results['Coupons (Test)'] = coupRes.deletedCount;
 
-    // 11. Purge Test Audit Logs
+    // 11. Purge Audit Logs
     const auditRes = await AuditLog.deleteMany({});
-    results['Audit Logs (Test)'] = auditRes.deletedCount;
+    results['Audit Logs'] = auditRes.deletedCount;
 
     // 12. Optional: Categories purge if explicitly requested
     if (includeCategories) {
@@ -88,7 +105,7 @@ const purgeSeedData = async () => {
     }
 
     // 13. Clean references in Collections
-    const colUpdate = await Collection.updateMany(
+    await Collection.updateMany(
       {},
       { $set: { manualProductIds: [] } }
     );
@@ -102,7 +119,6 @@ const purgeSeedData = async () => {
         sec.markModified('config');
         changed = true;
       }
-      // Fix residual "Sola" copy in shop_audience panels if present
       if (sec.sectionKey === 'shop_audience' && sec.config) {
         const panels = sec.config.categoryPanels || sec.config.audienceCards || [];
         for (const p of panels) {
@@ -141,21 +157,34 @@ const purgeSeedData = async () => {
     }
     console.log('----------------------------------------------------');
 
-    // Admin account confirmation
+    // 16. Ensure Super Admin Account Exists (Critical for Atlas clusters)
+    let admin = await User.findOne({ role: 'superadmin' });
+    if (!admin) {
+      console.log('\n[Init] No Super Admin found on cluster. Creating default Super Admin...');
+      const hashedPassword = await bcrypt.hash('Admin@123456', 12);
+      admin = await User.create({
+        name: 'CALZARE Super Admin',
+        email: 'admin@calzare.com',
+        password: hashedPassword,
+        role: 'superadmin',
+        phone: '+91 99887 76655',
+      });
+      console.log('  ✓ Created Super Admin account: admin@calzare.com');
+    }
+
     const remainingAdmins = await User.find({ role: 'superadmin' }).select('name email role');
-    console.log('\nPreserved Admin Account(s):');
+    console.log('\nActive Admin Account(s) on Database:');
     remainingAdmins.forEach((adm) => {
       console.log(`  • ${adm.name} (${adm.email}) [${adm.role}]`);
     });
 
-    console.log('\n[SUCCESS] Store is now completely clean and ready for real-time production use!');
+    console.log(`\n[SUCCESS] ${isAtlas ? 'MongoDB Atlas Cloud Cluster' : 'Database'} is now clean and ready for real-time commercial use!`);
     await mongoose.disconnect();
     process.exit(0);
   } catch (error) {
-    console.error('\n[ERROR] Failed to purge seed data:', error.message);
+    console.error('\n[ERROR] Failed to purge database:', error.message);
     process.exit(1);
   }
 };
 
 purgeSeedData();
-

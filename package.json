@@ -12,6 +12,7 @@
     "server": "npm --prefix backend run dev",
     "client": "npm --prefix frontend run dev",
     "seed": "npm --prefix backend run seed",
-    "test": "npm --prefix backend test"
+    "test": "npm --prefix backend test",
+    "clean:seed": "npm --prefix backend run clean:seed"
   }
 }

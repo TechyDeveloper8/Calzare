@@ -4,8 +4,13 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, ChevronLeft, ChevronRight, Grid, SlidersHorizontal, Sparkles } from 'lucide-react';
 
 export const ProductGridSection = ({ section, onQuickView }) => {
-  const allProducts = section.dynamicProducts || [];
+  const allProducts = section?.dynamicProducts || [];
   const railRef = useRef(null);
+
+  // In live storefront, gracefully hide the section if there are no published products yet
+  if (!allProducts || allProducts.length === 0) {
+    return null;
+  }
 
   // Extract unique category names from loaded products
   const categoryOptions = useMemo(() => {

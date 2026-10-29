@@ -146,6 +146,9 @@ const homepageSectionSchema = new mongoose.Schema(
           subtitle: { type: String },
           imageUrl: { type: String },
           link: { type: String },
+          badge: { type: String, default: '' },
+          isEnabled: { type: Boolean, default: true },
+          order: { type: Number, default: 0 },
         },
       ],
 

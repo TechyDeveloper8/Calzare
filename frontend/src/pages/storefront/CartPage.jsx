@@ -44,27 +44,20 @@ export const CartPage = () => {
       <div className="container">
         <h1 style={{ fontSize: 'clamp(2.2rem, 5vw, 3.8rem)', marginBottom: '40px' }}>YOUR SHOPPING BAG</h1>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '48px' }} className="pdp-layout-grid">
+        <div className="cart-checkout-grid">
           {/* Items List Column */}
           <div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               {items.map((item) => (
                 <div
                   key={item._id}
-                  style={{
-                    display: 'flex',
-                    gap: '24px',
-                    padding: '24px',
-                    background: '#ffffff',
-                    borderRadius: 'var(--radius-lg)',
-                    border: '1px solid var(--border-light)',
-                    alignItems: 'center',
-                  }}
+                  className="cart-page-item"
                 >
                   <img
                     src={item.image}
                     alt={item.productName}
-                    style={{ width: '100px', height: '110px', borderRadius: '12px', objectFit: 'cover', background: '#f5f3ee' }}
+                    className="cart-page-item-img"
+                    style={{ width: '92px', height: '100px', borderRadius: '12px', objectFit: 'cover', background: '#f5f3ee', flexShrink: 0 }}
                   />
                   <div style={{ flexGrow: 1 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>

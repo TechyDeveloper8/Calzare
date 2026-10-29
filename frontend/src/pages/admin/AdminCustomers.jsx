@@ -91,6 +91,19 @@ export const AdminCustomers = () => {
     }
   };
 
+  const handleToggleStatus = async (u) => {
+    const action = u.isActive !== false ? 'suspend' : 'reactivate';
+    if (!window.confirm(`Are you sure you want to ${action} account for ${u.email}?`)) return;
+    try {
+      const res = await api.adminToggleUserStatus(u._id);
+      if (res.success) {
+        setUsers(users.map((item) => (item._id === u._id ? { ...item, isActive: res.user.isActive } : item)));
+      }
+    } catch (err) {
+      alert(err.message || 'Failed to update account status');
+    }
+  };
+
   const getRoleBadge = (role) => {
     switch (role) {
       case 'superadmin':
@@ -181,6 +194,7 @@ export const AdminCustomers = () => {
                   <th>Email</th>
                   <th>Phone</th>
                   <th>Role</th>
+                  <th>Status</th>
                   <th>Addresses</th>
                   <th>Joined Date</th>
                   <th style={{ textAlign: 'right' }}>Actions</th>
@@ -200,8 +214,22 @@ export const AdminCustomers = () => {
                     </td>
                     <td>{getRoleBadge(u.role)}</td>
                     <td>
+                      {u.isActive !== false ? (
+                        <span className="corp-pill corp-pill-success" style={{ fontSize: '0.7rem' }}>
+                          Active
+                        </span>
+                      ) : (
+                        <span
+                          className="corp-pill"
+                          style={{ fontSize: '0.7rem', background: '#fef2f2', color: '#b91c1c', border: '1px solid #fecaca' }}
+                        >
+                          Suspended
+                        </span>
+                      )}
+                    </td>
+                    <td>
                       <span style={{ fontSize: '0.85rem' }}>
-                        {u.addresses?.length || 0} {u.addresses?.length === 1 ? 'saved' : 'saved'}
+                        {u.addresses?.length || 0} saved
                       </span>
                     </td>
                     <td style={{ fontSize: '0.8rem', color: '#666' }}>
@@ -229,6 +257,23 @@ export const AdminCustomers = () => {
                         >
                           <Shield size={13} /> Role
                         </button>
+                        {u.role !== 'superadmin' && (
+                          <button
+                            type="button"
+                            onClick={() => handleToggleStatus(u)}
+                            className="admin-btn admin-btn-outline"
+                            style={{
+                              padding: '4px 8px',
+                              fontSize: '0.75rem',
+                              gap: '4px',
+                              color: u.isActive !== false ? '#b91c1c' : '#16a34a',
+                              borderColor: u.isActive !== false ? '#fecaca' : '#bbf7d0',
+                            }}
+                            title={u.isActive !== false ? 'Suspend account access' : 'Reactivate account'}
+                          >
+                            {u.isActive !== false ? 'Suspend' : 'Activate'}
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

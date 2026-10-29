@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { ImageUploadField } from '../../components/admin/ImageUploadField.jsx';
 import { AudienceSection } from '../../components/storefront/AudienceSection.jsx';
+import { CategoryDiscoverySection } from '../../components/storefront/CategoryDiscoverySection.jsx';
 
 export const AdminHomepageEditor = () => {
   const [sections, setSections] = useState([]);
@@ -89,6 +90,79 @@ export const AdminHomepageEditor = () => {
   const handleOpenEdit = (sec) => {
     setEditingSection(JSON.parse(JSON.stringify(sec)));
     setSaveSuccess(false);
+  };
+
+
+  const currentCategoryTiles = editingSection?.config?.categoryTiles || [];
+
+  const handleUpdateCategoryTile = (idx, field, value) => {
+    const updated = [...currentCategoryTiles];
+    updated[idx] = { ...updated[idx], [field]: value };
+    setEditingSection({
+      ...editingSection,
+      config: {
+        ...editingSection.config,
+        categoryTiles: updated,
+      },
+    });
+  };
+
+  const handleMoveCategoryTile = (idx, direction) => {
+    const targetIdx = idx + direction;
+    if (targetIdx < 0 || targetIdx >= currentCategoryTiles.length) return;
+    const updated = [...currentCategoryTiles];
+    const temp = updated[idx];
+    updated[idx] = updated[targetIdx];
+    updated[targetIdx] = temp;
+    updated.forEach((t, i) => {
+      t.order = i;
+    });
+    setEditingSection({
+      ...editingSection,
+      config: {
+        ...editingSection.config,
+        categoryTiles: updated,
+      },
+    });
+  };
+
+  const handleDeleteCategoryTile = (idx) => {
+    if (currentCategoryTiles.length <= 1) {
+      alert('At least one silhouette card must remain.');
+      return;
+    }
+    const updated = currentCategoryTiles.filter((_, i) => i !== idx);
+    updated.forEach((t, i) => {
+      t.order = i;
+    });
+    setEditingSection({
+      ...editingSection,
+      config: {
+        ...editingSection.config,
+        categoryTiles: updated,
+      },
+    });
+  };
+
+  const handleAddCategoryTile = () => {
+    const newTile = {
+      id: `tile_${Date.now()}`,
+      title: 'NEW SILHOUETTE',
+      subtitle: 'Footwear features & silhouette description',
+      imageUrl: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=800&q=80',
+      link: '/shop',
+      badge: '',
+      order: currentCategoryTiles.length,
+      isEnabled: true,
+    };
+    const updated = [...currentCategoryTiles, newTile];
+    setEditingSection({
+      ...editingSection,
+      config: {
+        ...editingSection.config,
+        categoryTiles: updated,
+      },
+    });
   };
 
   const currentSplitPanels =
@@ -194,7 +268,7 @@ export const AdminHomepageEditor = () => {
       setSaving(true);
       const payload = {
         ...editingSection,
-        eyebrow: '',
+        eyebrow: editingSection.eyebrow !== undefined ? editingSection.eyebrow : '',
       };
       const res = await api.adminUpdateSection(editingSection._id, payload);
       if (res.success) {
@@ -356,7 +430,7 @@ export const AdminHomepageEditor = () => {
               maxWidth:
                 editingSection.sectionType === 'affordable_store' ||
                 editingSection.sectionType === 'audience_cards' ||
-                editingSection.sectionType === 'shop_split'
+                editingSection.sectionType === 'shop_split' || editingSection.sectionType === 'category_discovery'
                   ? '940px'
                   : '640px',
             }}
@@ -1475,6 +1549,246 @@ export const AdminHomepageEditor = () => {
                         }
                         className="admin-input"
                       />
+                    </div>
+                  </div>
+                )}
+
+                {/* Category Discovery Controls (Choose Your Silhouette) */}
+                {editingSection.sectionType === 'category_discovery' && (
+                  <div style={{ padding: '18px', background: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0', marginBottom: '20px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px', flexWrap: 'wrap', gap: '10px' }}>
+                      <div>
+                        <div style={{ fontSize: '0.94rem', fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <Sparkles size={16} color="#0f172a" /> Silhouette Cards ({currentCategoryTiles.length} Silhouettes)
+                        </div>
+                        <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '2px 0 0' }}>
+                          Configure footwear silhouettes (Clogs, Sliders, Sandals, Foam Walkers) with custom descriptions, links, and imagery.
+                        </p>
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <button
+                          type="button"
+                          onClick={handleAddCategoryTile}
+                          className="admin-btn admin-btn-outline"
+                          style={{ fontSize: '0.76rem', gap: '4px', background: '#ffffff' }}
+                        >
+                          <Plus size={13} /> Add Silhouette
+                        </button>
+                        <div style={{ display: 'flex', gap: '3px', background: '#e2e8f0', padding: '2px', borderRadius: '4px' }}>
+                          {['desktop', 'mobile'].map((tab) => (
+                            <button
+                              key={tab}
+                              type="button"
+                              onClick={() => setAdminPreviewTab(tab)}
+                              style={{
+                                padding: '4px 8px',
+                                fontSize: '0.72rem',
+                                fontWeight: 700,
+                                borderRadius: '3px',
+                                border: 'none',
+                                cursor: 'pointer',
+                                background: adminPreviewTab === tab ? '#ffffff' : 'transparent',
+                                color: adminPreviewTab === tab ? '#0f172a' : '#64748b',
+                                boxShadow: adminPreviewTab === tab ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                                textTransform: 'capitalize',
+                              }}
+                            >
+                              {tab}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Section Eyebrow Input */}
+                    <div className="admin-form-group" style={{ marginBottom: '16px' }}>
+                      <label className="admin-label">Section Eyebrow (Optional)</label>
+                      <input
+                        type="text"
+                        value={editingSection.eyebrow || ''}
+                        onChange={(e) => setEditingSection({ ...editingSection, eyebrow: e.target.value })}
+                        className="admin-input"
+                        placeholder="e.g. CURATED FOOTWEAR"
+                      />
+                    </div>
+
+                    {/* List of Silhouette Tiles */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                      {currentCategoryTiles.map((tile, tIdx) => (
+                        <div
+                          key={tile.id || tIdx}
+                          style={{
+                            background: '#ffffff',
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '8px',
+                            padding: '16px',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              marginBottom: '14px',
+                              borderBottom: '1px solid #f1f5f9',
+                              paddingBottom: '10px',
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span
+                                style={{
+                                  background: '#0f172a',
+                                  color: '#ffffff',
+                                  fontWeight: 800,
+                                  fontSize: '0.72rem',
+                                  padding: '2px 8px',
+                                  borderRadius: '4px',
+                                }}
+                              >
+                                #{tIdx + 1}
+                              </span>
+                              <span style={{ fontWeight: 700, fontSize: '0.88rem', color: '#0f172a' }}>
+                                {tile.title || 'Untitled Silhouette'}
+                              </span>
+                              {tile.badge && (
+                                <span
+                                  style={{
+                                    background: '#e0f2fe',
+                                    color: '#0369a1',
+                                    fontSize: '0.68rem',
+                                    fontWeight: 700,
+                                    padding: '2px 8px',
+                                    borderRadius: '999px',
+                                  }}
+                                >
+                                  {tile.badge}
+                                </span>
+                              )}
+                            </div>
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <button
+                                type="button"
+                                disabled={tIdx === 0}
+                                onClick={() => handleMoveCategoryTile(tIdx, -1)}
+                                className="admin-btn admin-btn-outline"
+                                style={{ padding: '4px 8px' }}
+                                title="Move Up / Earlier"
+                              >
+                                <ArrowUp size={13} />
+                              </button>
+                              <button
+                                type="button"
+                                disabled={tIdx === currentCategoryTiles.length - 1}
+                                onClick={() => handleMoveCategoryTile(tIdx, 1)}
+                                className="admin-btn admin-btn-outline"
+                                style={{ padding: '4px 8px' }}
+                                title="Move Down / Later"
+                              >
+                                <ArrowDown size={13} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleUpdateCategoryTile(tIdx, 'isEnabled', tile.isEnabled === false ? true : false)}
+                                className="admin-btn admin-btn-outline"
+                                style={{ padding: '4px 8px' }}
+                                title={tile.isEnabled === false ? 'Enable Silhouette' : 'Disable Silhouette'}
+                              >
+                                {tile.isEnabled === false ? <EyeOff size={13} color="#94a3b8" /> : <Eye size={13} color="#059669" />}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteCategoryTile(tIdx)}
+                                className="admin-btn admin-btn-outline"
+                                style={{ padding: '4px 8px', color: '#dc2626' }}
+                                title="Delete Silhouette"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+                            <div className="admin-form-group" style={{ marginBottom: 0 }}>
+                              <label className="admin-label">Silhouette Title *</label>
+                              <input
+                                type="text"
+                                value={tile.title || ''}
+                                onChange={(e) => handleUpdateCategoryTile(tIdx, 'title', e.target.value)}
+                                className="admin-input"
+                                placeholder="e.g. CLOUD CLOGS"
+                                required
+                              />
+                            </div>
+
+                            <div className="admin-form-group" style={{ marginBottom: 0 }}>
+                              <label className="admin-label">Subtitle / Key Specs</label>
+                              <input
+                                type="text"
+                                value={tile.subtitle || ''}
+                                onChange={(e) => handleUpdateCategoryTile(tIdx, 'subtitle', e.target.value)}
+                                className="admin-input"
+                                placeholder="e.g. Arch ventilation & pivot heel straps"
+                              />
+                            </div>
+
+                            <div className="admin-form-group" style={{ marginBottom: 0 }}>
+                              <label className="admin-label">Storefront Link *</label>
+                              <input
+                                type="text"
+                                value={tile.link || ''}
+                                onChange={(e) => handleUpdateCategoryTile(tIdx, 'link', e.target.value)}
+                                className="admin-input"
+                                placeholder="e.g. /shop?category=clogs"
+                                required
+                              />
+                            </div>
+
+                            <div className="admin-form-group" style={{ marginBottom: 0 }}>
+                              <label className="admin-label">Ribbon Badge (Optional)</label>
+                              <input
+                                type="text"
+                                value={tile.badge || ''}
+                                onChange={(e) => handleUpdateCategoryTile(tIdx, 'badge', e.target.value)}
+                                className="admin-input"
+                                placeholder="e.g. Popular, Trending, All-Terrain"
+                              />
+                            </div>
+
+                            <div className="admin-form-group" style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
+                              <ImageUploadField
+                                label="Silhouette Image"
+                                description="Upload an image or paste a URL for this silhouette card"
+                                value={tile.imageUrl || ''}
+                                onChange={(url) => handleUpdateCategoryTile(tIdx, 'imageUrl', url)}
+                                previewHeight={120}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Live Visual Preview Frame */}
+                    <div style={{ marginTop: '20px', borderTop: '1px solid #e2e8f0', paddingTop: '16px' }}>
+                      <label className="admin-label" style={{ marginBottom: '8px' }}>
+                        Live Silhouette Preview ({adminPreviewTab === 'desktop' ? 'Desktop Grid' : 'Mobile View'})
+                      </label>
+                      <div
+                        style={{
+                          maxWidth: adminPreviewTab === 'desktop' ? '100%' : '375px',
+                          margin: '0 auto',
+                          background: '#ffffff',
+                          borderRadius: '12px',
+                          border: '1px solid #cbd5e1',
+                          overflow: 'hidden',
+                          boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
+                        }}
+                      >
+                        <CategoryDiscoverySection section={editingSection} />
+                      </div>
                     </div>
                   </div>
                 )}

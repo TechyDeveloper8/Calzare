@@ -32,7 +32,7 @@ export const AffordableStoreSection = ({ section, onQuickView }) => {
 
   const rawDescription =
     config.campaignDescription ||
-    `Everyday Sola, everyday price.\nStarting ₹${lowestPrice.toLocaleString('en-IN')}`;
+    `Everyday CALZARE, everyday price.\nStarting ₹${lowestPrice.toLocaleString('en-IN')}`;
 
   const descriptionLines = rawDescription.split('\n');
 
@@ -41,18 +41,18 @@ export const AffordableStoreSection = ({ section, onQuickView }) => {
 
   // Creative photography with art direction
   const desktopImg =
-    config.desktopMediaUrl ||
-    config.campaignImage ||
+    config.desktopMediaUrl?.trim() ||
+    config.campaignImage?.trim() ||
     '/images/store999/promo.jpg';
 
   const mobileImg =
-    config.mobileMediaUrl ||
-    config.mobileImage ||
+    config.mobileMediaUrl?.trim() ||
+    config.mobileImage?.trim() ||
     desktopImg;
 
   const badgeImg =
-    config.badgeImageUrl ||
-    config.campaignBadgeImg ||
+    config.badgeImageUrl?.trim() ||
+    config.campaignBadgeImg?.trim() ||
     '/images/store999/badge.png';
 
   const focalPoint = config.focalPoint || 'center';

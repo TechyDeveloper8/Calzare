@@ -87,18 +87,7 @@ export const QuickViewModal = ({ product, isOpen, onClose }) => {
       onClick={onClose}
     >
       <div
-        className="glass-panel"
-        style={{
-          width: '100%',
-          maxWidth: '860px',
-          maxHeight: '90vh',
-          overflowY: 'auto',
-          backgroundColor: '#ffffff',
-          borderRadius: 'var(--radius-xl)',
-          position: 'relative',
-          padding: '28px',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35)',
-        }}
+        className="glass-panel quickview-dialog-shell"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
@@ -106,8 +95,8 @@ export const QuickViewModal = ({ product, isOpen, onClose }) => {
           onClick={onClose}
           style={{
             position: 'absolute',
-            top: '18px',
-            right: '18px',
+            top: '16px',
+            right: '16px',
             width: '36px',
             height: '36px',
             borderRadius: '50%',
@@ -124,7 +113,7 @@ export const QuickViewModal = ({ product, isOpen, onClose }) => {
           <X size={18} />
         </button>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '32px' }}>
+        <div className="quickview-dialog-grid">
           {/* Left Column: Gallery */}
           <div>
             <div

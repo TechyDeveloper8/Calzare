@@ -176,13 +176,13 @@ export const CheckoutPage = () => {
         )}
 
         <form onSubmit={handlePlaceOrder}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '48px' }} className="pdp-layout-grid">
+          <div className="cart-checkout-grid">
             {/* Left: Customer & Delivery Details */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
               {/* 1. Contact Information */}
-              <div className="glass-panel" style={{ padding: '32px', borderRadius: 'var(--radius-lg)', background: '#ffffff' }}>
+              <div className="checkout-card glass-panel">
                 <h3 style={{ fontSize: '1.25rem', marginBottom: '20px' }}>1. CONTACT INFORMATION</h3>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div className="checkout-form-grid">
                   <div>
                     <label className="admin-label">Full Name *</label>
                     <input
@@ -223,7 +223,7 @@ export const CheckoutPage = () => {
               </div>
 
               {/* 2. Delivery Address */}
-              <div className="glass-panel" style={{ padding: '32px', borderRadius: 'var(--radius-lg)', background: '#ffffff' }}>
+              <div className="checkout-card glass-panel">
                 <h3 style={{ fontSize: '1.25rem', marginBottom: '20px' }}>2. SHIPPING ADDRESS</h3>
                 <div style={{ marginBottom: '16px' }}>
                   <label className="admin-label">Flat / House No. / Street Address *</label>
@@ -237,7 +237,7 @@ export const CheckoutPage = () => {
                     placeholder="Flat 402, Oak Residency, 12th Main Road"
                   />
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                <div className="checkout-form-grid" style={{ marginBottom: '16px' }}>
                   <div>
                     <label className="admin-label">Landmark</label>
                     <input
@@ -262,7 +262,7 @@ export const CheckoutPage = () => {
                     />
                   </div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div className="checkout-form-grid">
                   <div>
                     <label className="admin-label">City *</label>
                     <input
@@ -291,7 +291,7 @@ export const CheckoutPage = () => {
               </div>
 
               {/* 3. Payment Method Selection */}
-              <div className="glass-panel" style={{ padding: '32px', borderRadius: 'var(--radius-lg)', background: '#ffffff' }}>
+              <div className="checkout-card glass-panel">
                 <h3 style={{ fontSize: '1.25rem', marginBottom: '20px' }}>3. PAYMENT METHOD</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {/* Razorpay Prepaid Option */}

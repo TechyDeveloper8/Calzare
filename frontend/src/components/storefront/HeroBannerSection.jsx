@@ -10,11 +10,11 @@ export const HeroBannerSection = ({ section }) => {
   ];
 
   const desktopImage =
-    config.desktopMediaUrl ||
+    config.desktopMediaUrl?.trim() ||
     'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=2000&q=85';
 
   const mobileImage =
-    config.mobileMediaUrl ||
+    config.mobileMediaUrl?.trim() ||
     desktopImage;
 
   const textAlignment = config.textAlignment || 'left'; // 'left' | 'center' | 'right'

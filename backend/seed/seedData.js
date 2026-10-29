@@ -18,6 +18,11 @@ const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/calzare_ec
 
 const seedDatabase = async () => {
   try {
+    if (process.env.NODE_ENV === 'production' && process.env.ALLOW_SEED_IN_PRODUCTION !== 'true') {
+      console.error('\n[BLOCKED] seedDatabase cannot run in production mode to protect live real-time store data!\n');
+      process.exit(1);
+    }
+
     await mongoose.connect(MONGO_URI);
     console.log('[Seed] Connected to MongoDB');
 

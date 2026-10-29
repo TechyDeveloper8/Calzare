@@ -48,12 +48,12 @@ const storyPageSchema = new mongoose.Schema(
     },
     metaTitle: {
       type: String,
-      default: 'Our Story — SolaWorld Footwear',
+      default: 'Our Story — CALZARE Footwear',
       trim: true,
     },
     metaDescription: {
       type: String,
-      default: 'Discover the story, craftsmanship, and design philosophy behind SolaWorld footwear.',
+      default: 'Discover the story, craftsmanship, and design philosophy behind CALZARE footwear.',
       trim: true,
     },
     ogImage: {

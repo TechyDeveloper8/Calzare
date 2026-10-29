@@ -57,26 +57,21 @@ If you prefer to configure the Web Service manually via the Render UI:
 
 ---
 
-## How to Seed Production Data on Render
+## Preparing for Real-Time Production Use (Clean Database)
 
-Once your Render backend is deployed, you can seed the initial catalog (products, categories, collections, CMS sections, admin credentials) using one of two methods:
+For real-time commercial launch, dummy and seed products are completely removed so you start with an authentic catalog and real customer orders.
 
-### Method A: Via Render Web Shell
-1. Go to your Web Service in the Render dashboard.
-2. Click **Shell** in the left menu.
-3. Run:
-   ```bash
-   npm run seed
-   node seed/seedMenCollection.js
-   node seed/updateHeaderNav.js
-   ```
-
-### Method B: From Your Local Machine Pointed to Cloud DB
-Run the seed script locally with your remote `MONGO_URI`:
+### Clean Slate for Real-Time Production (Default / Recommended)
+To purge all seed products, test orders, seed reviews, and dummy customer accounts while preserving the Super Admin user:
 ```bash
-MONGO_URI="mongodb+srv://<user>:<password>@cluster0.mongodb.net/calzare_production" node seed/seedData.js
-MONGO_URI="mongodb+srv://<user>:<password>@cluster0.mongodb.net/calzare_production" node seed/seedMenCollection.js
-MONGO_URI="mongodb+srv://<user>:<password>@cluster0.mongodb.net/calzare_production" node seed/updateHeaderNav.js
+npm run clean:seed
+```
+This leaves your database completely clean and ready for real products added via the Admin Dashboard (`/admin/products/new`).
+
+### Optional: Development Sample Data (Staging / Dev Only)
+If deploying a staging or demo environment only and you explicitly want sample products:
+```bash
+ALLOW_SEED_IN_PRODUCTION=true npm run seed
 ```
 
 ---

@@ -20,6 +20,9 @@ export const protect = async (req, res, next) => {
     if (!user) {
       return res.status(401).json({ success: false, message: 'User no longer exists.' });
     }
+    if (user.isActive === false) {
+      return res.status(403).json({ success: false, message: 'Access denied: Account has been suspended by administration.' });
+    }
     req.user = user;
     next();
   } catch (error) {

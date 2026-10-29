@@ -199,17 +199,22 @@ export const api = {
   adminGetMenus: () => request('/navigation/admin/all'),
   adminUpdateMenu: (menuKey, body) => request(`/navigation/admin/${menuKey}`, { method: 'PUT', body }),
 
-  // Customers CRM
+  // Customers CRM & Security
   adminGetUsers: (params = {}) => {
     const qs = new URLSearchParams(params).toString();
     return request(`/auth/admin/users${qs ? `?${qs}` : ''}`);
   },
   adminUpdateUserRole: (id, body) => request(`/auth/admin/users/${id}/role`, { method: 'PUT', body }),
+  adminToggleUserStatus: (id) => request(`/auth/admin/users/${id}/status`, { method: 'PUT' }),
+  adminGetSecurityMetrics: () => request('/auth/admin/security-status'),
 
   // Store Settings & Audit Logs
   adminGetSettings: () => request('/settings/admin'),
   adminUpdateSettings: (body) => request('/settings/admin', { method: 'PUT', body }),
   adminTestFshipConnection: (body) => request('/settings/admin/test-fship', { method: 'POST', body }),
   adminGetSubscribers: () => request('/settings/subscribers'),
-  adminGetAuditLogs: () => request('/settings/audit-logs'),
+  adminGetAuditLogs: (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return request(`/settings/audit-logs${qs ? `?${qs}` : ''}`);
+  },
 };

@@ -93,7 +93,6 @@ export const Header = ({ onOpenSearch }) => {
             {/* Brand Logo - Aligned to Fully Left Side */}
             <Link to="/" className="brand-logo" style={{ textDecoration: 'none' }}>
               {settings?.storeName || 'CALZARE'}
-              <span className="brand-logo-dot" />
             </Link>
 
             {/* Desktop Navigation Links - Centered in Middle */}
@@ -348,7 +347,6 @@ export const Header = ({ onOpenSearch }) => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
               <div className="brand-logo" style={{ fontSize: '1.4rem' }}>
                 {settings?.storeName || 'CALZARE'}
-                <span className="brand-logo-dot" />
               </div>
               <button
                 onClick={() => setMobileMenuOpen(false)}

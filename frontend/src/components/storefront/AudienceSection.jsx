@@ -1,6 +1,25 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
+const DEFAULT_PANEL_IMAGES = {
+  women: '/images/split/women-collection-image.jpg',
+  men: '/images/split/men-collection-image.jpg',
+  kids: '/images/split/kids-collection-image.jpg',
+  unisex: '/images/split/unisex-collection-image.jpg',
+};
+
+const getPanelImage = (panel) => {
+  if (panel?.imageUrl && typeof panel.imageUrl === 'string' && panel.imageUrl.trim() !== '') {
+    return panel.imageUrl.trim();
+  }
+  const idStr = `${panel?.id || ''} ${panel?.title || ''} ${panel?.link || ''}`.toLowerCase();
+  if (idStr.includes('women')) return DEFAULT_PANEL_IMAGES.women;
+  if (idStr.includes('men')) return DEFAULT_PANEL_IMAGES.men;
+  if (idStr.includes('kid')) return DEFAULT_PANEL_IMAGES.kids;
+  if (idStr.includes('unisex')) return DEFAULT_PANEL_IMAGES.unisex;
+  return DEFAULT_PANEL_IMAGES.women;
+};
+
 export const AudienceSection = ({ section, isPreview = false }) => {
   const config = section?.config || {};
   
@@ -28,8 +47,8 @@ export const AudienceSection = ({ section, isPreview = false }) => {
         {
           id: 'panel_men',
           title: 'Men',
-          text: 'Stairs, streets, wherever next.\nSola moves at your pace.',
-          tagline: 'Stairs, streets, wherever next.\nSola moves at your pace.',
+          text: 'Stairs, streets, wherever next.\nCALZARE moves at your pace.',
+          tagline: 'Stairs, streets, wherever next.\nCALZARE moves at your pace.',
           ctaLabel: 'Shop Men',
           link: '/collections/men',
           imageUrl: '/images/split/men-collection-image.jpg',
@@ -97,6 +116,11 @@ export const AudienceSection = ({ section, isPreview = false }) => {
         {visiblePanels.map((panel, idx) => {
           const isLeft = idx % 2 === 0;
           const displayCopy = panel.text || panel.tagline || '';
+          const resolvedImageUrl = getPanelImage(panel);
+          const resolvedMobileImageUrl =
+            panel.mobileImageUrl && typeof panel.mobileImageUrl === 'string' && panel.mobileImageUrl.trim() !== ''
+              ? panel.mobileImageUrl.trim()
+              : null;
 
           return (
             <article
@@ -108,24 +132,26 @@ export const AudienceSection = ({ section, isPreview = false }) => {
               {/* Media Container with responsive picture & lazy loading */}
               <div className="handoff-shop-split__media">
                 <picture>
-                  {panel.mobileImageUrl && (
-                    <source media="(max-width: 749px)" srcSet={panel.mobileImageUrl} />
+                  {resolvedMobileImageUrl && (
+                    <source media="(max-width: 749px)" srcSet={resolvedMobileImageUrl} />
                   )}
-                  <img
-                    src={panel.imageUrl}
-                    alt={panel.altText || panel.title || `Shop ${panel.title}`}
-                    loading="lazy"
-                    decoding="async"
-                    className="handoff-shop-split__img"
-                    style={{
-                      objectPosition: panel.objectPosition || 'center bottom',
-                    }}
-                    onError={(e) => {
-                      // Fallback placeholder if custom image URL breaks
-                      e.currentTarget.src =
-                        'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=1200&q=80';
-                    }}
-                  />
+                  {resolvedImageUrl ? (
+                    <img
+                      src={resolvedImageUrl}
+                      alt={panel.altText || panel.title || `Shop ${panel.title || 'Collection'}`}
+                      loading="lazy"
+                      decoding="async"
+                      className="handoff-shop-split__img"
+                      style={{
+                        objectPosition: panel.objectPosition || 'center bottom',
+                      }}
+                      onError={(e) => {
+                        // Fallback placeholder if custom image URL breaks
+                        e.currentTarget.src =
+                          'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=1200&q=80';
+                      }}
+                    />
+                  ) : null}
                 </picture>
               </div>
 

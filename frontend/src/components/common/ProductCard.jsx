@@ -54,8 +54,9 @@ export const ProductCard = ({ product, onQuickView }) => {
     }
   };
 
-  const primaryImg = activeImages[0]?.url;
-  const secondaryImg = activeImages[1]?.url || (activeImages.length > 1 ? activeImages[1]?.url : null);
+  const fallbackPlaceholder = 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=800&q=80';
+  const primaryImg = (activeImages[0]?.url && activeImages[0].url.trim() !== '') ? activeImages[0].url.trim() : fallbackPlaceholder;
+  const secondaryImg = (activeImages[1]?.url && activeImages[1].url.trim() !== '') ? activeImages[1].url.trim() : null;
 
   return (
     <div className="product-card">

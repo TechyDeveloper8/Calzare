@@ -2,6 +2,12 @@
    STOREFRONT STYLES — CALZARE EDITORIAL & MODULAR HOMEPAGE
    ========================================================================== */
 
+:root {
+  --heading-font: 'Helvetica Neue', Helvetica, -apple-system, BlinkMacSystemFont, Arial, 'Segoe UI', Roboto, sans-serif;
+  --body-font: 'Helvetica Neue', Helvetica, -apple-system, BlinkMacSystemFont, Arial, 'Segoe UI', Roboto, sans-serif;
+  --price-font: 'Helvetica Neue', Helvetica, -apple-system, BlinkMacSystemFont, Arial, 'Segoe UI', Roboto, sans-serif;
+}
+
 /* Announcement Bar */
 .announcement-bar {
   background: var(--ink-black);
@@ -54,7 +60,9 @@
 .header-fluid-container {
   width: 100%;
   max-width: 100%;
-  padding: 0 clamp(16px, 2.5vw, 40px);
+  padding: 0 clamp(12px, 2.5vw, 40px);
+  padding-left: max(clamp(12px, 2.5vw, 40px), var(--safe-left, 0px));
+  padding-right: max(clamp(12px, 2.5vw, 40px), var(--safe-right, 0px));
   margin: 0;
   box-sizing: border-box;
 }
@@ -94,16 +102,6 @@
   color: var(--ink-black);
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-}
-
-.brand-logo-dot {
-  width: 8px;
-  height: 8px;
-  background-color: var(--accent-lime);
-  border-radius: 50%;
-  display: inline-block;
-  flex-shrink: 0;
 }
 
 .desktop-nav-links {
@@ -197,10 +195,7 @@
     font-size: 1.2rem;
   }
 
-  .brand-logo-dot {
-    width: 6px;
-    height: 6px;
-  }
+
 
   .header-account-wrap {
     display: block;
@@ -229,13 +224,13 @@
     display: grid !important;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    height: 76px;
+    height: clamp(68px, 6vw, 78px);
   }
 
   .brand-logo {
     grid-column: 1;
     justify-self: start;
-    font-size: 1.85rem;
+    font-size: clamp(1.4rem, 2vw, 1.85rem);
   }
 
   .desktop-nav-links {
@@ -243,7 +238,11 @@
     display: flex !important;
     justify-content: center;
     align-items: center;
-    gap: 32px;
+    gap: clamp(12px, 1.8vw, 32px);
+  }
+
+  .nav-link {
+    font-size: clamp(0.76rem, 0.88vw, 0.88rem);
   }
 
   .header-actions {
@@ -252,7 +251,7 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 12px;
+    gap: clamp(8px, 1.2vw, 14px);
   }
 }
 
@@ -369,30 +368,52 @@
 
 .hero-title {
   font-family: var(--font-display);
-  font-size: clamp(2.8rem, 6.2vw, 5.8rem);
+  font-size: clamp(2rem, 5.5vw, 5.6rem);
   font-weight: 800;
   letter-spacing: -0.03em;
-  line-height: 0.94;
-  margin-bottom: 24px;
+  line-height: 0.98;
+  margin-bottom: clamp(16px, 2.5vw, 24px);
   color: #ffffff;
   text-shadow: 0 6px 30px rgba(0, 0, 0, 0.45);
   white-space: pre-line;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .hero-subtitle {
-  font-size: clamp(1.05rem, 1.6vw, 1.25rem);
-  line-height: 1.65;
-  max-width: 540px;
-  margin-bottom: 38px;
-  color: rgba(255, 255, 255, 0.86);
+  font-size: clamp(0.92rem, 1.4vw, 1.25rem);
+  line-height: 1.6;
+  max-width: min(540px, 100%);
+  margin-bottom: clamp(20px, 3.5vw, 38px);
+  color: rgba(255, 255, 255, 0.88);
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
 }
 
 .hero-cta-group {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: clamp(10px, 1.5vw, 16px);
   align-items: center;
+}
+
+@media (max-width: 640px) {
+  .hero-title {
+    font-size: clamp(1.85rem, 8vw, 2.75rem);
+    line-height: 1.04;
+  }
+
+  .hero-cta-group {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .hero-cta-group .btn-primary,
+  .hero-cta-group .btn-secondary,
+  .hero-cta-group .btn-glass {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 .btn-glass {
@@ -2491,57 +2512,117 @@
   }
 }
 
-/* ── 2. CATEGORY SHORTCUTS ───────────────────────────────────────────────── */
+/* ── 2. CATEGORY SHORTCUTS (MOBILE-FIRST) ───────────────────────────────── */
+/* Mobile Base: Full-bleed touch-scrollable rail with native momentum & scroll-snap */
 .category-shortcuts-wrap {
-  width: 100%;
+  width: calc(100% + 2 * clamp(12px, 2.5vw, 36px));
+  margin: 4px calc(-1 * clamp(12px, 2.5vw, 36px)) 12px;
+  padding: 4px clamp(12px, 2.5vw, 36px) 12px;
   overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y;
+  scroll-snap-type: x proximity;
+  scroll-padding: 0 clamp(12px, 2.5vw, 36px);
   scrollbar-width: none;
   -ms-overflow-style: none;
-  padding: 12px 0 16px;
+  position: relative;
+  box-sizing: border-box;
 }
 
 .category-shortcuts-wrap::-webkit-scrollbar {
   display: none;
+  width: 0;
+  height: 0;
 }
 
 .category-shortcuts-list {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: nowrap;
+  width: max-content;
+  min-width: 100%;
+  padding-right: clamp(16px, 4vw, 40px);
+  box-sizing: border-box;
 }
 
 .category-shortcut-pill {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 9px 22px;
-  border-radius: 999px;
-  font-size: 0.82rem;
+  min-height: 42px;
+  padding: 9px 18px;
+  border-radius: 9999px;
+  font-family: var(--body-font);
+  font-size: 0.76rem;
   font-weight: 700;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   text-decoration: none;
-  cursor: pointer;
-  background: #f8fafc;
-  color: #0f172a;
-  border: 1px solid #e2e8f0;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
+  cursor: pointer;
+  background: #ffffff;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+  scroll-snap-align: start;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.15s ease;
 }
 
-.category-shortcut-pill:hover {
-  background: #ffffff;
-  border-color: #0f172a;
-  transform: translateY(-1px);
+.category-shortcut-pill:active {
+  transform: scale(0.96);
 }
 
 .category-shortcut-pill.active {
   background: #0f172a;
   color: #ffffff;
   border-color: #0f172a;
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.2);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.22);
+}
+
+/* Progressive Enhancement: Desktop Large Screen (>= 1024px) */
+@media (min-width: 1024px) {
+  .category-shortcuts-wrap {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 0;
+    padding-right: 0;
+    overflow-x: visible;
+    scroll-snap-type: none;
+    margin-bottom: 16px;
+  }
+
+  .category-shortcuts-list {
+    flex-wrap: wrap;
+    gap: 10px;
+    width: 100%;
+    padding-right: 0;
+  }
+
+  .category-shortcut-pill {
+    padding: 10px 22px;
+    font-size: 0.8rem;
+  }
+
+  .category-shortcut-pill:hover {
+    background: #0f172a;
+    color: #ffffff;
+    border-color: #0f172a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.14);
+  }
+
+  .category-shortcut-pill.active:hover {
+    background: #1e293b;
+    border-color: #1e293b;
+    transform: translateY(-2px);
+  }
 }
 
 /* ── 3. TOOLBAR & SORTING ───────────────────────────────────────────────── */
@@ -2762,18 +2843,7 @@
     font-size: 0.76rem !important;
   }
 
-  .category-shortcuts-wrap {
-    padding: 6px 0 12px !important;
-    margin: 0 -16px 10px !important;
-    padding-left: 16px !important;
-    padding-right: 16px !important;
-    width: calc(100% + 32px) !important;
-  }
 
-  .category-shortcut-pill {
-    padding: 7px 16px !important;
-    font-size: 0.74rem !important;
-  }
 
   .collection-hero__inner {
     padding: 24px 0 16px !important;
@@ -3388,5 +3458,273 @@
   .story-stage-card img {
     transition: none !important;
     transform: none !important;
+  }
+}
+
+/* ==========================================================================
+   UNIVERSAL RESPONSIVE DISPLAY SIZE ENHANCEMENT SUITE
+   Supports: 320px-380px (Compact Mobile), 390px-480px (Standard Mobile),
+   640px-768px (Phablet/Tablet Portrait), 769px-1024px (Tablet Landscape),
+   1025px-1440px (Laptop/Standard Desktop), 1441px-1920px (Large Screen),
+   1921px+ (Ultra-wide & 4K)
+   ========================================================================== */
+
+/* ── 1. Cart & Checkout Responsive Grid ─────────────────────────────────── */
+.cart-checkout-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 28px;
+  align-items: start;
+  width: 100%;
+}
+
+@media (min-width: 992px) {
+  .cart-checkout-grid {
+    grid-template-columns: 1.18fr 0.82fr;
+    gap: clamp(32px, 3.5vw, 56px);
+  }
+}
+
+@media (min-width: 1440px) {
+  .cart-checkout-grid {
+    grid-template-columns: 1.25fr 0.82fr;
+    gap: 64px;
+  }
+}
+
+.checkout-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  .checkout-form-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+.checkout-card {
+  padding: clamp(16px, 2.5vw, 32px);
+  border-radius: var(--radius-lg);
+  background: #ffffff;
+  border: 1px solid var(--border-light);
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.cart-page-item {
+  display: flex;
+  gap: 20px;
+  padding: clamp(14px, 2vw, 24px);
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-light);
+  align-items: center;
+  box-sizing: border-box;
+}
+
+@media (max-width: 640px) {
+  .cart-page-item {
+    gap: 14px;
+    align-items: flex-start;
+  }
+
+  .cart-page-item-img {
+    width: 74px !important;
+    height: 82px !important;
+    border-radius: 8px !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .cart-page-item {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cart-page-item-img {
+    width: 100% !important;
+    height: 180px !important;
+  }
+}
+
+/* ── 2. Modal Dialogs Responsive Containment ────────────────────────────── */
+.modal-overlay-responsive {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 15, 16, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 250;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(12px, 2.5vw, 24px);
+  box-sizing: border-box;
+}
+
+.quickview-dialog-shell {
+  width: 100%;
+  max-width: min(880px, calc(100vw - 24px));
+  max-height: min(90vh, 90dvh);
+  overflow-y: auto;
+  background-color: #ffffff;
+  border-radius: var(--radius-xl);
+  padding: clamp(16px, 3vw, 28px);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+  box-sizing: border-box;
+  position: relative;
+}
+
+.quickview-dialog-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (min-width: 768px) {
+  .quickview-dialog-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(24px, 3vw, 36px);
+  }
+}
+
+/* ── 3. PDP Mobile Display Adaptations ──────────────────────────────────── */
+@media (max-width: 640px) {
+  .pdp-page-wrapper {
+    padding: 16px 0 88px;
+  }
+
+  .pdp-stage-container {
+    border-radius: var(--radius-lg);
+    aspect-ratio: 1 / 1;
+  }
+
+  .pdp-gallery-thumbs {
+    gap: 8px;
+    padding: 10px 0 4px;
+  }
+
+  .pdp-thumb-btn {
+    width: 62px;
+    height: 66px;
+    border-radius: 8px;
+  }
+
+  .pdp-size-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: 8px;
+  }
+
+  .pdp-size-btn {
+    padding: 11px 6px;
+    font-size: 0.8rem;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .pdp-pincode-input-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .pdp-pincode-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .pdp-offers-banner {
+    padding: 14px 16px;
+    margin-bottom: 20px;
+  }
+
+  .pdp-trust-strip {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 14px;
+  }
+}
+
+@media (max-width: 380px) {
+  .pdp-size-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .pdp-stage-container {
+    aspect-ratio: 1 / 1;
+  }
+
+  .pdp-thumb-btn {
+    width: 54px;
+    height: 58px;
+  }
+}
+
+/* ── 4. Cart Drawer Mobile Screen Adaptations ───────────────────────────── */
+@media (max-width: 480px) {
+  .cart-drawer-header {
+    padding: 16px 18px;
+  }
+
+  .cart-drawer-items {
+    padding: 16px 18px;
+    gap: 12px;
+  }
+
+  .cart-item-row {
+    gap: 12px;
+  }
+
+  .cart-item-thumb {
+    width: 68px;
+    height: 74px;
+  }
+
+  .cart-drawer-footer {
+    padding: 16px 18px;
+    padding-bottom: max(16px, var(--safe-bottom, 0px));
+  }
+}
+
+/* ── 5. Footer Responsive Presentation ──────────────────────────────────── */
+@media (max-width: 767px) {
+  .footer-wrapper {
+    padding-top: 56px !important;
+    padding-bottom: max(28px, var(--safe-bottom, 0px)) !important;
+  }
+
+  .footer-grid {
+    gap: 36px;
+    margin-bottom: 40px;
+  }
+
+  .footer-brand-logo {
+    font-size: 1.85rem !important;
+  }
+
+  .footer-bottom-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+}
+
+/* ── 6. Ultra-wide & 4K Displays (>= 1800px) ────────────────────────────── */
+@media (min-width: 1800px) {
+  .container {
+    max-width: 1760px;
+  }
+
+  .hero-title {
+    font-size: 5.6rem;
+  }
+
+  .hero-content {
+    max-width: 760px;
   }
 }

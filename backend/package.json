@@ -8,7 +8,8 @@
     "start": "node server.js",
     "dev": "node --watch server.js",
     "seed": "node seed/seedData.js && node seed/seedAudienceCollections.js",
-    "test": "node --test --test-concurrency=1 tests/ecommerce.test.js"
+    "test": "node --test --test-concurrency=1 tests/ecommerce.test.js",
+    "clean:seed": "node scripts/purgeSeedData.js"
   },
   "engines": {
     "node": ">=18.0.0"

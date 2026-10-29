@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useSearchParams, useOutletContext, Link } from 'react-router-dom';
 import { api } from '../../api/api.js';
 import { ProductCard } from '../../components/common/ProductCard.jsx';
@@ -44,6 +44,33 @@ export const CollectionPage = ({ preset }) => {
   const currentMaxPrice = searchParams.get('maxPrice') || '';
   const currentAvailability = searchParams.get('availability') || '';
   const currentPage = parseInt(searchParams.get('page') || '1', 10);
+
+  // Fallback catalog categories for mobile shortcuts
+  const DEFAULT_CATEGORIES = useMemo(
+    () => [
+      { slug: 'clogs', name: 'Clogs' },
+      { slug: 'sliders', name: 'Sliders' },
+      { slug: 'sandals', name: 'Sandals' },
+      { slug: 'foam-walkers', name: 'Foam Walkers' },
+    ],
+    []
+  );
+
+  const displayCategories = categories && categories.length > 0 ? categories : DEFAULT_CATEGORIES;
+
+  // Auto-scroll active category pill into center view on mobile touch rails
+  const shortcutsWrapRef = useRef(null);
+  const activePillRef = useRef(null);
+
+  useEffect(() => {
+    if (activePillRef.current) {
+      activePillRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'center',
+      });
+    }
+  }, [currentCategory]);
 
   // 1. Fetch Collection Metadata from CMS
   useEffect(() => {
@@ -346,30 +373,35 @@ export const CollectionPage = ({ preset }) => {
 
       <div className="container" id="collection-grid">
         {/* ── 2. Category Shortcuts Bar ──────────────────────────────────── */}
-        <div className="category-shortcuts-wrap" aria-label="Footwear Category Shortcuts">
+        <div className="category-shortcuts-wrap" aria-label="Footwear Category Shortcuts" ref={shortcutsWrapRef}>
           <div className="category-shortcuts-list" role="tablist">
             <button
               type="button"
               role="tab"
               aria-selected={!currentCategory || currentCategory === 'all'}
+              ref={!currentCategory || currentCategory === 'all' ? activePillRef : null}
               className={`category-shortcut-pill ${!currentCategory || currentCategory === 'all' ? 'active' : ''}`}
               onClick={() => updateFilter('category', '')}
             >
               All Footwear
             </button>
 
-            {categories.map((cat) => (
-              <button
-                key={cat._id || cat.slug}
-                type="button"
-                role="tab"
-                aria-selected={currentCategory === cat.slug}
-                className={`category-shortcut-pill ${currentCategory === cat.slug ? 'active' : ''}`}
-                onClick={() => updateFilter('category', cat.slug)}
-              >
-                {cat.name}
-              </button>
-            ))}
+            {displayCategories.map((cat) => {
+              const isActive = currentCategory === cat.slug;
+              return (
+                <button
+                  key={cat._id || cat.slug}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  ref={isActive ? activePillRef : null}
+                  className={`category-shortcut-pill ${isActive ? 'active' : ''}`}
+                  onClick={() => updateFilter('category', cat.slug)}
+                >
+                  {cat.name}
+                </button>
+              );
+            })}
           </div>
         </div>
 

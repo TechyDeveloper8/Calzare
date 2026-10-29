@@ -60,7 +60,6 @@ export const Footer = () => {
               }}
             >
               {settings?.storeName || 'CALZARE'}
-              <span className="brand-logo-dot" style={{ width: '9px', height: '9px' }} />
             </div>
             <p style={{ color: '#a0a0a8', fontSize: '0.92rem', lineHeight: '1.65', margin: '0 0 12px 0', maxWidth: '380px' }}>
               {settings?.tagline || 'Good Shoes. Loud Personality.'} Sculpted from closed-cell waterproof EVA foam

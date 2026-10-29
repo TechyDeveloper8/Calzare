@@ -53,7 +53,7 @@ export const SearchModal = ({ isOpen, onClose }) => {
         display: 'flex',
         alignItems: 'flex-start',
         justifyContent: 'center',
-        padding: '64px 20px',
+        padding: 'clamp(16px, 5vw, 64px) clamp(12px, 3vw, 20px)',
       }}
       onClick={onClose}
     >
@@ -62,6 +62,9 @@ export const SearchModal = ({ isOpen, onClose }) => {
         style={{
           width: '100%',
           maxWidth: '680px',
+          maxHeight: 'min(85vh, 85dvh)',
+          display: 'flex',
+          flexDirection: 'column',
           background: '#ffffff',
           borderRadius: 'var(--radius-xl)',
           overflow: 'hidden',
@@ -75,9 +78,9 @@ export const SearchModal = ({ isOpen, onClose }) => {
           style={{
             display: 'flex',
             alignItems: 'center',
-            padding: '20px 24px',
+            padding: 'clamp(14px, 2.5vw, 20px) clamp(14px, 2.5vw, 24px)',
             borderBottom: '1px solid var(--border-light)',
-            gap: '16px',
+            gap: 'clamp(10px, 2vw, 16px)',
           }}
         >
           <Search size={22} color="var(--ink-black)" />

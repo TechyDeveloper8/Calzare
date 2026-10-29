@@ -54,7 +54,7 @@ export const StorytellingSection = ({ section }) => {
           {/* Asymmetric Dual Photo Composition */}
           <div className="story-images-composition" style={{ position: 'relative' }}>
             <img
-              src={story.primaryImageUrl}
+              src={story.primaryImageUrl?.trim() || 'https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=1200&q=80'}
               alt="CALZARE architectural foam craftsmanship"
               className="story-img-main"
               loading="lazy"
@@ -65,9 +65,9 @@ export const StorytellingSection = ({ section }) => {
                 boxShadow: '0 20px 40px -10px rgba(0,0,0,0.1)',
               }}
             />
-            {story.secondaryImageUrl && (
+            {story.secondaryImageUrl?.trim() && (
               <img
-                src={story.secondaryImageUrl}
+                src={story.secondaryImageUrl.trim()}
                 alt="Detailed foam sole texture"
                 className="story-img-inset"
                 loading="lazy"

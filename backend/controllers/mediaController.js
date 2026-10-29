@@ -32,13 +32,13 @@ export const uploadMedia = async (req, res, next) => {
 
     for (const file of files) {
       const isVideo = file.mimetype.startsWith('video/');
-      const fileUrl = `${baseUrl}/uploads/${file.filename}`;
+      const fullFileUrl = `${baseUrl}/uploads/${file.filename}`;
 
       const asset = await MediaAsset.create({
         title: path.parse(file.originalname).name,
         filename: file.filename,
         originalName: file.originalname,
-        url: fileUrl,
+        url: fullFileUrl,
         fileType: isVideo ? 'video' : 'image',
         mimeType: file.mimetype,
         sizeBytes: file.size,

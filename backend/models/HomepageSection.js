@@ -91,6 +91,14 @@ const homepageSectionSchema = new mongoose.Schema(
       focalPoint: { type: String, default: 'center' },
       overlayTint: { type: String, default: 'rgba(0, 0, 0, 0.45)' },
 
+      // Affordable Store / 999 Store specific campaign media & copy
+      campaignImage: { type: String },
+      campaignBadgeImg: { type: String },
+      badgeImageUrl: { type: String },
+      campaignHeadline: { type: String },
+      campaignDescription: { type: String },
+      promoBgColor: { type: String, default: '#0147af' },
+
       // Audience cards & Shop Split Panels
       audienceCards: [
         {

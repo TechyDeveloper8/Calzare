@@ -50,10 +50,11 @@ export const AffordableStoreSection = ({ section, onQuickView }) => {
       ? getAssetUrl(config.campaignImage.trim())
       : '/images/store999/promo.jpg';
 
+  // If mobile image is still pointing to seed default promo.jpg, use custom uploaded desktopImg
   const mobileImg =
-    config.mobileMediaUrl?.trim()
+    config.mobileMediaUrl?.trim() && config.mobileMediaUrl !== '/images/store999/promo.jpg'
       ? getAssetUrl(config.mobileMediaUrl.trim())
-      : config.mobileImage?.trim()
+      : config.mobileImage?.trim() && config.mobileImage !== '/images/store999/promo.jpg'
       ? getAssetUrl(config.mobileImage.trim())
       : desktopImg;
 

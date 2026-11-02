@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { api, getAssetUrl } from '../../api/api.js';
 import {
   Upload,
@@ -37,7 +37,12 @@ export const ImageUploadField = ({
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [showMediaModal, setShowMediaModal] = useState(false);
   const [urlInputValue, setUrlInputValue] = useState('');
+  const [hasError, setHasError] = useState(false);
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    setHasError(false);
+  }, [value]);
 
   const handleFile = async (file) => {
     if (!file) return;
@@ -220,23 +225,29 @@ export const ImageUploadField = ({
             padding: objectFit === 'cover' ? '0' : '8px',
           }}
         >
-          <img
-            src={getAssetUrl(value)}
-            alt="Preview"
-            style={{
-              maxWidth: '100%',
-              maxHeight: '100%',
-              width: objectFit === 'cover' ? '100%' : 'auto',
-              height: objectFit === 'cover' ? '100%' : 'auto',
-              objectFit: objectFit || 'contain',
-              objectPosition: 'center',
-              display: 'block',
-              margin: 'auto',
-            }}
-            onError={(e) => {
-              e.currentTarget.style.display = 'none';
-            }}
-          />
+          {hasError ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', padding: '12px', textAlign: 'center' }}>
+              <ImageIcon size={26} />
+              <span style={{ fontSize: '0.72rem', marginTop: '4px' }}>Image preview unavailable</span>
+            </div>
+          ) : (
+            <img
+              src={getAssetUrl(value)}
+              alt="Preview"
+              onLoad={() => setHasError(false)}
+              onError={() => setHasError(true)}
+              style={{
+                maxWidth: '100%',
+                maxHeight: '100%',
+                width: objectFit === 'cover' ? '100%' : 'auto',
+                height: objectFit === 'cover' ? '100%' : 'auto',
+                objectFit: objectFit || 'contain',
+                objectPosition: 'center',
+                display: 'block',
+                margin: 'auto',
+              }}
+            />
+          )}
 
           {/* Quick action buttons on preview */}
           <div

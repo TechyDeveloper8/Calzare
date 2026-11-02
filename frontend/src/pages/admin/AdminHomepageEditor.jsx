@@ -1150,13 +1150,18 @@ export const AdminHomepageEditor = () => {
                       {/* Media Uploads */}
                       <div className="admin-form-group">
                         <ImageUploadField
-                          label="Desktop Portrait Campaign Photography"
-                          description="High-resolution portrait photography (601 × 715 px aspect ratio)"
-                          value={editingSection.config?.desktopMediaUrl || editingSection.config?.campaignImage || '/images/store999/promo.jpg'}
+                          label="Campaign Photography (Portrait)"
+                          description="High-resolution portrait photography (601 × 715 px aspect ratio). Automatically updates both desktop and mobile layouts."
+                          value={editingSection.config?.desktopMediaUrl !== undefined ? editingSection.config.desktopMediaUrl : (editingSection.config?.campaignImage || '/images/store999/promo.jpg')}
                           onChange={(url) =>
                             setEditingSection({
                               ...editingSection,
-                              config: { ...editingSection.config, desktopMediaUrl: url, campaignImage: url },
+                              config: {
+                                ...editingSection.config,
+                                desktopMediaUrl: url,
+                                mobileMediaUrl: url,
+                                campaignImage: url,
+                              },
                             })
                           }
                           aspectRatio="portrait"
@@ -1165,13 +1170,36 @@ export const AdminHomepageEditor = () => {
 
                       <div className="admin-form-group">
                         <ImageUploadField
-                          label="Badge Graphic (Near CTA)"
-                          description="Circular or badge graphic (e.g. 100% Genuine, Starting ₹999)"
-                          value={editingSection.config?.badgeImageUrl || editingSection.config?.campaignBadgeImg || '/images/store999/badge.png'}
+                          label="Mobile Campaign Photography (Optional)"
+                          description="Custom mobile art direction. Leave blank to automatically use the campaign image above."
+                          value={editingSection.config?.mobileMediaUrl && editingSection.config.mobileMediaUrl !== '/images/store999/promo.jpg' && editingSection.config.mobileMediaUrl !== editingSection.config.desktopMediaUrl ? editingSection.config.mobileMediaUrl : ''}
                           onChange={(url) =>
                             setEditingSection({
                               ...editingSection,
-                              config: { ...editingSection.config, badgeImageUrl: url, campaignBadgeImg: url },
+                              config: {
+                                ...editingSection.config,
+                                mobileMediaUrl: url || editingSection.config?.desktopMediaUrl || '',
+                              },
+                            })
+                          }
+                          aspectRatio="portrait"
+                          compact={true}
+                        />
+                      </div>
+
+                      <div className="admin-form-group">
+                        <ImageUploadField
+                          label="Badge Graphic (Near CTA)"
+                          description="Circular or badge graphic (e.g. 100% Genuine, Starting ₹999)"
+                          value={editingSection.config?.badgeImageUrl !== undefined ? editingSection.config.badgeImageUrl : (editingSection.config?.campaignBadgeImg || '/images/store999/badge.png')}
+                          onChange={(url) =>
+                            setEditingSection({
+                              ...editingSection,
+                              config: {
+                                ...editingSection.config,
+                                badgeImageUrl: url,
+                                campaignBadgeImg: url,
+                              },
                             })
                           }
                           aspectRatio="square"
@@ -1424,7 +1452,7 @@ export const AdminHomepageEditor = () => {
                             }}
                           >
                             <img
-                              src={editingSection.config?.desktopMediaUrl || '/images/store999/promo.jpg'}
+                              src={getAssetUrl(editingSection.config?.desktopMediaUrl || editingSection.config?.campaignImage || '/images/store999/promo.jpg')}
                               alt=""
                               style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: editingSection.config?.focalPoint || 'center' }}
                             />
@@ -1483,7 +1511,7 @@ export const AdminHomepageEditor = () => {
                                   {editingSection.config?.primaryCtaLabel || 'EXPLORE'}
                                 </span>
                                 <img
-                                  src={editingSection.config?.badgeImageUrl || '/images/store999/badge.png'}
+                                  src={getAssetUrl(editingSection.config?.badgeImageUrl || editingSection.config?.campaignBadgeImg || '/images/store999/badge.png')}
                                   alt=""
                                   style={{ width: '36px', height: '36px', objectFit: 'contain' }}
                                 />

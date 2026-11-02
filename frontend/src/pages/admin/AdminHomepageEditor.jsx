@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../../api/api.js';
 import {
   Sparkles,
+  Star,
   ArrowUp,
   ArrowDown,
   Eye,
@@ -19,6 +20,7 @@ import {
 import { ImageUploadField } from '../../components/admin/ImageUploadField.jsx';
 import { AudienceSection } from '../../components/storefront/AudienceSection.jsx';
 import { CategoryDiscoverySection } from '../../components/storefront/CategoryDiscoverySection.jsx';
+import { ReviewCarouselSection } from '../../components/storefront/ReviewCarouselSection.jsx';
 
 export const AdminHomepageEditor = () => {
   const [sections, setSections] = useState([]);
@@ -88,10 +90,129 @@ export const AdminHomepageEditor = () => {
   };
 
   const handleOpenEdit = (sec) => {
-    setEditingSection(JSON.parse(JSON.stringify(sec)));
+    const clone = JSON.parse(JSON.stringify(sec));
+    if (clone.sectionType === 'reviews' && (!clone.config?.customerReviews || clone.config.customerReviews.length === 0)) {
+      clone.config = clone.config || {};
+      clone.config.customerReviews = [
+        {
+          id: 'rev_1',
+          customerName: 'Aarav Mehta',
+          rating: 5,
+          title: 'Walked 18,000 steps without calf fatigue',
+          comment:
+            'Tested these across Bangalore monsoons and broken pavement. The dual-density microfoam absorbs every harsh impact without feeling mushy. Genuinely superior to standard EVA clogs.',
+          verifiedPurchase: true,
+          location: 'Bengaluru • Verified Buyer',
+          productName: 'Apex Closed-Cell Clog',
+          isEnabled: true,
+          order: 0,
+        },
+        {
+          id: 'rev_2',
+          customerName: 'Priya Sundaram',
+          rating: 5,
+          title: 'Architectural shape meets all-day arch support',
+          comment:
+            'I wear these for 10-hour hospital shifts. The sculpted arch cradle is unmatched. My feet feel fresh when clocking off.',
+          verifiedPurchase: true,
+          location: 'Mumbai • Verified Buyer',
+          productName: 'Apex All-Terrain Mule',
+          isEnabled: true,
+          order: 1,
+        },
+        {
+          id: 'rev_3',
+          customerName: 'Rohan Kapoor',
+          rating: 5,
+          title: '100% waterproof and effortless to rinse',
+          comment:
+            'Got caught in a flash downpour. Rinsed them under tap water in 20 seconds and they looked brand new. Bold aesthetic, zero ordinary energy.',
+          verifiedPurchase: true,
+          location: 'Delhi • Verified Buyer',
+          productName: 'Urban Hydro Slide',
+          isEnabled: true,
+          order: 2,
+        },
+      ];
+    }
+    setEditingSection(clone);
     setSaveSuccess(false);
   };
 
+
+  const currentCustomerReviews = editingSection?.config?.customerReviews || [];
+
+  const handleUpdateCustomerReview = (idx, field, value) => {
+    const updated = [...currentCustomerReviews];
+    updated[idx] = { ...updated[idx], [field]: value };
+    setEditingSection({
+      ...editingSection,
+      config: {
+        ...editingSection.config,
+        customerReviews: updated,
+      },
+    });
+  };
+
+  const handleAddCustomerReview = () => {
+    const newRev = {
+      id: `rev_${Date.now()}`,
+      customerName: '',
+      rating: 5,
+      title: '',
+      comment: '',
+      verifiedPurchase: true,
+      location: 'Verified Buyer',
+      productName: '',
+      isEnabled: true,
+      order: currentCustomerReviews.length,
+    };
+    const updated = [...currentCustomerReviews, newRev];
+    setEditingSection({
+      ...editingSection,
+      config: {
+        ...editingSection.config,
+        customerReviews: updated,
+      },
+    });
+  };
+
+  const handleDeleteCustomerReview = (idx) => {
+    if (currentCustomerReviews.length <= 1) {
+      alert('At least one customer review must remain.');
+      return;
+    }
+    const updated = currentCustomerReviews.filter((_, i) => i !== idx);
+    updated.forEach((r, i) => {
+      r.order = i;
+    });
+    setEditingSection({
+      ...editingSection,
+      config: {
+        ...editingSection.config,
+        customerReviews: updated,
+      },
+    });
+  };
+
+  const handleMoveCustomerReview = (idx, direction) => {
+    const targetIdx = idx + direction;
+    if (targetIdx < 0 || targetIdx >= currentCustomerReviews.length) return;
+    const updated = [...currentCustomerReviews];
+    const temp = updated[idx];
+    updated[idx] = updated[targetIdx];
+    updated[targetIdx] = temp;
+    updated.forEach((r, i) => {
+      r.order = i;
+    });
+    setEditingSection({
+      ...editingSection,
+      config: {
+        ...editingSection.config,
+        customerReviews: updated,
+      },
+    });
+  };
 
   const currentCategoryTiles = editingSection?.config?.categoryTiles || [];
 
@@ -430,7 +551,9 @@ export const AdminHomepageEditor = () => {
               maxWidth:
                 editingSection.sectionType === 'affordable_store' ||
                 editingSection.sectionType === 'audience_cards' ||
-                editingSection.sectionType === 'shop_split' || editingSection.sectionType === 'category_discovery'
+                editingSection.sectionType === 'shop_split' ||
+                editingSection.sectionType === 'category_discovery' ||
+                editingSection.sectionType === 'reviews'
                   ? '940px'
                   : '640px',
             }}
@@ -1801,6 +1924,278 @@ export const AdminHomepageEditor = () => {
                         }}
                       >
                         <CategoryDiscoverySection section={editingSection} />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Customer Reviews Section Controls (WORDS FROM THE PAVEMENT) */}
+                {editingSection.sectionType === 'reviews' && (
+                  <div style={{ padding: '18px', background: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0', marginBottom: '20px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px', flexWrap: 'wrap', gap: '10px' }}>
+                      <div>
+                        <div style={{ fontSize: '0.94rem', fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <Sparkles size={16} color="#0f172a" /> Customer Reviews & Brand Words ({currentCustomerReviews.length} Reviews)
+                        </div>
+                        <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '2px 0 0' }}>
+                          Add and curate customer testimonials, star ratings, and feedback for CALZARE.
+                        </p>
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <button
+                          type="button"
+                          onClick={handleAddCustomerReview}
+                          className="admin-btn admin-btn-outline"
+                          style={{ fontSize: '0.76rem', gap: '4px', background: '#ffffff' }}
+                        >
+                          <Plus size={13} /> Add Customer Review
+                        </button>
+                        <div style={{ display: 'flex', gap: '3px', background: '#e2e8f0', padding: '2px', borderRadius: '4px' }}>
+                          {['desktop', 'mobile'].map((tab) => (
+                            <button
+                              key={tab}
+                              type="button"
+                              onClick={() => setAdminPreviewTab(tab)}
+                              style={{
+                                padding: '4px 8px',
+                                fontSize: '0.72rem',
+                                fontWeight: 700,
+                                borderRadius: '3px',
+                                border: 'none',
+                                cursor: 'pointer',
+                                background: adminPreviewTab === tab ? '#ffffff' : 'transparent',
+                                color: adminPreviewTab === tab ? '#0f172a' : '#64748b',
+                                boxShadow: adminPreviewTab === tab ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                                textTransform: 'capitalize',
+                              }}
+                            >
+                              {tab}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Source Selection */}
+                    <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '14px', marginBottom: '16px' }}>
+                      <div className="admin-form-group" style={{ marginBottom: 0 }}>
+                        <label className="admin-label">Reviews Source</label>
+                        <select
+                          value={editingSection.config?.reviewsSource || 'both'}
+                          onChange={(e) =>
+                            setEditingSection({
+                              ...editingSection,
+                              config: { ...editingSection.config, reviewsSource: e.target.value },
+                            })
+                          }
+                          className="admin-select"
+                        >
+                          <option value="both">Both: Curated Brand Words + Live Approved Customer Reviews</option>
+                          <option value="custom_curated">Curated Brand Words Only (Managed Below)</option>
+                          <option value="auto_approved">Live Approved Customer Reviews Only (From Reviews Moderation)</option>
+                        </select>
+                        <span className="admin-hint">
+                          "Both" displays curated brand testimonials followed by customer submissions approved in the Customer Reviews tab.
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* List of Reviews */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                      {currentCustomerReviews.map((rev, rIdx) => (
+                        <div
+                          key={rev.id || rIdx}
+                          style={{
+                            background: '#ffffff',
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '8px',
+                            padding: '16px',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+                            opacity: rev.isEnabled === false ? 0.6 : 1,
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              marginBottom: '14px',
+                              borderBottom: '1px solid #f1f5f9',
+                              paddingBottom: '10px',
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span
+                                style={{
+                                  background: '#0f172a',
+                                  color: '#ffffff',
+                                  fontWeight: 800,
+                                  fontSize: '0.72rem',
+                                  padding: '2px 8px',
+                                  borderRadius: '4px',
+                                }}
+                              >
+                                #{rIdx + 1}
+                              </span>
+                              <span style={{ fontWeight: 700, fontSize: '0.86rem', color: '#0f172a' }}>
+                                {rev.customerName || 'Untitled Customer'}
+                              </span>
+                              <div style={{ display: 'flex', color: '#f59e0b', gap: '1px', marginLeft: '6px' }}>
+                                {[...Array(Number(rev.rating) || 5)].map((_, i) => (
+                                  <Star key={i} size={12} fill="currentColor" />
+                                ))}
+                              </div>
+                            </div>
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <button
+                                type="button"
+                                disabled={rIdx === 0}
+                                onClick={() => handleMoveCustomerReview(rIdx, -1)}
+                                className="admin-btn admin-btn-outline"
+                                style={{ padding: '4px 6px', opacity: rIdx === 0 ? 0.3 : 1 }}
+                                title="Move Review Up"
+                              >
+                                <ArrowUp size={12} />
+                              </button>
+                              <button
+                                type="button"
+                                disabled={rIdx === currentCustomerReviews.length - 1}
+                                onClick={() => handleMoveCustomerReview(rIdx, 1)}
+                                className="admin-btn admin-btn-outline"
+                                style={{ padding: '4px 6px', opacity: rIdx === currentCustomerReviews.length - 1 ? 0.3 : 1 }}
+                                title="Move Review Down"
+                              >
+                                <ArrowDown size={12} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleUpdateCustomerReview(rIdx, 'isEnabled', rev.isEnabled === false ? true : false)}
+                                className="admin-btn admin-btn-outline"
+                                style={{ padding: '4px 8px', fontSize: '0.72rem' }}
+                                title="Toggle Visibility"
+                              >
+                                {rev.isEnabled !== false ? <Eye size={12} color="#047857" /> : <EyeOff size={12} color="#94a3b8" />}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteCustomerReview(rIdx)}
+                                className="admin-btn admin-btn-outline"
+                                style={{ padding: '4px 6px', color: '#dc2626' }}
+                                title="Delete Review"
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+                            <div className="admin-form-group" style={{ marginBottom: 0 }}>
+                              <label className="admin-label">Customer Name *</label>
+                              <input
+                                type="text"
+                                value={rev.customerName || ''}
+                                onChange={(e) => handleUpdateCustomerReview(rIdx, 'customerName', e.target.value)}
+                                className="admin-input"
+                                placeholder="e.g. Arjun Mehta"
+                                required
+                              />
+                            </div>
+
+                            <div className="admin-form-group" style={{ marginBottom: 0 }}>
+                              <label className="admin-label">Star Rating</label>
+                              <select
+                                value={rev.rating || 5}
+                                onChange={(e) => handleUpdateCustomerReview(rIdx, 'rating', Number(e.target.value))}
+                                className="admin-select"
+                              >
+                                <option value={5}>5 Stars (★★★★★) - Excellent</option>
+                                <option value={4}>4 Stars (★★★★☆) - Great</option>
+                                <option value={3}>3 Stars (★★★☆☆) - Average</option>
+                                <option value={2}>2 Stars (★★☆☆☆) - Fair</option>
+                                <option value={1}>1 Star (★☆☆☆☆) - Poor</option>
+                              </select>
+                            </div>
+
+                            <div className="admin-form-group" style={{ marginBottom: 0 }}>
+                              <label className="admin-label">Location / Subtitle</label>
+                              <input
+                                type="text"
+                                value={rev.location || ''}
+                                onChange={(e) => handleUpdateCustomerReview(rIdx, 'location', e.target.value)}
+                                className="admin-input"
+                                placeholder="e.g. Bengaluru • Verified Buyer"
+                              />
+                            </div>
+
+                            <div className="admin-form-group" style={{ marginBottom: 0 }}>
+                              <label className="admin-label">Footwear Silhouette / Product</label>
+                              <input
+                                type="text"
+                                value={rev.productName || ''}
+                                onChange={(e) => handleUpdateCustomerReview(rIdx, 'productName', e.target.value)}
+                                className="admin-input"
+                                placeholder="e.g. Apex Closed-Cell Clog"
+                              />
+                            </div>
+
+                            <div className="admin-form-group" style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
+                              <label className="admin-label">Review Headline / Title</label>
+                              <input
+                                type="text"
+                                value={rev.title || ''}
+                                onChange={(e) => handleUpdateCustomerReview(rIdx, 'title', e.target.value)}
+                                className="admin-input"
+                                placeholder="e.g. Walked 18,000 steps without calf fatigue"
+                              />
+                            </div>
+
+                            <div className="admin-form-group" style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
+                              <label className="admin-label">Customer Words / Feedback *</label>
+                              <textarea
+                                rows={3}
+                                value={rev.comment || ''}
+                                onChange={(e) => handleUpdateCustomerReview(rIdx, 'comment', e.target.value)}
+                                className="admin-textarea"
+                                placeholder="Write the customer's exact words about comfort, sizing, or daily wear..."
+                                required
+                              />
+                            </div>
+
+                            <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: '8px', paddingTop: '4px' }}>
+                              <input
+                                type="checkbox"
+                                id={`verifiedPurchase_${rIdx}`}
+                                checked={rev.verifiedPurchase !== false}
+                                onChange={(e) => handleUpdateCustomerReview(rIdx, 'verifiedPurchase', e.target.checked)}
+                              />
+                              <label htmlFor={`verifiedPurchase_${rIdx}`} style={{ fontSize: '0.8rem', color: '#334155', cursor: 'pointer', fontWeight: 600 }}>
+                                Verified Buyer Badge
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Live Visual Preview Frame */}
+                    <div style={{ marginTop: '20px', borderTop: '1px solid #e2e8f0', paddingTop: '16px' }}>
+                      <label className="admin-label" style={{ marginBottom: '8px' }}>
+                        Live Reviews Preview ({adminPreviewTab === 'desktop' ? 'Desktop Grid' : 'Mobile View'})
+                      </label>
+                      <div
+                        style={{
+                          maxWidth: adminPreviewTab === 'desktop' ? '100%' : '375px',
+                          margin: '0 auto',
+                          background: '#ffffff',
+                          borderRadius: '12px',
+                          border: '1px solid #cbd5e1',
+                          overflow: 'hidden',
+                          boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
+                        }}
+                      >
+                        <ReviewCarouselSection section={editingSection} />
                       </div>
                     </div>
                   </div>

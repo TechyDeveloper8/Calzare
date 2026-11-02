@@ -123,11 +123,30 @@ export const getPublishedHomepage = async (req, res, next) => {
 
         // 3. Customer Reviews Section
         if (sec.sectionType === 'reviews') {
-          const reviews = await Review.find({ status: 'approved' })
-            .sort({ isFeatured: -1, rating: -1, createdAt: -1 })
-            .limit(8)
-            .populate('product', 'name slug defaultImages');
-          item.dynamicReviews = reviews;
+          const source = sec.config?.reviewsSource || 'both';
+          const curatedReviews = (sec.config?.customerReviews || [])
+            .filter((r) => r.isEnabled !== false)
+            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+          let dbReviews = [];
+          if (source === 'auto_approved' || source === 'both') {
+            dbReviews = await Review.find({ status: 'approved' })
+              .sort({ isFeatured: -1, rating: -1, createdAt: -1 })
+              .limit(8)
+              .populate('product', 'name slug defaultImages');
+          }
+
+          let combinedReviews = [];
+          if (source === 'custom_curated') {
+            combinedReviews = curatedReviews;
+          } else if (source === 'auto_approved') {
+            combinedReviews = dbReviews;
+          } else {
+            // 'both': curated custom words first, then approved customer submissions
+            combinedReviews = [...curatedReviews, ...dbReviews];
+          }
+
+          item.dynamicReviews = combinedReviews;
         }
 
         return item;

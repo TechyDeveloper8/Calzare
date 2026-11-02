@@ -153,6 +153,27 @@ const homepageSectionSchema = new mongoose.Schema(
         },
       ],
 
+      // Customer reviews / Brand words
+      customerReviews: [
+        {
+          id: { type: String },
+          customerName: { type: String, required: true },
+          rating: { type: Number, default: 5 },
+          title: { type: String },
+          comment: { type: String, required: true },
+          verifiedPurchase: { type: Boolean, default: true },
+          location: { type: String },
+          productName: { type: String },
+          isEnabled: { type: Boolean, default: true },
+          order: { type: Number, default: 0 },
+        },
+      ],
+      reviewsSource: {
+        type: String,
+        enum: ['custom_curated', 'auto_approved', 'both'],
+        default: 'both',
+      },
+
       // Benefits blocks
       benefitItems: [
         {

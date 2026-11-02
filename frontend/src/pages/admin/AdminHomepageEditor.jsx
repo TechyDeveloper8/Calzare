@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { api } from '../../api/api.js';
+import { api, getAssetUrl } from '../../api/api.js';
 import {
   Sparkles,
   Star,
@@ -21,6 +21,7 @@ import { ImageUploadField } from '../../components/admin/ImageUploadField.jsx';
 import { AudienceSection } from '../../components/storefront/AudienceSection.jsx';
 import { CategoryDiscoverySection } from '../../components/storefront/CategoryDiscoverySection.jsx';
 import { ReviewCarouselSection } from '../../components/storefront/ReviewCarouselSection.jsx';
+import { ErrorBoundary } from '../../components/common/ErrorBoundary.jsx';
 
 export const AdminHomepageEditor = () => {
   const [sections, setSections] = useState([]);
@@ -91,6 +92,19 @@ export const AdminHomepageEditor = () => {
 
   const handleOpenEdit = (sec) => {
     const clone = JSON.parse(JSON.stringify(sec));
+    clone.config = clone.config || {};
+    if (clone.sectionType === 'affordable_store') {
+      const headline = clone.config.campaignHeadline || clone.title || 'Your day\nfound its footing.';
+      const desc = clone.config.campaignDescription || clone.subtitle || 'Everyday Calzare, everyday price.\nStarting ₹999';
+      clone.title = headline;
+      clone.subtitle = desc;
+      clone.config.campaignHeadline = headline;
+      clone.config.campaignDescription = desc;
+      clone.config.desktopMediaUrl = clone.config.desktopMediaUrl || clone.config.campaignImage || '';
+      clone.config.campaignImage = clone.config.desktopMediaUrl;
+      clone.config.badgeImageUrl = clone.config.badgeImageUrl || clone.config.campaignBadgeImg || '';
+      clone.config.campaignBadgeImg = clone.config.badgeImageUrl;
+    }
     if (clone.sectionType === 'reviews' && (!clone.config?.customerReviews || clone.config.customerReviews.length === 0)) {
       clone.config = clone.config || {};
       clone.config.customerReviews = [
@@ -391,6 +405,22 @@ export const AdminHomepageEditor = () => {
         ...editingSection,
         eyebrow: editingSection.eyebrow !== undefined ? editingSection.eyebrow : '',
       };
+      if (payload.sectionType === 'affordable_store') {
+        const headline = payload.config?.campaignHeadline || payload.title || 'Your day\nfound its footing.';
+        const desc = payload.config?.campaignDescription || payload.subtitle || 'Everyday Calzare, everyday price.\nStarting ₹999';
+        payload.title = headline;
+        payload.subtitle = desc;
+        if (payload.config) {
+          payload.config.campaignHeadline = headline;
+          payload.config.campaignDescription = desc;
+          if (payload.config.desktopMediaUrl) {
+            payload.config.campaignImage = payload.config.desktopMediaUrl;
+          }
+          if (payload.config.badgeImageUrl) {
+            payload.config.campaignBadgeImg = payload.config.badgeImageUrl;
+          }
+        }
+      }
       const res = await api.adminUpdateSection(editingSection._id, payload);
       if (res.success) {
         setSections((prev) => prev.map((s) => (s._id === editingSection._id ? res.section : s)));
@@ -569,27 +599,32 @@ export const AdminHomepageEditor = () => {
             </div>
 
             <div className="admin-modal-body">
-              <form onSubmit={handleSaveSection}>
-                <div className="admin-form-group">
-                  <label className="admin-label">Main Heading / Title</label>
-                  <textarea
-                    rows={2}
-                    value={editingSection.title || ''}
-                    onChange={(e) => setEditingSection({ ...editingSection, title: e.target.value })}
-                    className="admin-textarea"
-                    placeholder="e.g. 0% BORING.\n100% AIR."
-                  />
-                </div>
+              <ErrorBoundary onReset={() => setEditingSection(null)}>
+                <form onSubmit={handleSaveSection}>
+                {editingSection.sectionType !== 'affordable_store' && (
+                  <>
+                    <div className="admin-form-group">
+                      <label className="admin-label">Main Heading / Title</label>
+                      <textarea
+                        rows={2}
+                        value={editingSection.title || ''}
+                        onChange={(e) => setEditingSection({ ...editingSection, title: e.target.value })}
+                        className="admin-textarea"
+                        placeholder="e.g. 0% BORING.\n100% AIR."
+                      />
+                    </div>
 
-                <div className="admin-form-group">
-                  <label className="admin-label">Subtitle / Narrative Summary</label>
-                  <textarea
-                    rows={3}
-                    value={editingSection.subtitle || ''}
-                    onChange={(e) => setEditingSection({ ...editingSection, subtitle: e.target.value })}
-                    className="admin-textarea"
-                  />
-                </div>
+                    <div className="admin-form-group">
+                      <label className="admin-label">Subtitle / Narrative Summary</label>
+                      <textarea
+                        rows={3}
+                        value={editingSection.subtitle || ''}
+                        onChange={(e) => setEditingSection({ ...editingSection, subtitle: e.target.value })}
+                        className="admin-textarea"
+                      />
+                    </div>
+                  </>
+                )}
 
                 {/* Hero Specific Controls */}
                 {editingSection.sectionType === 'hero' && (
@@ -1400,7 +1435,7 @@ export const AdminHomepageEditor = () => {
                                     }}
                                   />
                                   <img
-                                    src={p.defaultImages?.[0]?.url || p.defaultImages?.[0] || '/images/store999/promo.jpg'}
+                                    src={getAssetUrl(p.defaultImages?.[0]?.url || p.defaultImages?.[0] || '/images/store999/promo.jpg')}
                                     alt=""
                                     style={{ width: '32px', height: '32px', objectFit: 'contain', background: '#fff', borderRadius: '3px' }}
                                   />
@@ -1599,7 +1634,7 @@ export const AdminHomepageEditor = () => {
                               {editingSection.config?.primaryCtaLabel || 'EXPLORE'}
                             </span>
                             <img
-                              src={editingSection.config?.badgeImageUrl || '/images/store999/badge.png'}
+                              src={getAssetUrl(editingSection.config?.badgeImageUrl || editingSection.config?.campaignBadgeImg || '/images/store999/badge.png')}
                               alt=""
                               style={{ width: '40px', height: '40px', objectFit: 'contain' }}
                             />
@@ -2266,7 +2301,8 @@ export const AdminHomepageEditor = () => {
                   </button>
                 </div>
               </form>
-            </div>
+            </ErrorBoundary>
+          </div>
           </div>
         </div>
       )}

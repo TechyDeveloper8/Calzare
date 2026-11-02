@@ -14,6 +14,7 @@ import { Footer } from './components/common/Footer.jsx';
 import { CartDrawer } from './components/common/CartDrawer.jsx';
 import { SearchModal } from './components/common/SearchModal.jsx';
 import { QuickViewModal } from './components/common/QuickViewModal.jsx';
+import { ErrorBoundary } from './components/common/ErrorBoundary.jsx';
 
 // Storefront Pages
 import { HomePage } from './pages/storefront/HomePage.jsx';
@@ -97,7 +98,8 @@ export default function App() {
           <CartProvider>
             <WishlistProvider>
               <ScrollToTop />
-              <Routes>
+              <ErrorBoundary>
+                <Routes>
                 {/* Storefront Routes */}
                 <Route element={<StorefrontLayout />}>
                   <Route path="/" element={<HomePage />} />
@@ -172,6 +174,7 @@ export default function App() {
                 {/* 404 Fallback */}
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
+            </ErrorBoundary>
             </WishlistProvider>
           </CartProvider>
         </StoreConfigProvider>

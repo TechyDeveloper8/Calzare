@@ -204,8 +204,9 @@ export const api = {
   adminUpdateCoupon: (id, body) => request(`/coupons/admin/${id}`, { method: 'PUT', body }),
   adminDeleteCoupon: (id) => request(`/coupons/admin/${id}`, { method: 'DELETE' }),
 
-  // Reviews Moderation
+  // Reviews Moderation & Management
   adminGetReviews: () => request('/reviews/admin/all'),
+  adminCreateReview: (body) => request('/reviews/admin', { method: 'POST', body }),
   adminUpdateReview: (id, body) => request(`/reviews/admin/${id}`, { method: 'PUT', body }),
   adminDeleteReview: (id) => request(`/reviews/admin/${id}`, { method: 'DELETE' }),
 

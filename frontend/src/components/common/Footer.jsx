@@ -51,8 +51,9 @@ export const Footer = () => {
             <div
               className="brand-logo footer-brand-logo"
               style={{
-                fontSize: 'clamp(2.15rem, 2.7vw, 2.55rem)',
-                fontWeight: 800,
+                fontSize: 'clamp(3.2rem, 4.8vw, 4.4rem)',
+                fontWeight: 900,
+                letterSpacing: '-0.045em',
                 color: '#ffffff',
                 marginBottom: '16px',
                 lineHeight: 1,

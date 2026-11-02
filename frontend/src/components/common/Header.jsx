@@ -345,7 +345,7 @@ export const Header = ({ onOpenSearch }) => {
           >
             {/* Drawer Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
-              <div className="brand-logo" style={{ fontSize: '1.4rem' }}>
+              <div className="brand-logo" style={{ fontSize: '1.95rem', fontWeight: 900, letterSpacing: '-0.04em' }}>
                 {settings?.storeName || 'CALZARE'}
               </div>
               <button

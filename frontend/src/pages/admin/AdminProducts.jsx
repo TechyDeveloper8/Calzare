@@ -235,7 +235,7 @@ export const AdminProducts = () => {
                             <ExternalLink size={13} />
                           </Link>
                           <Link
-                            to={`/admin/products/${p._id}/edit`}
+                            to={`/admin/products/edit/${p._id}`}
                             className="admin-btn admin-btn-outline"
                             style={{ padding: '5px 8px', fontSize: '0.72rem' }}
                             title="Edit Product & Variants"

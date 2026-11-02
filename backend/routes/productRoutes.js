@@ -4,6 +4,7 @@ import {
   getProductBySlug,
   checkDeliveryPincode,
   searchProducts,
+  adminGetProductById,
   adminCreateProduct,
   adminUpdateProduct,
   adminDeleteProduct,
@@ -25,6 +26,9 @@ const purgeProductCache = (req, res, next) => {
   });
   next();
 };
+
+// Admin dedicated product fetch by ID (uncached, complete document with all variants)
+router.get('/admin/:id', protect, authorize('admin', 'superadmin', 'product_manager', 'editor'), adminGetProductById);
 
 // Public catalogue routes
 router.get('/', cacheResponse(30, 15, 60), getProducts);

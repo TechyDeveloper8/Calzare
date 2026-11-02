@@ -157,7 +157,7 @@ export const api = {
   adminDeleteSection: (id) => request(`/homepage/admin/sections/${id}`, { method: 'DELETE' }),
 
   // Products & Variants Manager
-  adminGetProductById: (id) => request(`/products/${id}`),
+  adminGetProductById: (id) => request(`/products/admin/${id}`),
   adminCreateProduct: (body) => request('/products', { method: 'POST', body }),
   adminUpdateProduct: (id, body) => request(`/products/${id}`, { method: 'PUT', body }),
   adminDeleteProduct: (id) => request(`/products/${id}`, { method: 'DELETE' }),

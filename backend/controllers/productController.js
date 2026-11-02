@@ -414,6 +414,32 @@ export const searchProducts = async (req, res, next) => {
 };
 
 // Admin Endpoints
+
+export const adminGetProductById = async (req, res, next) => {
+  try {
+    const product = await Product.findById(req.params.id)
+      .populate('category', 'name slug')
+      .populate('collections', 'name slug brandComparison')
+      .populate({
+        path: 'relatedProducts',
+        select: 'name slug baseRegularPrice baseSalePrice defaultImages productType brand isBestseller isNewArrival',
+      })
+      .populate({
+        path: 'variants',
+        options: { sort: { displayOrder: 1, createdAt: 1 } },
+      });
+
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.json({ success: true, product });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const adminCreateProduct = async (req, res, next) => {
   try {
     const {
@@ -558,6 +584,10 @@ export const adminUpdateProduct = async (req, res, next) => {
       product.slug = slugify(req.body.slug, { lower: true, strict: true });
     }
 
+    if (req.body.sku && req.body.sku.trim() !== '') {
+      product.sku = req.body.sku.trim().toUpperCase();
+    }
+
     const updatableFields = [
       'name',
       'barcode',
@@ -579,6 +609,7 @@ export const adminUpdateProduct = async (req, res, next) => {
       'audience',
       'baseRegularPrice',
       'baseSalePrice',
+      'taxRatePercentage',
       'status',
       'isFeatured',
       'isBestseller',
@@ -612,36 +643,78 @@ export const adminUpdateProduct = async (req, res, next) => {
     await product.save();
 
     // Sync color variants if provided
-    if (req.body.initialVariants && Array.isArray(req.body.initialVariants)) {
-      for (const v of req.body.initialVariants) {
+    const variantsPayload = req.body.initialVariants || req.body.variants;
+    if (variantsPayload && Array.isArray(variantsPayload)) {
+      const existingVariants = await ProductVariant.find({ productId: product._id });
+      const keptVariantIds = [];
+
+      for (const v of variantsPayload) {
+        const variantSku = (
+          v.variantSku || `${product.sku}-${(v.colorName || 'CLR').slice(0, 3)}`
+        ).toUpperCase();
+
         if (v._id) {
-          await ProductVariant.findByIdAndUpdate(v._id, {
-            colorName: v.colorName,
-            colorHex: v.colorHex,
-            variantSku: (v.variantSku || `${product.sku}-${(v.colorName || 'CLR').slice(0, 3)}`).toUpperCase(),
-            regularPrice: v.regularPrice || product.baseRegularPrice,
-            salePrice: v.salePrice || product.baseSalePrice,
-            images: v.images || product.defaultImages,
-            sizes: v.sizes,
-          });
+          const updatedV = await ProductVariant.findByIdAndUpdate(
+            v._id,
+            {
+              colorName: v.colorName,
+              colorHex: v.colorHex,
+              variantSku,
+              regularPrice: v.regularPrice || product.baseRegularPrice,
+              salePrice: v.salePrice || product.baseSalePrice,
+              images: v.images || product.defaultImages,
+              sizes: v.sizes,
+              isActive: v.isActive !== false,
+            },
+            { new: true }
+          );
+          if (updatedV) keptVariantIds.push(updatedV._id.toString());
         } else {
-          await ProductVariant.create({
+          // Check if variant with this SKU already exists
+          let targetSku = variantSku;
+          const skuConflict = await ProductVariant.findOne({ variantSku: targetSku });
+          if (skuConflict && skuConflict.productId.toString() !== product._id.toString()) {
+            targetSku = `${variantSku}-${Date.now().toString().slice(-4)}`;
+          }
+
+          const createdV = await ProductVariant.create({
             productId: product._id,
             colorName: v.colorName,
             colorHex: v.colorHex || '#111111',
-            variantSku: (v.variantSku || `${product.sku}-${(v.colorName || 'CLR').slice(0, 3)}`).toUpperCase(),
+            variantSku: targetSku,
             regularPrice: v.regularPrice || product.baseRegularPrice,
             salePrice: v.salePrice || product.baseSalePrice,
             images: v.images || product.defaultImages,
             sizes: v.sizes,
+            isActive: true,
           });
+          keptVariantIds.push(createdV._id.toString());
+        }
+      }
+
+      // Delete variants that were removed in the edit form
+      for (const ev of existingVariants) {
+        if (!keptVariantIds.includes(ev._id.toString())) {
+          await ev.deleteOne();
         }
       }
     }
 
     await logAudit(req, 'UPDATE_PRODUCT', 'Product', product._id, { changes: req.body });
 
-    const updated = await Product.findById(product._id).populate('variants');
+    const updated = await Product.findById(product._id)
+      .populate('category', 'name slug')
+      .populate('collections', 'name slug brandComparison')
+      .populate({
+        path: 'relatedProducts',
+        select: 'name slug baseRegularPrice baseSalePrice defaultImages productType brand isBestseller isNewArrival',
+      })
+      .populate({
+        path: 'variants',
+        options: { sort: { displayOrder: 1, createdAt: 1 } },
+      });
+
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.json({ success: true, product: updated, message: 'Product updated successfully' });
   } catch (error) {
     next(error);

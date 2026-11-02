@@ -275,8 +275,9 @@ export const AdminProductForm = () => {
     },
   });
 
-  // Load Catalog Dependencies & Product Data
+    // Load Catalog Dependencies & Product Data
   useEffect(() => {
+    let isMounted = true;
     const init = async () => {
       try {
         setLoading(true);
@@ -287,16 +288,18 @@ export const AdminProductForm = () => {
           api.getProducts({ limit: 100 }),
         ]);
 
+        if (!isMounted) return;
         if (catRes.success) setCategories(catRes.categories || []);
         if (collRes.success) setCollections(collRes.collections || []);
         if (prodsRes.success) {
           setAllProducts(
-            (prodsRes.products || []).filter((p) => (isEditing ? p._id !== id : true))
+            (prodsRes.products || []).filter((p) => (id ? p._id !== id : true))
           );
         }
 
-        if (isEditing) {
+        if (id) {
           const res = await api.adminGetProductById(id);
+          if (!isMounted) return;
           if (res.success && res.product) {
             const p = res.product;
             setForm((prev) => ({
@@ -304,7 +307,7 @@ export const AdminProductForm = () => {
               ...p,
               category: p.category?._id || p.category,
               collections: (p.collections || []).map((c) => c._id || c),
-              initialVariants: p.variants?.length ? p.variants : prev.initialVariants,
+              initialVariants: p.variants?.length ? p.variants : (p.initialVariants?.length ? p.initialVariants : prev.initialVariants),
               customCopy: { ...prev.customCopy, ...(p.customCopy || {}) },
               materialsAndCare: { ...prev.materialsAndCare, ...(p.materialsAndCare || {}) },
               sizeGuideConfig: { ...prev.sizeGuideConfig, ...(p.sizeGuideConfig || {}) },
@@ -333,14 +336,18 @@ export const AdminProductForm = () => {
           setForm((prev) => ({ ...prev, category: catRes.categories[0]._id }));
         }
       } catch (err) {
+        if (!isMounted) return;
         console.error('Failed to load initial form data:', err);
         setError(err.message || 'Error fetching product information');
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
     init();
-  }, [id, isEditing]);
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
 
   // Variant Helpers
   const handleAddVariant = () => {
@@ -548,14 +555,76 @@ export const AdminProductForm = () => {
       // Automatically format uppercase SKU
       if (payload.sku) payload.sku = payload.sku.toUpperCase();
 
-      if (isEditing) {
-        await api.adminUpdateProduct(id, payload);
+      if (id) {
+        const res = await api.adminUpdateProduct(id, payload);
+        if (res.success && res.product) {
+          const p = res.product;
+          setForm((prev) => ({
+            ...prev,
+            ...p,
+            category: p.category?._id || p.category,
+            collections: (p.collections || []).map((c) => c._id || c),
+            initialVariants: p.variants?.length ? p.variants : (p.initialVariants?.length ? p.initialVariants : prev.initialVariants),
+            customCopy: { ...prev.customCopy, ...(p.customCopy || {}) },
+            materialsAndCare: { ...prev.materialsAndCare, ...(p.materialsAndCare || {}) },
+            sizeGuideConfig: { ...prev.sizeGuideConfig, ...(p.sizeGuideConfig || {}) },
+            sizeChart: p.sizeChart || prev.sizeChart,
+            specifications: p.specifications?.length ? p.specifications : prev.specifications,
+            richFeatures: p.richFeatures?.length ? p.richFeatures : prev.richFeatures,
+            storytellingBlocks: p.storytellingBlocks?.length ? p.storytellingBlocks : prev.storytellingBlocks,
+            faqs: p.faqs?.length ? p.faqs : prev.faqs,
+            relatedProducts: (p.relatedProducts || []).map((r) => r._id || r),
+            tags: p.tags?.length ? p.tags : prev.tags,
+            brandComparison: {
+              mode: 'inherit',
+              isEnabled: true,
+              isPublished: true,
+              heading: 'SEE THE DIFFERENCE',
+              subheading: '',
+              desktopMediaUrl: '',
+              mobileMediaUrl: '',
+              altText: 'Brand comparison',
+              displayOrder: 0,
+              ...(p.brandComparison || {}),
+            },
+          }));
+        }
         setSaveSuccess(true);
         setTimeout(() => setSaveSuccess(false), 3000);
       } else {
         const res = await api.adminCreateProduct(payload);
         if (res.success && res.product?._id) {
-          navigate(`/admin/products/edit/${res.product._id}`);
+          const p = res.product;
+          setForm((prev) => ({
+            ...prev,
+            ...p,
+            category: p.category?._id || p.category,
+            collections: (p.collections || []).map((c) => c._id || c),
+            initialVariants: p.variants?.length ? p.variants : (p.initialVariants?.length ? p.initialVariants : prev.initialVariants),
+            customCopy: { ...prev.customCopy, ...(p.customCopy || {}) },
+            materialsAndCare: { ...prev.materialsAndCare, ...(p.materialsAndCare || {}) },
+            sizeGuideConfig: { ...prev.sizeGuideConfig, ...(p.sizeGuideConfig || {}) },
+            sizeChart: p.sizeChart || prev.sizeChart,
+            specifications: p.specifications?.length ? p.specifications : prev.specifications,
+            richFeatures: p.richFeatures?.length ? p.richFeatures : prev.richFeatures,
+            storytellingBlocks: p.storytellingBlocks?.length ? p.storytellingBlocks : prev.storytellingBlocks,
+            faqs: p.faqs?.length ? p.faqs : prev.faqs,
+            relatedProducts: (p.relatedProducts || []).map((r) => r._id || r),
+            tags: p.tags?.length ? p.tags : prev.tags,
+            brandComparison: {
+              mode: 'inherit',
+              isEnabled: true,
+              isPublished: true,
+              heading: 'SEE THE DIFFERENCE',
+              subheading: '',
+              desktopMediaUrl: '',
+              mobileMediaUrl: '',
+              altText: 'Brand comparison',
+              displayOrder: 0,
+              ...(p.brandComparison || {}),
+            },
+          }));
+          navigate(`/admin/products/edit/${res.product._id}`, { replace: true });
         } else {
           navigate('/admin/products');
         }

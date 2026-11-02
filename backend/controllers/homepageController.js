@@ -49,7 +49,6 @@ export const getPublishedHomepage = async (req, res, next) => {
           const limit = Number(sec.config?.maxProducts) || 8;
           let productQuery = {
             status: 'published',
-            baseSalePrice: { $lte: cap },
           };
 
           // Manual product selection mode
@@ -67,7 +66,11 @@ export const getPublishedHomepage = async (req, res, next) => {
               } else {
                 productQuery.collections = matchedColl._id;
               }
+            } else {
+              productQuery.baseSalePrice = { $lte: cap };
             }
+          } else {
+            productQuery.baseSalePrice = { $lte: cap };
           }
 
           // Sorting options
@@ -86,6 +89,16 @@ export const getPublishedHomepage = async (req, res, next) => {
             .populate('variants')
             .populate('category', 'name slug');
 
+          // Fallback: If no products match the priceCap filter, load lowest-priced published products
+          // so this section is NEVER empty when products exist in the store!
+          if (!affordableProducts.length && (!sec.config?.productSource || sec.config?.productSource !== 'manual_select')) {
+            affordableProducts = await Product.find({ status: 'published' })
+              .sort({ baseSalePrice: 1 })
+              .limit(limit)
+              .populate('variants')
+              .populate('category', 'name slug');
+          }
+
           // If manual select, preserve admin specified order
           if (sec.config?.productSource === 'manual_select' && sec.config?.selectedProductIds?.length) {
             const idMap = new Map(affordableProducts.map((p) => [p._id.toString(), p]));
@@ -96,15 +109,15 @@ export const getPublishedHomepage = async (req, res, next) => {
 
           item.dynamicProducts = affordableProducts;
 
-          // Actual minimum price derived authoritatively from database
-          const minProduct = await Product.findOne(productQuery)
-            .sort({ baseSalePrice: 1 })
-            .select('baseSalePrice');
+          // Actual minimum price derived authoritatively from database or lowest product
+          const minProduct = affordableProducts.length
+            ? affordableProducts[0]
+            : await Product.findOne({ status: 'published' })
+                .sort({ baseSalePrice: 1 })
+                .select('baseSalePrice');
 
           item.actualStartingPrice = minProduct
             ? minProduct.baseSalePrice
-            : affordableProducts.length > 0
-            ? Math.min(...affordableProducts.map((p) => p.baseSalePrice))
             : cap;
         }
 

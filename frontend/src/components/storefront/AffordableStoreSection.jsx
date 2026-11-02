@@ -1,3 +1,4 @@
+import { getAssetUrl } from '../../api/api.js';
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -32,7 +33,9 @@ export const AffordableStoreSection = ({ section, onQuickView }) => {
 
   const rawDescription =
     config.campaignDescription ||
-    `Everyday CALZARE, everyday price.\nStarting ₹${lowestPrice.toLocaleString('en-IN')}`;
+    (section?.subtitle
+      ? section.subtitle
+      : `Everyday CALZARE, everyday price.\nStarting ₹${lowestPrice.toLocaleString('en-IN')}`);
 
   const descriptionLines = rawDescription.split('\n');
 
@@ -41,19 +44,25 @@ export const AffordableStoreSection = ({ section, onQuickView }) => {
 
   // Creative photography with art direction
   const desktopImg =
-    config.desktopMediaUrl?.trim() ||
-    config.campaignImage?.trim() ||
-    '/images/store999/promo.jpg';
+    config.desktopMediaUrl?.trim()
+      ? getAssetUrl(config.desktopMediaUrl.trim())
+      : config.campaignImage?.trim()
+      ? getAssetUrl(config.campaignImage.trim())
+      : '/images/store999/promo.jpg';
 
   const mobileImg =
-    config.mobileMediaUrl?.trim() ||
-    config.mobileImage?.trim() ||
-    desktopImg;
+    config.mobileMediaUrl?.trim()
+      ? getAssetUrl(config.mobileMediaUrl.trim())
+      : config.mobileImage?.trim()
+      ? getAssetUrl(config.mobileImage.trim())
+      : desktopImg;
 
   const badgeImg =
-    config.badgeImageUrl?.trim() ||
-    config.campaignBadgeImg?.trim() ||
-    '/images/store999/badge.png';
+    config.badgeImageUrl?.trim()
+      ? getAssetUrl(config.badgeImageUrl.trim())
+      : config.campaignBadgeImg?.trim()
+      ? getAssetUrl(config.campaignBadgeImg.trim())
+      : '/images/store999/badge.png';
 
   const focalPoint = config.focalPoint || 'center';
   const promoBgColor = config.promoBgColor || '#0147af';
@@ -165,10 +174,7 @@ export const AffordableStoreSection = ({ section, onQuickView }) => {
     }
   };
 
-  // Gracefully hide if no products and not in admin preview
-  if (!products.length && !section?.showEmptyInAdmin) {
-    return null;
-  }
+  // When published, section always renders its campaign panel even if inventory is restocked
 
   const sectionId = section?._id || 'store-999';
 
@@ -252,39 +258,107 @@ export const AffordableStoreSection = ({ section, onQuickView }) => {
             onKeyDown={handleKeyDown}
           >
             <div className="handoff-store-999__track">
-              {products.map((product) => {
-                const displayImg =
-                  product.defaultImages?.[0]?.url ||
-                  product.defaultImages?.[0] ||
-                  '/images/store999/promo.jpg';
+              {products.length > 0 ? (
+                products.map((product) => {
+                  const rawImg =
+                    product.defaultImages?.[0]?.url ||
+                    product.defaultImages?.[0] ||
+                    '';
+                  const displayImg = rawImg ? getAssetUrl(rawImg) : '';
 
-                const displayPrice =
-                  product.baseSalePrice || product.price || 999;
+                  const displayPrice =
+                    product.baseSalePrice || product.price || lowestPrice;
 
-                return (
-                  <article key={product._id} className="handoff-store-999__card">
-                    <Link
-                      className="handoff-store-999__card-link"
-                      to={`/product/${product.slug}`}
-                    >
-                      <div className="handoff-store-999__card-media">
-                        <img
-                          src={displayImg}
-                          alt={product.name}
-                          width="276"
-                          height="198"
-                          loading="lazy"
-                          className="handoff-store-999__card-img"
-                        />
-                      </div>
-                      <h3 className="handoff-store-999__card-title">{product.name}</h3>
-                      <p className="handoff-store-999__card-price">
-                        ₹{displayPrice.toLocaleString('en-IN')}
-                      </p>
-                    </Link>
-                  </article>
-                );
-              })}
+                  return (
+                    <article key={product._id} className="handoff-store-999__card">
+                      <Link
+                        className="handoff-store-999__card-link"
+                        to={`/product/${product.slug}`}
+                      >
+                        <div className="handoff-store-999__card-media">
+                          {displayImg ? (
+                            <img
+                              src={displayImg}
+                              alt={product.name}
+                              width="276"
+                              height="198"
+                              loading="lazy"
+                              className="handoff-store-999__card-img"
+                            />
+                          ) : (
+                            <div
+                              style={{
+                                width: '100%',
+                                height: '198px',
+                                background: '#f8fafc',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: '#94a3b8',
+                              }}
+                            >
+                              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+                                <path d="M3.5 13h17M3.5 13a4.5 4.5 0 0 0 4.5 4.5h8a4.5 4.5 0 0 0 4.5-4.5M3.5 13l2-6a3 3 0 0 1 3-2h7a3 3 0 0 1 3 2l2 6" />
+                              </svg>
+                              <span style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.1em', marginTop: '6px' }}>
+                                CALZARE
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                        <h3 className="handoff-store-999__card-title">{product.name}</h3>
+                        <p className="handoff-store-999__card-price">
+                          ₹{displayPrice.toLocaleString('en-IN')}
+                        </p>
+                      </Link>
+                    </article>
+                  );
+                })
+              ) : (
+                <article
+                  className="handoff-store-999__card"
+                  style={{
+                    minWidth: '280px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    textAlign: 'center',
+                    padding: '36px 20px',
+                    background: '#ffffff',
+                    borderRadius: '16px',
+                    border: '1px dashed #cbd5e1',
+                  }}
+                >
+                  <div
+                    style={{
+                      width: '48px',
+                      height: '48px',
+                      borderRadius: '50%',
+                      background: '#f1f5f9',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#64748b',
+                      marginBottom: '12px',
+                    }}
+                  >
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <path d="M3.5 13h17M3.5 13a4.5 4.5 0 0 0 4.5 4.5h8a4.5 4.5 0 0 0 4.5-4.5M3.5 13l2-6a3 3 0 0 1 3-2h7a3 3 0 0 1 3 2l2 6" />
+                    </svg>
+                  </div>
+                  <h3 style={{ fontSize: '0.96rem', fontWeight: 800, color: '#0f172a', margin: '0 0 6px' }}>
+                    NEW DROPS INCOMING
+                  </h3>
+                  <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '0 0 16px', lineHeight: 1.4 }}>
+                    Everyday comfort silhouettes are currently being restocked.
+                  </p>
+                  <Link to="/shop" className="btn-primary" style={{ fontSize: '0.75rem', padding: '8px 16px', textDecoration: 'none' }}>
+                    EXPLORE ALL STYLES
+                  </Link>
+                </article>
+              )}
             </div>
           </div>
 

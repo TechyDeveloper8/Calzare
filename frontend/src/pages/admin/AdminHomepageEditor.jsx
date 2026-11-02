@@ -966,7 +966,7 @@ export const AdminHomepageEditor = () => {
                           value={
                             editingSection.config?.campaignDescription !== undefined
                               ? editingSection.config.campaignDescription
-                              : editingSection.subtitle || 'Everyday Sola, everyday price.\nStarting ₹999'
+                              : editingSection.subtitle || 'Everyday Calzare, everyday price.\nStarting ₹999'
                           }
                           onChange={(e) =>
                             setEditingSection({
@@ -976,7 +976,7 @@ export const AdminHomepageEditor = () => {
                             })
                           }
                           className="admin-textarea"
-                          placeholder="Everyday Sola, everyday price.&#10;Starting ₹999"
+                          placeholder="Everyday Calzare, everyday price.&#10;Starting ₹999"
                         />
                         <span className="admin-hint">
                           Starting price is automatically evaluated from active database products unless overridden above.
@@ -1336,7 +1336,7 @@ export const AdminHomepageEditor = () => {
                                   ))}
                               </div>
                               <div style={{ fontSize: '0.74rem', opacity: 0.9, marginTop: '8px', lineHeight: 1.4 }}>
-                                {(editingSection.config?.campaignDescription || editingSection.subtitle || 'Everyday Sola, everyday price.\nStarting ₹999')
+                                {(editingSection.config?.campaignDescription || editingSection.subtitle || 'Everyday Calzare, everyday price.\nStarting ₹999')
                                   .split('\n')
                                   .map((l, i) => (
                                     <React.Fragment key={i}>
@@ -1424,7 +1424,7 @@ export const AdminHomepageEditor = () => {
                               ))}
                           </div>
                           <div style={{ fontSize: '0.78rem', opacity: 0.9, lineHeight: 1.4 }}>
-                            {(editingSection.config?.campaignDescription || editingSection.subtitle || 'Everyday Sola, everyday price.\nStarting ₹999')
+                            {(editingSection.config?.campaignDescription || editingSection.subtitle || 'Everyday Calzare, everyday price.\nStarting ₹999')
                               .split('\n')
                               .map((l, i) => (
                                 <React.Fragment key={i}>

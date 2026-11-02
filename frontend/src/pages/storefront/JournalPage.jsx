@@ -1,3 +1,4 @@
+import { getAssetUrl } from '../../api/api.js';
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../../api/api.js';
@@ -85,12 +86,19 @@ export const JournalPage = () => {
               marginBottom: '64px',
             }}
           >
-            <div style={{ height: '100%', minHeight: '360px', position: 'relative', overflow: 'hidden' }}>
-              <img
-                src={featured.heroImage || 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=1200&q=80'}
-                alt={featured.title}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
+            <div style={{ height: '100%', minHeight: '360px', position: 'relative', overflow: 'hidden', background: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {featured.heroImage ? (
+                <img
+                  src={getAssetUrl(featured.heroImage)}
+                  alt={featured.title}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              ) : (
+                <div style={{ padding: '32px', textAlign: 'center', color: '#94a3b8' }}>
+                  <span style={{ fontSize: '0.72rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--accent-lime)', display: 'block', marginBottom: '8px', fontWeight: 800 }}>CALZARE EDITORIAL</span>
+                  <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#ffffff' }}>FEATURED STORY</div>
+                </div>
+              )}
             </div>
 
             <div style={{ padding: '48px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
@@ -180,12 +188,18 @@ export const JournalPage = () => {
                 flexDirection: 'column',
               }}
             >
-              <div style={{ height: '220px', overflow: 'hidden' }}>
-                <img
-                  src={art.heroImage || 'https://images.unsplash.com/photo-1603808033192-082d6919d3e1?auto=format&fit=crop&w=800&q=80'}
-                  alt={art.title}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
+              <div style={{ height: '220px', overflow: 'hidden', background: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {art.heroImage ? (
+                  <img
+                    src={getAssetUrl(art.heroImage)}
+                    alt={art.title}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                ) : (
+                  <div style={{ textAlign: 'center', color: '#94a3b8' }}>
+                    <span style={{ fontSize: '0.7rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--accent-lime)', fontWeight: 800 }}>CALZARE</span>
+                  </div>
+                )}
               </div>
 
               <div style={{ padding: '28px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>

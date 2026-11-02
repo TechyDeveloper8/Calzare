@@ -1,3 +1,4 @@
+import { getAssetUrl } from '../../api/api.js';
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate, useSearchParams, useOutletContext } from 'react-router-dom';
 import { api } from '../../api/api.js';
@@ -230,7 +231,7 @@ export const ProductDetailPage = ({ onQuickView: propOnQuickView }) => {
     ? activeVariant.images
     : product.defaultImages?.length
     ? product.defaultImages
-    : [{ url: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=1200&q=85', alt: product.name }];
+    : [];
 
   const currentPrice = activeVariant?.salePrice || product.baseSalePrice;
   const regularPrice = activeVariant?.regularPrice || product.baseRegularPrice;
@@ -486,12 +487,35 @@ export const ProductDetailPage = ({ onQuickView: propOnQuickView }) => {
               onMouseEnter={() => setIsZoomed(true)}
               onMouseLeave={() => setIsZoomed(false)}
             >
-              <img
-                src={displayImages[selectedImageIndex]?.url || displayImages[0]?.url}
-                alt={displayImages[selectedImageIndex]?.alt || product.name}
-                className={`pdp-stage-image ${isZoomed ? 'is-zoomed' : ''}`}
-                fetchpriority="high"
-              />
+              {(displayImages[selectedImageIndex]?.url || displayImages[0]?.url) ? (
+                <img
+                  src={getAssetUrl(displayImages[selectedImageIndex]?.url || displayImages[0]?.url)}
+                  alt={displayImages[selectedImageIndex]?.alt || product.name}
+                  className={`pdp-stage-image ${isZoomed ? 'is-zoomed' : ''}`}
+                  fetchpriority="high"
+                />
+              ) : (
+                <div
+                  className="pdp-stage-image"
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: '#f8fafc',
+                    color: '#94a3b8',
+                    minHeight: '400px',
+                    height: '100%',
+                  }}
+                >
+                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3.5 13h17M3.5 13a4.5 4.5 0 0 0 4.5 4.5h8a4.5 4.5 0 0 0 4.5-4.5M3.5 13l2-6a3 3 0 0 1 3-2h7a3 3 0 0 1 3 2l2 6" />
+                  </svg>
+                  <span style={{ fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.12em', marginTop: '10px', color: '#94a3b8' }}>
+                    CALZARE FOOTWEAR
+                  </span>
+                </div>
+              )}
 
               {/* Badges Overlay */}
               <div style={{ position: 'absolute', top: '16px', left: '16px', display: 'flex', flexDirection: 'column', gap: '8px', zIndex: 2 }}>
@@ -540,7 +564,7 @@ export const ProductDetailPage = ({ onQuickView: propOnQuickView }) => {
                     className={`pdp-thumb-btn ${selectedImageIndex === idx ? 'active' : ''}`}
                     aria-label={`View photo ${idx + 1}`}
                   >
-                    <img src={img.url} alt={img.alt || `${product.name} angle ${idx + 1}`} className="pdp-thumb-img" loading="lazy" />
+                    <img src={getAssetUrl(img.url)} alt={img.alt || `${product.name} angle ${idx + 1}`} className="pdp-thumb-img" loading="lazy" />
                   </button>
                 ))}
               </div>
@@ -1381,7 +1405,7 @@ export const ProductDetailPage = ({ onQuickView: propOnQuickView }) => {
           </button>
 
           <img
-            src={displayImages[selectedImageIndex]?.url}
+            src={getAssetUrl(displayImages[selectedImageIndex]?.url)}
             alt={displayImages[selectedImageIndex]?.alt || product.name}
             className="pdp-lightbox-img"
             onClick={(e) => e.stopPropagation()}
@@ -1413,11 +1437,17 @@ export const ProductDetailPage = ({ onQuickView: propOnQuickView }) => {
       {showMobileBar && (
         <div className="pdp-mobile-sticky-bar">
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <img
-              src={displayImages[0]?.url}
-              alt={product.name}
-              style={{ width: '44px', height: '44px', borderRadius: '8px', objectFit: 'cover' }}
-            />
+            {displayImages[0]?.url ? (
+              <img
+                src={getAssetUrl(displayImages[0].url)}
+                alt={product.name}
+                style={{ width: '44px', height: '44px', borderRadius: '8px', objectFit: 'cover' }}
+              />
+            ) : (
+              <div style={{ width: '44px', height: '44px', borderRadius: '8px', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: '0.62rem', fontWeight: 700 }}>
+                CALZ
+              </div>
+            )}
             <div>
               <div style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--ink-black)', maxWidth: '120px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {product.name}

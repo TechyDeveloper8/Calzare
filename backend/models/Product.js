@@ -33,7 +33,6 @@ const productSchema = new mongoose.Schema(
     tags: [{ type: String, index: true }],
     productType: {
       type: String,
-      enum: ['Clogs', 'Sliders', 'Sandals', 'Sneakers', 'Foam Walkers', 'Accessories'],
       default: 'Clogs',
       index: true,
     },

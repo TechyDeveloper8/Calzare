@@ -1,3 +1,4 @@
+import { getAssetUrl } from '../../api/api.js';
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { X, Heart, ShoppingBag, Check, ShieldCheck, ArrowRight, Star } from 'lucide-react';
@@ -37,7 +38,7 @@ export const QuickViewModal = ({ product, isOpen, onClose }) => {
     ? activeVariant.images
     : product.defaultImages?.length
     ? product.defaultImages
-    : [{ url: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=1000&q=85' }];
+    : [];
 
   const currentPrice = activeVariant?.salePrice || product.baseSalePrice;
   const regularPrice = activeVariant?.regularPrice || product.baseRegularPrice;
@@ -126,11 +127,33 @@ export const QuickViewModal = ({ product, isOpen, onClose }) => {
                 position: 'relative',
               }}
             >
-              <img
-                src={images[selectedImageIndex]?.url || images[0]?.url}
-                alt={product.name}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
+              {images[selectedImageIndex]?.url ? (
+                <img
+                  src={getAssetUrl(images[selectedImageIndex].url)}
+                  alt={product.name}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: '#f8fafc',
+                    color: '#94a3b8',
+                  }}
+                >
+                  <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3.5 13h17M3.5 13a4.5 4.5 0 0 0 4.5 4.5h8a4.5 4.5 0 0 0 4.5-4.5M3.5 13l2-6a3 3 0 0 1 3-2h7a3 3 0 0 1 3 2l2 6" />
+                  </svg>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.1em', marginTop: '8px', color: '#94a3b8' }}>
+                    CALZARE
+                  </span>
+                </div>
+              )}
 
               {discountPercent > 0 && (
                 <span

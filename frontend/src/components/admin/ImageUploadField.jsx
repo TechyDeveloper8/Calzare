@@ -234,8 +234,7 @@ export const ImageUploadField = ({
               margin: 'auto',
             }}
             onError={(e) => {
-              e.currentTarget.src =
-                'https://placehold.co/400x300/f1f5f9/64748b?text=Image+Load+Error';
+              e.currentTarget.style.display = 'none';
             }}
           />
 
@@ -602,8 +601,7 @@ export const MultiImageUploadField = ({
                 margin: 'auto',
               }}
               onError={(e) => {
-                e.currentTarget.src =
-                  'https://placehold.co/200x200/f1f5f9/64748b?text=Broken+Image';
+                e.currentTarget.style.display = 'none';
               }}
             />
 

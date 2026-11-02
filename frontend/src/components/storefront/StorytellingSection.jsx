@@ -1,3 +1,4 @@
+import { getAssetUrl } from '../../api/api.js';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Sparkles } from 'lucide-react';
@@ -10,8 +11,8 @@ export const StorytellingSection = ({ section }) => {
     bodyText:
       'We tested 42 foam compound densities across Bengaluru pavement, Mumbai monsoons, and Jaipur heat before releasing our Apex silhouette. The outcome: closed-cell buoyancy that supports your arch while letting you walk 20,000 steps without calf fatigue.',
     signature: 'CALZARE DESIGN LAB, BENGALURU',
-    primaryImageUrl: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=1200&q=80',
-    secondaryImageUrl: 'https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?auto=format&fit=crop&w=800&q=80',
+    primaryImageUrl: '',
+    secondaryImageUrl: '',
     ctaLabel: 'READ THE FULL STORY',
     ctaLink: '/about',
   };
@@ -51,39 +52,89 @@ export const StorytellingSection = ({ section }) => {
             </div>
           </div>
 
-          {/* Asymmetric Dual Photo Composition */}
-          <div className="story-images-composition" style={{ position: 'relative' }}>
-            <img
-              src={story.primaryImageUrl?.trim() || 'https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=1200&q=80'}
-              alt="CALZARE architectural foam craftsmanship"
-              className="story-img-main"
-              loading="lazy"
-              style={{
-                width: '100%',
-                borderRadius: 'var(--radius-xl)',
-                objectFit: 'cover',
-                boxShadow: '0 20px 40px -10px rgba(0,0,0,0.1)',
-              }}
-            />
-            {story.secondaryImageUrl?.trim() && (
+          {/* Asymmetric Dual Photo Composition or Editorial Badge */}
+          {story.primaryImageUrl?.trim() ? (
+            <div className="story-images-composition" style={{ position: 'relative' }}>
               <img
-                src={story.secondaryImageUrl.trim()}
-                alt="Detailed foam sole texture"
-                className="story-img-inset"
+                src={getAssetUrl(story.primaryImageUrl.trim())}
+                alt="CALZARE architectural foam craftsmanship"
+                className="story-img-main"
                 loading="lazy"
                 style={{
-                  position: 'absolute',
-                  bottom: '-25px',
-                  left: '-25px',
-                  width: '45%',
-                  borderRadius: 'var(--radius-lg)',
-                  border: '6px solid var(--canvas-warm)',
+                  width: '100%',
+                  borderRadius: 'var(--radius-xl)',
                   objectFit: 'cover',
-                  boxShadow: '0 15px 30px -5px rgba(0,0,0,0.2)',
+                  boxShadow: '0 20px 40px -10px rgba(0,0,0,0.1)',
                 }}
               />
-            )}
-          </div>
+              {story.secondaryImageUrl?.trim() && (
+                <img
+                  src={getAssetUrl(story.secondaryImageUrl.trim())}
+                  alt="Detailed foam sole texture"
+                  className="story-img-inset"
+                  loading="lazy"
+                  style={{
+                    position: 'absolute',
+                    bottom: '-25px',
+                    left: '-25px',
+                    width: '45%',
+                    borderRadius: 'var(--radius-lg)',
+                    border: '6px solid var(--canvas-warm)',
+                    objectFit: 'cover',
+                    boxShadow: '0 15px 30px -5px rgba(0,0,0,0.2)',
+                  }}
+                />
+              )}
+            </div>
+          ) : (
+            <div
+              className="story-images-composition"
+              style={{
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: '360px',
+                background: '#0f172a',
+                borderRadius: 'var(--radius-xl)',
+                color: '#ffffff',
+                padding: '40px',
+                textAlign: 'center',
+                boxShadow: '0 20px 40px -10px rgba(0,0,0,0.1)',
+              }}
+            >
+              <div style={{ maxWidth: '340px' }}>
+                <span
+                  style={{
+                    fontSize: '0.75rem',
+                    letterSpacing: '0.2em',
+                    textTransform: 'uppercase',
+                    color: 'var(--accent-lime)',
+                    display: 'block',
+                    marginBottom: '12px',
+                    fontWeight: 800,
+                  }}
+                >
+                  ENGINEERED IN INDIA
+                </span>
+                <h3
+                  style={{
+                    fontSize: '1.8rem',
+                    fontFamily: 'var(--font-heading)',
+                    fontWeight: 800,
+                    letterSpacing: '-0.02em',
+                    margin: '0 0 16px',
+                    lineHeight: 1.15,
+                  }}
+                >
+                  CLOSED-CELL ARCHITECTURAL FOAM
+                </h3>
+                <p style={{ fontSize: '0.86rem', color: '#94a3b8', lineHeight: 1.6, margin: 0 }}>
+                  Monolithic injection-molded cushioning tested across daily pavements and wet terrains.
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </section>

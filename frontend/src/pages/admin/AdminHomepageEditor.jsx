@@ -149,7 +149,7 @@ export const AdminHomepageEditor = () => {
       id: `tile_${Date.now()}`,
       title: 'NEW SILHOUETTE',
       subtitle: 'Footwear features & silhouette description',
-      imageUrl: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=800&q=80',
+      imageUrl: '',
       link: '/shop',
       badge: '',
       order: currentCategoryTiles.length,

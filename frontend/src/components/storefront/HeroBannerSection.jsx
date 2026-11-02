@@ -1,3 +1,4 @@
+import { getAssetUrl } from '../../api/api.js';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight, Sparkles } from 'lucide-react';
@@ -9,13 +10,13 @@ export const HeroBannerSection = ({ section }) => {
     { text: '☁️ CLOUDFOOTBED TECH', badgeStyle: 'glass_float', position: 'bottom_left' },
   ];
 
-  const desktopImage =
-    config.desktopMediaUrl?.trim() ||
-    'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=2000&q=85';
+  const desktopImage = config.desktopMediaUrl?.trim()
+    ? getAssetUrl(config.desktopMediaUrl.trim())
+    : '';
 
-  const mobileImage =
-    config.mobileMediaUrl?.trim() ||
-    desktopImage;
+  const mobileImage = config.mobileMediaUrl?.trim()
+    ? getAssetUrl(config.mobileMediaUrl.trim())
+    : desktopImage;
 
   const textAlignment = config.textAlignment || 'left'; // 'left' | 'center' | 'right'
   const overlayOpacity = config.overlayOpacity !== undefined ? config.overlayOpacity : 0.25;
@@ -23,24 +24,28 @@ export const HeroBannerSection = ({ section }) => {
   return (
     <section className="hero-section hero-fullbleed">
       {/* Edge-to-edge full-bleed campaign photography with responsive art direction */}
-      <div className="hero-backdrop">
-        <picture>
-          <source media="(max-width: 768px)" srcSet={mobileImage} />
-          <img
-            src={desktopImage}
-            alt={section.title ? section.title.replace('\n', ' ') : 'CALZARE Campaign Footwear'}
-            className="hero-backdrop-img"
-            fetchPriority="high"
-            loading="eager"
-            style={{
-              objectPosition: config.focalPoint || 'center center',
-            }}
-          />
-        </picture>
+      <div className="hero-backdrop" style={{ background: '#121214' }}>
+        {desktopImage && (
+          <picture>
+            {mobileImage && <source media="(max-width: 768px)" srcSet={mobileImage} />}
+            <img
+              src={desktopImage}
+              alt={section.title ? section.title.replace('\n', ' ') : 'CALZARE Campaign Footwear'}
+              className="hero-backdrop-img"
+              fetchPriority="high"
+              loading="eager"
+              style={{
+                objectPosition: config.focalPoint || 'center center',
+              }}
+            />
+          </picture>
+        )}
         <div
           className="hero-scrim"
           style={{
-            background: `linear-gradient(to right, rgba(15, 15, 16, ${Math.min(0.85, overlayOpacity + 0.5)}) 0%, rgba(15, 15, 16, ${overlayOpacity}) 60%, rgba(15, 15, 16, 0.1) 100%)`,
+            background: desktopImage
+              ? `linear-gradient(to right, rgba(15, 15, 16, ${Math.min(0.85, overlayOpacity + 0.5)}) 0%, rgba(15, 15, 16, ${overlayOpacity}) 60%, rgba(15, 15, 16, 0.1) 100%)`
+              : 'linear-gradient(135deg, #18181b 0%, #09090b 100%)',
           }}
         />
       </div>

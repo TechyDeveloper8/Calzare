@@ -22,7 +22,7 @@ export const ProductCard = ({ product, onQuickView }) => {
     ? activeVariant.images
     : product.defaultImages?.length
     ? product.defaultImages
-    : [{ url: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=800&q=80' }];
+    : [];
 
   const currentPrice = activeVariant?.salePrice || product.baseSalePrice;
   const regularPrice = activeVariant?.regularPrice || product.baseRegularPrice;
@@ -55,29 +55,52 @@ export const ProductCard = ({ product, onQuickView }) => {
     }
   };
 
-  const fallbackPlaceholder = 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=800&q=80';
-  const primaryImg = (activeImages[0]?.url && activeImages[0].url.trim() !== '') ? getAssetUrl(activeImages[0].url.trim()) : fallbackPlaceholder;
+  const primaryImg = (activeImages[0]?.url && activeImages[0].url.trim() !== '') ? getAssetUrl(activeImages[0].url.trim()) : '';
   const secondaryImg = (activeImages[1]?.url && activeImages[1].url.trim() !== '') ? getAssetUrl(activeImages[1].url.trim()) : null;
 
   return (
     <div className="product-card">
       <Link to={`/product/${product.slug}`} className="product-card-media" aria-label={`View ${product.name}`}>
-        {/* Primary Image */}
-        <img
-          src={primaryImg}
-          alt={product.name}
-          className={`product-card-img ${secondaryImg ? 'has-hover' : ''}`}
-          loading="lazy"
-        />
-
-        {/* Secondary Image on Hover */}
-        {secondaryImg && (
-          <img
-            src={secondaryImg}
-            alt={`${product.name} alternate view`}
-            className="product-card-img-hover"
-            loading="lazy"
-          />
+        {/* Primary Image or Clean Brand Silhouette */}
+        {primaryImg ? (
+          <>
+            <img
+              src={primaryImg}
+              alt={product.name}
+              className={`product-card-img ${secondaryImg ? 'has-hover' : ''}`}
+              loading="lazy"
+            />
+            {secondaryImg && (
+              <img
+                src={secondaryImg}
+                alt={`${product.name} alternate view`}
+                className="product-card-img-hover"
+                loading="lazy"
+              />
+            )}
+          </>
+        ) : (
+          <div
+            className="product-card-img"
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: '#f8fafc',
+              color: '#94a3b8',
+              aspectRatio: '1',
+              width: '100%',
+              height: '100%',
+            }}
+          >
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3.5 13h17M3.5 13a4.5 4.5 0 0 0 4.5 4.5h8a4.5 4.5 0 0 0 4.5-4.5M3.5 13l2-6a3 3 0 0 1 3-2h7a3 3 0 0 1 3 2l2 6" />
+            </svg>
+            <span style={{ fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.1em', marginTop: '6px', color: '#94a3b8' }}>
+              CALZARE
+            </span>
+          </div>
         )}
 
         {/* Top Badges */}

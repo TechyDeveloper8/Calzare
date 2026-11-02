@@ -146,9 +146,7 @@ export const AudienceSection = ({ section, isPreview = false }) => {
                         objectPosition: panel.objectPosition || 'center bottom',
                       }}
                       onError={(e) => {
-                        // Fallback placeholder if custom image URL breaks
-                        e.currentTarget.src =
-                          'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=1200&q=80';
+                        e.currentTarget.style.display = 'none';
                       }}
                     />
                   ) : null}

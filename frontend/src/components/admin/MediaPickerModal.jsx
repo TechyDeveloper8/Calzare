@@ -307,8 +307,7 @@ export const MediaPickerModal = ({ isOpen, onClose, onSelect, title = 'Select fr
                         background: '#f8fafc',
                       }}
                       onError={(e) => {
-                        e.currentTarget.src =
-                          'https://placehold.co/160x110/f1f5f9/64748b?text=Asset';
+                        e.currentTarget.style.display = 'none';
                       }}
                     />
                   </div>

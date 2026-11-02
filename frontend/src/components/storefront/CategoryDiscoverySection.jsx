@@ -33,7 +33,7 @@ export const CategoryDiscoverySection = ({ section }) => {
           id: 'tile_clogs',
           title: 'CLOUD CLOGS',
           subtitle: 'Arch ventilation & pivot heel straps',
-          imageUrl: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=800&q=80',
+          imageUrl: '',
           link: '/shop?category=clogs',
           badge: 'Popular',
           isEnabled: true,
@@ -43,7 +43,7 @@ export const CategoryDiscoverySection = ({ section }) => {
           id: 'tile_sliders',
           title: 'URBAN SLIDERS',
           subtitle: '35mm thick shock absorbent sole',
-          imageUrl: 'https://images.unsplash.com/photo-1603808033192-082d6919d3e1?auto=format&fit=crop&w=800&q=80',
+          imageUrl: '',
           link: '/shop?category=sliders',
           badge: 'Trending',
           isEnabled: true,
@@ -53,7 +53,7 @@ export const CategoryDiscoverySection = ({ section }) => {
           id: 'tile_sandals',
           title: 'HYDRO SANDALS',
           subtitle: 'Trail lugs for wet terrain grip',
-          imageUrl: 'https://images.unsplash.com/photo-1621996346565-e3d5d6281691?auto=format&fit=crop&w=800&q=80',
+          imageUrl: '',
           link: '/shop?category=sandals',
           badge: 'All-Terrain',
           isEnabled: true,
@@ -63,7 +63,7 @@ export const CategoryDiscoverySection = ({ section }) => {
           id: 'tile_foam_walkers',
           title: 'FOAM WALKERS',
           subtitle: 'Avant-garde streetwear mules',
-          imageUrl: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&q=80',
+          imageUrl: '',
           link: '/shop?category=foam-walkers',
           badge: 'Streetwear',
           isEnabled: true,
@@ -129,25 +129,42 @@ export const CategoryDiscoverySection = ({ section }) => {
                     padding: tile.imageFit === 'cover' ? '0' : '16px',
                   }}
                 >
-                  <img
-                    src={
-                      getAssetUrl(tile.imageUrl?.trim()) ||
-                      'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=800&q=80'
-                    }
-                    alt={tile.title || 'Footwear Silhouette'}
-                    style={{
-                      maxWidth: '100%',
-                      maxHeight: '100%',
-                      width: tile.imageFit === 'cover' ? '100%' : 'auto',
-                      height: tile.imageFit === 'cover' ? '100%' : 'auto',
-                      objectFit: tile.imageFit || 'contain',
-                      objectPosition: 'center',
-                      transition: 'transform 0.4s ease',
-                      display: 'block',
-                      margin: 'auto',
-                    }}
-                    loading="lazy"
-                  />
+                  {tile.imageUrl?.trim() ? (
+                    <img
+                      src={getAssetUrl(tile.imageUrl.trim())}
+                      alt={tile.title || 'Footwear Silhouette'}
+                      style={{
+                        maxWidth: '100%',
+                        maxHeight: '100%',
+                        width: tile.imageFit === 'cover' ? '100%' : 'auto',
+                        height: tile.imageFit === 'cover' ? '100%' : 'auto',
+                        objectFit: tile.imageFit || 'contain',
+                        objectPosition: 'center',
+                        transition: 'transform 0.4s ease',
+                        display: 'block',
+                        margin: 'auto',
+                      }}
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#94a3b8',
+                        padding: '20px',
+                      }}
+                    >
+                      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M3.5 13h17M3.5 13a4.5 4.5 0 0 0 4.5 4.5h8a4.5 4.5 0 0 0 4.5-4.5M3.5 13l2-6a3 3 0 0 1 3-2h7a3 3 0 0 1 3 2l2 6" />
+                      </svg>
+                      <span style={{ fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.08em', marginTop: '6px', color: '#94a3b8' }}>
+                        CALZARE
+                      </span>
+                    </div>
+                  )}
                   {tile.badge && (
                     <span
                       style={{

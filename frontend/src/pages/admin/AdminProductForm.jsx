@@ -69,13 +69,7 @@ export const AdminProductForm = () => {
     isBestseller: false,
     isNewArrival: true,
     tags: ['waterproof', 'eva-foam', 'clogs'],
-    defaultImages: [
-      {
-        url: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=1000&q=85',
-        alt: 'Product profile view',
-        isMain: true,
-      },
-    ],
+    defaultImages: [],
     videoUrl: '',
 
     // Group 2: Main product-page copy overrides
@@ -115,7 +109,7 @@ export const AdminProductForm = () => {
         heading: 'ENGINEERED FOR THE CONCRETE WILD',
         subheading: 'Closed-Cell Microfoam Technology',
         body: 'Every contour of the silhouette is pressure-mapped against human biomechanics to absorb shock and distribute bodyweight evenly across your stride.',
-        imageUrl: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=1200&q=80',
+        imageUrl: '',
         imageAlt: 'Foam cushioning macro view',
         videoUrl: '',
         layout: 'image_right',
@@ -209,13 +203,7 @@ export const AdminProductForm = () => {
         variantSku: 'CALZ-OAT',
         regularPrice: 1499,
         salePrice: 899,
-        images: [
-          {
-            url: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=1000&q=85',
-            alt: 'Oat Beige Side Angle',
-            isMain: true,
-          },
-        ],
+        images: [],
         sizes: [
           { size: 'UK 6', stock: 15, sku: 'CALZ-OAT-06' },
           { size: 'UK 7', stock: 20, sku: 'CALZ-OAT-07' },
@@ -864,13 +852,21 @@ export const AdminProductForm = () => {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
               <div className="admin-form-group">
                 <label className="admin-label">Footwear Category *</label>
                 <select
                   required
                   value={form.category}
-                  onChange={(e) => setForm({ ...form, category: e.target.value })}
+                  onChange={(e) => {
+                    const catId = e.target.value;
+                    const selectedCat = categories.find((c) => String(c._id) === String(catId));
+                    setForm({
+                      ...form,
+                      category: catId,
+                      productType: selectedCat ? selectedCat.name : (form.productType || 'Clogs'),
+                    });
+                  }}
                   className="admin-select"
                 >
                   <option value="">Select Primary Category</option>
@@ -879,22 +875,6 @@ export const AdminProductForm = () => {
                       {c.name}
                     </option>
                   ))}
-                </select>
-              </div>
-
-              <div className="admin-form-group">
-                <label className="admin-label">Product Type</label>
-                <select
-                  value={form.productType}
-                  onChange={(e) => setForm({ ...form, productType: e.target.value })}
-                  className="admin-select"
-                >
-                  <option value="Clogs">Clogs</option>
-                  <option value="Sliders">Sliders</option>
-                  <option value="Sandals">Sandals</option>
-                  <option value="Sneakers">Sneakers</option>
-                  <option value="Foam Walkers">Foam Walkers</option>
-                  <option value="Accessories">Accessories</option>
                 </select>
               </div>
 
@@ -2508,11 +2488,17 @@ export const AdminProductForm = () => {
                           setForm({ ...form, relatedProducts: newSelection });
                         }}
                       />
-                      <img
-                        src={p.defaultImages?.[0]?.url || 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=100&q=80'}
-                        alt={p.name}
-                        style={{ width: '40px', height: '40px', borderRadius: '4px', objectFit: 'cover' }}
-                      />
+                      {p.defaultImages?.[0]?.url ? (
+                        <img
+                          src={p.defaultImages[0].url}
+                          alt={p.name}
+                          style={{ width: '40px', height: '40px', borderRadius: '4px', objectFit: 'cover' }}
+                        />
+                      ) : (
+                        <div style={{ width: '40px', height: '40px', borderRadius: '4px', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: '0.62rem', fontWeight: 700 }}>
+                          CALZ
+                        </div>
+                      )}
                       <div>
                         <span style={{ fontSize: '0.84rem', fontWeight: 700, color: '#0f172a', display: 'block' }}>
                           {p.name}

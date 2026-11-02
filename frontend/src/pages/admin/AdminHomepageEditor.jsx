@@ -16,6 +16,7 @@ import {
   ExternalLink,
   X,
   Layers,
+  Search,
 } from 'lucide-react';
 import { ImageUploadField } from '../../components/admin/ImageUploadField.jsx';
 import { AudienceSection } from '../../components/storefront/AudienceSection.jsx';
@@ -32,6 +33,8 @@ export const AdminHomepageEditor = () => {
   const [editingSection, setEditingSection] = useState(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [railProductSearch, setRailProductSearch] = useState('');
+  const [expandedCutoutProductId, setExpandedCutoutProductId] = useState(null);
 
   const fetchSections = async () => {
     try {
@@ -104,6 +107,7 @@ export const AdminHomepageEditor = () => {
       clone.config.campaignImage = clone.config.desktopMediaUrl;
       clone.config.badgeImageUrl = clone.config.badgeImageUrl || clone.config.campaignBadgeImg || '';
       clone.config.campaignBadgeImg = clone.config.badgeImageUrl;
+      clone.config.productCutoutImages = clone.config.productCutoutImages || {};
     }
     if (clone.sectionType === 'reviews' && (!clone.config?.customerReviews || clone.config.customerReviews.length === 0)) {
       clone.config = clone.config || {};
@@ -1397,60 +1401,216 @@ export const AdminHomepageEditor = () => {
                         </div>
                       </div>
 
-                      {/* Manual Product Selector */}
-                      {editingSection.config?.productSource === 'manual_select' && (
-                        <div style={{ marginTop: '14px', borderTop: '1px solid #e2e8f0', paddingTop: '12px' }}>
-                          <label className="admin-label" style={{ marginBottom: '6px' }}>
-                            Pick Products for /999 Store ({editingSection.config?.selectedProductIds?.length || 0} selected)
-                          </label>
-                          <div style={{ maxHeight: '200px', overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '8px', background: '#f8fafc' }}>
-                            {availableProducts.map((p) => {
+                      {/* Rail Products Cutout Media & Selection */}
+                      <div style={{ marginTop: '16px', borderTop: '1px solid #e2e8f0', paddingTop: '14px' }}>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+                          <div>
+                            <div style={{ fontSize: '0.86rem', fontWeight: 700, color: '#0f172a' }}>
+                              Select Rail Products & Upload Cutout Images (No Background)
+                            </div>
+                            <p style={{ fontSize: '0.75rem', color: '#64748b', margin: '2px 0 0' }}>
+                              Upload isolated footwear cutout PNGs with transparent backgrounds so shoes float directly on the white rail, exactly like Solaworld.
+                            </p>
+                          </div>
+                          {editingSection.config?.productSource === 'manual_select' && (
+                            <button
+                              type="button"
+                              className="admin-btn admin-btn-outline"
+                              style={{ fontSize: '0.72rem', padding: '4px 10px' }}
+                              onClick={() => {
+                                const current = editingSection.config?.selectedProductIds || [];
+                                const qual = availableProducts
+                                  .filter((p) => (p.baseSalePrice || p.price || 0) <= (editingSection.config?.priceCap || 999))
+                                  .map((p) => p._id);
+                                const allSelected = qual.length > 0 && qual.every((id) => current.includes(id));
+                                setEditingSection({
+                                  ...editingSection,
+                                  config: {
+                                    ...editingSection.config,
+                                    selectedProductIds: allSelected ? [] : qual,
+                                  },
+                                });
+                              }}
+                            >
+                              {availableProducts.filter((p) => (p.baseSalePrice || p.price || 0) <= (editingSection.config?.priceCap || 999)).every((p) => (editingSection.config?.selectedProductIds || []).includes(p._id))
+                                ? 'Deselect All'
+                                : `Select All ≤ ₹${editingSection.config?.priceCap || 999}`}
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Search Input */}
+                        <div style={{ position: 'relative', marginBottom: '10px' }}>
+                          <Search size={14} style={{ position: 'absolute', left: '10px', top: '10px', color: '#94a3b8' }} />
+                          <input
+                            type="text"
+                            value={railProductSearch}
+                            onChange={(e) => setRailProductSearch(e.target.value)}
+                            placeholder="Filter products by name or SKU..."
+                            className="admin-input"
+                            style={{ paddingLeft: '32px', fontSize: '0.8rem' }}
+                          />
+                        </div>
+
+                        {/* Products Rail List with Cutout Uploader */}
+                        <div
+                          style={{
+                            maxHeight: '340px',
+                            overflowY: 'auto',
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '8px',
+                            padding: '8px',
+                            background: '#f8fafc',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '8px',
+                          }}
+                        >
+                          {availableProducts
+                            .filter((p) => {
+                              if (!railProductSearch) return true;
+                              const q = railProductSearch.toLowerCase();
+                              return p.name?.toLowerCase().includes(q) || p.sku?.toLowerCase().includes(q);
+                            })
+                            .map((p) => {
                               const isChecked = (editingSection.config?.selectedProductIds || []).includes(p._id);
+                              const cutoutUrl = editingSection.config?.productCutoutImages?.[p._id] || '';
+                              const isExpanded = expandedCutoutProductId === p._id;
+
                               return (
-                                <label
+                                <div
                                   key={p._id}
                                   style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '10px',
-                                    padding: '6px 8px',
-                                    borderBottom: '1px solid #f1f5f9',
-                                    cursor: 'pointer',
-                                    background: isChecked ? '#e0f2fe' : 'transparent',
-                                    borderRadius: '4px',
+                                    background: '#ffffff',
+                                    border: isChecked ? '1.5px solid #0056aa' : '1px solid #e2e8f0',
+                                    borderRadius: '6px',
+                                    padding: '8px 12px',
+                                    boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
                                   }}
                                 >
-                                  <input
-                                    type="checkbox"
-                                    checked={isChecked}
-                                    onChange={(e) => {
-                                      const current = editingSection.config?.selectedProductIds || [];
-                                      const next = e.target.checked
-                                        ? [...current, p._id]
-                                        : current.filter((id) => id !== p._id);
-                                      setEditingSection({
-                                        ...editingSection,
-                                        config: { ...editingSection.config, selectedProductIds: next },
-                                      });
-                                    }}
-                                  />
-                                  <img
-                                    src={getAssetUrl(p.defaultImages?.[0]?.url || p.defaultImages?.[0] || '/images/store999/promo.jpg')}
-                                    alt=""
-                                    style={{ width: '32px', height: '32px', objectFit: 'contain', background: '#fff', borderRadius: '3px' }}
-                                  />
-                                  <div style={{ flex: 1, fontSize: '0.8rem', fontWeight: 600, color: '#0f172a' }}>
-                                    {p.name}
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    {editingSection.config?.productSource === 'manual_select' && (
+                                      <input
+                                        type="checkbox"
+                                        checked={isChecked}
+                                        onChange={(e) => {
+                                          const current = editingSection.config?.selectedProductIds || [];
+                                          const next = e.target.checked
+                                            ? [...current, p._id]
+                                            : current.filter((id) => id !== p._id);
+                                          setEditingSection({
+                                            ...editingSection,
+                                            config: { ...editingSection.config, selectedProductIds: next },
+                                          });
+                                        }}
+                                        style={{ cursor: 'pointer', width: '16px', height: '16px' }}
+                                      />
+                                    )}
+
+                                    {/* Shoe Preview: checkerboard if cutout active to reveal transparency */}
+                                    <div
+                                      style={{
+                                        width: '48px',
+                                        height: '42px',
+                                        borderRadius: '4px',
+                                        border: '1px solid #e2e8f0',
+                                        background: cutoutUrl
+                                          ? 'repeating-conic-gradient(#f1f5f9 0% 25%, #ffffff 0% 50%) 50% / 10px 10px'
+                                          : '#f8fafc',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        overflow: 'hidden',
+                                        flexShrink: 0,
+                                      }}
+                                    >
+                                      <img
+                                        src={getAssetUrl(cutoutUrl || p.defaultImages?.[0]?.url || p.defaultImages?.[0] || '/images/store999/promo.jpg')}
+                                        alt=""
+                                        style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+                                      />
+                                    </div>
+
+                                    {/* Product Meta */}
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                      <div style={{ fontSize: '0.82rem', fontWeight: 600, color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                        {p.name}
+                                      </div>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
+                                        <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#0056aa' }}>
+                                          ₹{(p.baseSalePrice || p.price || 999).toLocaleString('en-IN')}
+                                        </span>
+                                        {cutoutUrl ? (
+                                          <span style={{ fontSize: '0.66rem', fontWeight: 700, background: '#dcfce7', color: '#15803d', padding: '1px 6px', borderRadius: '4px' }}>
+                                            ✨ No-BG Cutout Active
+                                          </span>
+                                        ) : (
+                                          <span style={{ fontSize: '0.66rem', color: '#94a3b8' }}>
+                                            Using Catalog Image
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    {/* Actions */}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                      <button
+                                        type="button"
+                                        className="admin-btn admin-btn-outline"
+                                        style={{ fontSize: '0.72rem', padding: '4px 8px' }}
+                                        onClick={() => setExpandedCutoutProductId(isExpanded ? null : p._id)}
+                                      >
+                                        {cutoutUrl ? (isExpanded ? 'Hide' : 'Change Cutout') : (isExpanded ? 'Cancel' : 'Upload Cutout (No BG)')}
+                                      </button>
+                                      {cutoutUrl && (
+                                        <button
+                                          type="button"
+                                          style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '0.72rem', cursor: 'pointer', padding: '4px' }}
+                                          title="Revert to standard catalog image"
+                                          onClick={() => {
+                                            const next = { ...(editingSection.config?.productCutoutImages || {}) };
+                                            delete next[p._id];
+                                            setEditingSection({
+                                              ...editingSection,
+                                              config: { ...editingSection.config, productCutoutImages: next },
+                                            });
+                                          }}
+                                        >
+                                          <Trash2 size={13} />
+                                        </button>
+                                      )}
+                                    </div>
                                   </div>
-                                  <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#0147af' }}>
-                                    ₹{(p.baseSalePrice || p.price || 999).toLocaleString('en-IN')}
-                                  </div>
-                                </label>
+
+                                  {/* Inline Cutout Uploader */}
+                                  {isExpanded && (
+                                    <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px dashed #cbd5e1' }}>
+                                      <ImageUploadField
+                                        label={`Upload Transparent Cutout PNG for ${p.name}`}
+                                        description="Upload high-res PNG image with transparent background (no background color). The shoe will float directly on the white sliding rail without any bounding box."
+                                        value={cutoutUrl}
+                                        onChange={(url) => {
+                                          setEditingSection({
+                                            ...editingSection,
+                                            config: {
+                                              ...editingSection.config,
+                                              productCutoutImages: {
+                                                ...(editingSection.config?.productCutoutImages || {}),
+                                                [p._id]: url,
+                                              },
+                                            },
+                                          });
+                                        }}
+                                        compact={true}
+                                        aspectRatio="square"
+                                      />
+                                    </div>
+                                  )}
+                                </div>
                               );
                             })}
-                          </div>
                         </div>
-                      )}
+                      </div>
                     </div>
 
                     {/* Part C: Live Visual Preview */}
@@ -1554,36 +1714,140 @@ export const AdminHomepageEditor = () => {
                             </div>
                           </div>
 
-                          {/* Desktop Preview Rail Sample */}
-                          <div style={{ display: 'flex', gap: '12px', overflow: 'hidden' }}>
-                            {[1, 2].map((idx) => (
-                              <div
-                                key={idx}
-                                style={{
-                                  width: '160px',
-                                  flexShrink: 0,
-                                  border: '1px solid #f1f5f9',
-                                  borderRadius: '8px',
-                                  padding: '8px',
-                                  textAlign: 'center',
-                                }}
-                              >
-                                <div style={{ height: '110px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                  <img
-                                    src="/images/store999/promo.jpg"
-                                    alt=""
-                                    style={{ maxHeight: '90px', objectFit: 'contain' }}
-                                  />
+                          {/* Desktop Preview Rail */}
+                          {(() => {
+                            const selectedIds = editingSection.config?.selectedProductIds || [];
+                            let railList = [];
+                            if (editingSection.config?.productSource === 'manual_select' && selectedIds.length > 0) {
+                              const pMap = new Map(availableProducts.map((p) => [p._id, p]));
+                              railList = selectedIds.map((id) => pMap.get(id)).filter(Boolean);
+                            } else {
+                              railList = availableProducts.filter(
+                                (p) => (p.baseSalePrice || p.price || 0) <= (editingSection.config?.priceCap || 999)
+                              );
+                            }
+                            if (!railList.length) railList = availableProducts.slice(0, 4);
+                            const displayRail = railList.slice(0, 4);
+
+                            return (
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', width: '100%', minWidth: 0 }}>
+                                <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '4px' }}>
+                                  {displayRail.map((p) => {
+                                    const cutout = editingSection.config?.productCutoutImages?.[p._id];
+                                    const fallback = p.defaultImages?.[0]?.url || p.defaultImages?.[0];
+                                    const imgSrc = cutout || fallback || '/images/store999/promo.jpg';
+                                    const isCutout = Boolean(cutout);
+
+                                    return (
+                                      <div
+                                        key={p._id}
+                                        style={{
+                                          width: '180px',
+                                          flexShrink: 0,
+                                          background: '#ffffff',
+                                          padding: '8px 4px 14px',
+                                          textAlign: 'center',
+                                          display: 'flex',
+                                          flexDirection: 'column',
+                                          alignItems: 'center',
+                                        }}
+                                      >
+                                        <div
+                                          style={{
+                                            width: '100%',
+                                            height: '130px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            position: 'relative',
+                                          }}
+                                        >
+                                          <img
+                                            src={getAssetUrl(imgSrc)}
+                                            alt={p.name}
+                                            style={{
+                                              maxWidth: '100%',
+                                              maxHeight: '120px',
+                                              objectFit: 'contain',
+                                              filter: isCutout ? 'drop-shadow(0 8px 16px rgba(0,0,0,0.08))' : 'none',
+                                            }}
+                                          />
+                                          {isCutout && (
+                                            <span
+                                              style={{
+                                                position: 'absolute',
+                                                top: 0,
+                                                right: 0,
+                                                fontSize: '0.62rem',
+                                                fontWeight: 700,
+                                                background: '#dcfce7',
+                                                color: '#15803d',
+                                                padding: '2px 5px',
+                                                borderRadius: '3px',
+                                              }}
+                                            >
+                                              No-BG
+                                            </span>
+                                          )}
+                                        </div>
+                                        <div
+                                          style={{
+                                            fontSize: '0.82rem',
+                                            fontWeight: 500,
+                                            color: '#000000',
+                                            margin: '8px 0 2px',
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            width: '100%',
+                                          }}
+                                        >
+                                          {p.name}
+                                        </div>
+                                        <div style={{ fontSize: '0.82rem', color: '#0056aa', fontWeight: 500 }}>
+                                          ₹{(p.baseSalePrice || p.price || 999).toLocaleString('en-IN')}
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
                                 </div>
-                                <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#000', margin: '6px 0 2px' }}>
-                                  Veyron Clogs {idx}
-                                </div>
-                                <div style={{ fontSize: '0.75rem', color: '#0056aa', fontWeight: 600 }}>
-                                  ₹999
+
+                                {/* Solaworld Pill Arrows Preview */}
+                                <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '6px' }}>
+                                  <div
+                                    style={{
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      width: '42px',
+                                      height: '24px',
+                                      borderRadius: '12px',
+                                      border: '1px solid #cbd5e1',
+                                      color: '#64748b',
+                                      fontSize: '0.72rem',
+                                    }}
+                                  >
+                                    ←
+                                  </div>
+                                  <div
+                                    style={{
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      width: '42px',
+                                      height: '24px',
+                                      borderRadius: '12px',
+                                      border: '1px solid #cbd5e1',
+                                      color: '#64748b',
+                                      fontSize: '0.72rem',
+                                    }}
+                                  >
+                                    →
+                                  </div>
                                 </div>
                               </div>
-                            ))}
-                          </div>
+                            );
+                          })()}
                         </div>
                       ) : (
                         /* Mobile Preview Layout */

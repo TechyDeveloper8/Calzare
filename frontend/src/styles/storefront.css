@@ -1167,6 +1167,10 @@
   transition: transform 0.3s ease;
 }
 
+.handoff-store-999__card-img--cutout {
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.08));
+}
+
 .handoff-store-999__card:hover .handoff-store-999__card-img {
   transform: scale(1.04);
 }

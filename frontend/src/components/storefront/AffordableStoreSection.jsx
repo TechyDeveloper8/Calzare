@@ -261,7 +261,12 @@ export const AffordableStoreSection = ({ section, onQuickView }) => {
             <div className="handoff-store-999__track">
               {products.length > 0 ? (
                 products.map((product) => {
+                  const cutoutUrl =
+                    config.productCutoutImages?.[product._id] ||
+                    product.cutoutImage;
+                  const hasCutout = Boolean(cutoutUrl);
                   const rawImg =
+                    cutoutUrl ||
                     product.defaultImages?.[0]?.url ||
                     product.defaultImages?.[0] ||
                     '';
@@ -284,7 +289,7 @@ export const AffordableStoreSection = ({ section, onQuickView }) => {
                               width="276"
                               height="198"
                               loading="lazy"
-                              className="handoff-store-999__card-img"
+                              className={`handoff-store-999__card-img ${hasCutout ? 'handoff-store-999__card-img--cutout' : ''}`}
                             />
                           ) : (
                             <div

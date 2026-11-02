@@ -107,6 +107,18 @@ export const getPublishedHomepage = async (req, res, next) => {
               .filter(Boolean);
           }
 
+          if (sec.config?.productCutoutImages) {
+            const cutouts = sec.config.productCutoutImages;
+            affordableProducts = affordableProducts.map((p) => {
+              const pObj = p.toObject ? p.toObject() : { ...p };
+              const idStr = pObj._id?.toString();
+              if (cutouts[idStr]) {
+                pObj.cutoutImage = cutouts[idStr];
+              }
+              return pObj;
+            });
+          }
+
           item.dynamicProducts = affordableProducts;
 
           // Actual minimum price derived authoritatively from database or lowest product

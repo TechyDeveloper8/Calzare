@@ -98,6 +98,7 @@ const homepageSectionSchema = new mongoose.Schema(
       campaignHeadline: { type: String },
       campaignDescription: { type: String },
       promoBgColor: { type: String, default: '#0147af' },
+      productCutoutImages: { type: mongoose.Schema.Types.Mixed, default: {} },
 
       // Audience cards & Shop Split Panels
       audienceCards: [

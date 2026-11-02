@@ -26,6 +26,16 @@ export const getAssetUrl = (url) => {
     return trimmed;
   }
 
+  // Public static assets hosted on frontend client (e.g. /images/..., /favicon, /icons)
+  if (
+    trimmed.startsWith('/images/') ||
+    trimmed.startsWith('images/') ||
+    trimmed.startsWith('/favicon') ||
+    trimmed.startsWith('/icons')
+  ) {
+    return trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+  }
+
   const backendHost = (
     import.meta.env.VITE_API_URL ||
     import.meta.env.VITE_API_BASE_URL ||

@@ -1473,8 +1473,10 @@ export const AdminHomepageEditor = () => {
                               return p.name?.toLowerCase().includes(q) || p.sku?.toLowerCase().includes(q);
                             })
                             .map((p) => {
-                              const isChecked = (editingSection.config?.selectedProductIds || []).includes(p._id);
-                              const cutoutUrl = editingSection.config?.productCutoutImages?.[p._id] || '';
+                              const selectedIdsList = (editingSection.config?.selectedProductIds || []).map((id) => (id?._id || id?.toString() || id));
+                              const pIdStr = p._id?.toString() || p._id;
+                              const isChecked = selectedIdsList.includes(pIdStr);
+                              const cutoutUrl = (editingSection.config?.productCutoutImages && (editingSection.config.productCutoutImages[pIdStr] || editingSection.config.productCutoutImages[p._id])) || '';
                               const isExpanded = expandedCutoutProductId === p._id;
 
                               return (
@@ -1719,8 +1721,8 @@ export const AdminHomepageEditor = () => {
                             const selectedIds = editingSection.config?.selectedProductIds || [];
                             let railList = [];
                             if (editingSection.config?.productSource === 'manual_select' && selectedIds.length > 0) {
-                              const pMap = new Map(availableProducts.map((p) => [p._id, p]));
-                              railList = selectedIds.map((id) => pMap.get(id)).filter(Boolean);
+                              const pMap = new Map(availableProducts.map((p) => [p._id?.toString() || p._id, p]));
+                              railList = selectedIds.map((id) => pMap.get(id?._id?.toString() || id?.toString() || id)).filter(Boolean);
                             } else {
                               railList = availableProducts.filter(
                                 (p) => (p.baseSalePrice || p.price || 0) <= (editingSection.config?.priceCap || 999)
@@ -1733,7 +1735,8 @@ export const AdminHomepageEditor = () => {
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', width: '100%', minWidth: 0 }}>
                                 <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '4px' }}>
                                   {displayRail.map((p) => {
-                                    const cutout = editingSection.config?.productCutoutImages?.[p._id];
+                                    const pIdStr = p._id?.toString() || p._id;
+                                    const cutout = (editingSection.config?.productCutoutImages && (editingSection.config.productCutoutImages[pIdStr] || editingSection.config.productCutoutImages[p._id])) || '';
                                     const fallback = p.defaultImages?.[0]?.url || p.defaultImages?.[0];
                                     const imgSrc = cutout || fallback || '/images/store999/promo.jpg';
                                     const isCutout = Boolean(cutout);

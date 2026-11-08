@@ -132,13 +132,13 @@ export const ContactPage = () => {
                   </div>
                   <div>
                     <div style={{ fontSize: '0.78rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 700 }}>
-                      Concierge Email
+                      Contact Email
                     </div>
                     <a
-                      href="mailto:concierge@calzarefootwear.com"
+                      href="mailto:Admin@calzareheels.com"
                       style={{ fontSize: '1.02rem', fontWeight: 700, color: 'var(--ink-black)', textDecoration: 'none' }}
                     >
-                      concierge@calzarefootwear.com
+                      Admin@calzareheels.com
                     </a>
                     <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
                       Priority queue for orders and sizing questions
@@ -166,7 +166,7 @@ export const ContactPage = () => {
                       WhatsApp Helpline
                     </div>
                     <div style={{ fontSize: '1.02rem', fontWeight: 700, color: 'var(--ink-black)' }}>
-                      +91 98765 43210
+                      +91 9162819875
                     </div>
                     <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
                       Instant chat support during business hours
@@ -194,7 +194,7 @@ export const ContactPage = () => {
                       Operating Hours
                     </div>
                     <div style={{ fontSize: '0.98rem', fontWeight: 600 }}>
-                      Monday – Saturday // 10:00 AM – 7:00 PM IST
+                      Monday – Saturday || 10:00 AM – 5:00 PM IST
                     </div>
                   </div>
                 </div>
@@ -219,7 +219,7 @@ export const ContactPage = () => {
                       Creative Design Studio
                     </div>
                     <div style={{ fontSize: '0.95rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                      12th Main Road, HAL 2nd Stage, Indiranagar, Bengaluru, Karnataka 560038, India
+                      CALZARE HEELS PRIVATE LIMITED  NSP1,   C-22,24, Near Teacher Training College, BIADA BARARI INDUSTRIAL.
                     </div>
                   </div>
                 </div>

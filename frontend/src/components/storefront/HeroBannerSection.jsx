@@ -40,7 +40,7 @@ export const HeroBannerSection = ({ section }) => {
 
   // Layout mode: Desktop Centered-Bottom, Mobile Bottom
   const isCenteredBottom =
-    ctaPosition === 'centered_bottom' ||
+    ctaPosition === 'left_bottom' ||
     (!showTitle && !showSubtitle && (showPrimaryCta || showSecondaryCta));
 
   return (
@@ -69,8 +69,8 @@ export const HeroBannerSection = ({ section }) => {
               background: isCenteredBottom && !showTitle && !showSubtitle
                 ? `linear-gradient(to top, rgba(10, 11, 14, 0.75) 0%, rgba(10, 11, 14, 0.2) 28%, transparent 65%)`
                 : desktopImage
-                ? `linear-gradient(to right, rgba(15, 15, 16, ${Math.min(0.85, overlayOpacity + 0.5)}) 0%, rgba(15, 15, 16, ${overlayOpacity}) 60%, rgba(15, 15, 16, 0.1) 100%)`
-                : 'linear-gradient(135deg, #18181b 0%, #09090b 100%)',
+                  ? `linear-gradient(to right, rgba(15, 15, 16, ${Math.min(0.85, overlayOpacity + 0.5)}) 0%, rgba(15, 15, 16, ${overlayOpacity}) 60%, rgba(15, 15, 16, 0.1) 100%)`
+                  : 'linear-gradient(135deg, #18181b 0%, #09090b 100%)',
             }}
           />
         )}
@@ -82,7 +82,7 @@ export const HeroBannerSection = ({ section }) => {
           <div
             className={`hero-content ${isCenteredBottom ? 'hero-content--centered-bottom' : ''}`}
             style={{
-              textAlign: isCenteredBottom ? 'center' : textAlignment,
+              textAlign: isBottom ? 'left' : textAlignment,
               marginLeft: isCenteredBottom || textAlignment === 'center' ? 'auto' : textAlignment === 'right' ? 'auto' : 0,
               marginRight: isCenteredBottom || textAlignment === 'center' ? 'auto' : 0,
             }}

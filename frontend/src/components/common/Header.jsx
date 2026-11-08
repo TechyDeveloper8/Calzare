@@ -34,6 +34,7 @@ export const Header = ({ onOpenSearch }) => {
   }, []);
 
   const defaultNavItems = [
+    { label: 'Home', url: '/' },
     { label: 'Men', url: '/men' },
     { label: 'Women', url: '/women' },
     { label: 'Kids', url: '/kids' },
@@ -60,12 +61,29 @@ export const Header = ({ onOpenSearch }) => {
       );
     })
     .map((item) => {
+      const lbl = (item.label || '').trim().toLowerCase();
+      if (lbl === 'home') {
+        return { ...item, url: '/' };
+      }
       // Remove badge from Kids if present
       if (item.label === 'Kids' && item.badge === 'NEW') {
         return { ...item, badge: null };
       }
       return item;
     });
+
+  // Ensure Home is ALWAYS present as the first item in the navbar and redirects to '/'
+  const homeIndex = navItems.findIndex(
+    (i) => (i.label || '').trim().toLowerCase() === 'home' || i.url === '/'
+  );
+  if (homeIndex === -1) {
+    navItems.unshift({ label: 'Home', url: '/' });
+  } else if (homeIndex > 0) {
+    const [homeItem] = navItems.splice(homeIndex, 1);
+    navItems.unshift({ ...homeItem, label: homeItem.label || 'Home', url: '/' });
+  } else {
+    navItems[0] = { ...navItems[0], url: '/' };
+  }
 
   // Ensure Our Story and Contact are always present in the header
   if (!navItems.some((i) => i.url === '/about')) {
@@ -98,12 +116,17 @@ export const Header = ({ onOpenSearch }) => {
             {/* Desktop Navigation Links - Centered in Middle */}
             <nav className="desktop-nav-links" aria-label="Main Navigation">
               {navItems.map((item, idx) => {
-                const isActive = location.pathname === item.url;
+                const isActive = item.url === '/' ? location.pathname === '/' : location.pathname === item.url;
                 return (
                   <Link
                     key={idx}
                     to={item.url}
                     className="nav-link"
+                    onClick={() => {
+                      if (item.url === '/' && location.pathname === '/') {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }
+                    }}
                     style={{
                       position: 'relative',
                       color: isActive ? 'var(--ink-black)' : 'var(--text-primary)',
@@ -363,7 +386,12 @@ export const Header = ({ onOpenSearch }) => {
                 <Link
                   key={idx}
                   to={item.url}
-                  onClick={() => setMobileMenuOpen(false)}
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    if (item.url === '/' && location.pathname === '/') {
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                  }}
                   style={{
                     fontFamily: 'var(--font-display)',
                     fontWeight: 800,

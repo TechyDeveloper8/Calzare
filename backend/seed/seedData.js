@@ -902,6 +902,7 @@ const seedDatabase = async () => {
         title: 'Primary Storefront Navigation',
         isActive: true,
         items: [
+          { label: 'Home', url: '/' },
           { label: 'Men', url: '/men' },
           { label: 'Women', url: '/women' },
           { label: 'Kids', url: '/kids' },

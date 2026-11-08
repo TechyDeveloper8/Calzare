@@ -57,6 +57,11 @@ const homepageSectionSchema = new mongoose.Schema(
       primaryCtaLink: { type: String, default: '/shop' },
       secondaryCtaLabel: { type: String },
       secondaryCtaLink: { type: String },
+      showTitle: { type: Boolean, default: true },
+      showSubtitle: { type: Boolean, default: true },
+      showPrimaryCta: { type: Boolean, default: true },
+      showSecondaryCta: { type: Boolean, default: true },
+      showStickers: { type: Boolean, default: true },
       stickers: [
         {
           text: { type: String },
@@ -92,6 +97,7 @@ const homepageSectionSchema = new mongoose.Schema(
       overlayTint: { type: String, default: 'rgba(0, 0, 0, 0.45)' },
 
       // Affordable Store / 999 Store specific campaign media & copy
+      campaignEyebrow: { type: String, default: '/999 Store' },
       campaignImage: { type: String },
       campaignBadgeImg: { type: String },
       badgeImageUrl: { type: String },

@@ -211,6 +211,9 @@ export const AffordableStoreSection = ({ section, onQuickView }) => {
           </div>
 
           <div className="handoff-store-999__promo-content">
+            <p className="handoff-store-999__eyebrow">
+              {config.campaignEyebrow || section?.eyebrow || '/999 Store'}
+            </p>
             <h2 className="handoff-store-999__heading">
               {headlineLines.map((line, idx) => (
                 <React.Fragment key={idx}>
@@ -261,8 +264,10 @@ export const AffordableStoreSection = ({ section, onQuickView }) => {
             <div className="handoff-store-999__track">
               {products.length > 0 ? (
                 products.map((product) => {
+                  const pIdStr = String(product._id);
                   const cutoutUrl =
                     config.productCutoutImages?.[product._id] ||
+                    config.productCutoutImages?.[pIdStr] ||
                     product.cutoutImage;
                   const hasCutout = Boolean(cutoutUrl);
                   const rawImg =

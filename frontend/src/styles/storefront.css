@@ -980,13 +980,13 @@
 
 .handoff-store-999__inner {
   display: grid;
-  grid-template-columns: minmax(360px, 440px) 1fr;
+  grid-template-columns: minmax(340px, 420px) minmax(0, 1fr);
   align-items: center;
   width: 100%;
-  max-width: 1680px;
+  max-width: 1440px;
   margin: 0 auto;
   min-width: 0;
-  gap: 32px;
+  gap: 36px;
   box-sizing: border-box;
   padding: 0 clamp(20px, 2.4vw, 36px) 0 clamp(16px, 1.8vw, 24px);
 }
@@ -1038,7 +1038,16 @@
 }
 
 .handoff-store-999__eyebrow {
-  display: none !important;
+  position: absolute;
+  top: 24px;
+  right: 28px;
+  margin: 0;
+  font-family: var(--heading-font, var(--font-display, sans-serif));
+  font-size: clamp(20px, 2.2vw, 30px);
+  font-weight: 500;
+  line-height: 1;
+  color: #ffffff;
+  letter-spacing: -0.02em;
 }
 
 .handoff-store-999__heading {
@@ -1110,7 +1119,7 @@
 .handoff-store-999__scroller {
   --store999-gap: 20px;
   --store999-visible: 2;
-  --store999-card-width: 200px;
+  --store999-card-width: calc((100% - var(--store999-gap)) / 2);
   width: 100%;
   min-width: 0;
   max-width: 100%;
@@ -1129,6 +1138,7 @@
   display: flex;
   gap: var(--store999-gap);
   width: max-content;
+  min-width: 100%;
 }
 
 .handoff-store-999__card {

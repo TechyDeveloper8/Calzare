@@ -109,6 +109,12 @@ export const AdminHomepageEditor = () => {
       clone.config.campaignBadgeImg = clone.config.badgeImageUrl;
       clone.config.productCutoutImages = clone.config.productCutoutImages || {};
     }
+    if (clone.sectionType === 'hero') {
+      clone.config.showTitle = clone.config.showTitle !== false;
+      clone.config.showSubtitle = clone.config.showSubtitle !== false;
+      clone.config.showPrimaryCta = clone.config.showPrimaryCta !== false;
+      clone.config.showStickers = clone.config.showStickers !== false;
+    }
     if (clone.sectionType === 'reviews' && (!clone.config?.customerReviews || clone.config.customerReviews.length === 0)) {
       clone.config = clone.config || {};
       clone.config.customerReviews = [
@@ -608,23 +614,61 @@ export const AdminHomepageEditor = () => {
                 {editingSection.sectionType !== 'affordable_store' && (
                   <>
                     <div className="admin-form-group">
-                      <label className="admin-label">Main Heading / Title</label>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                        <label className="admin-label" style={{ marginBottom: 0 }}>Main Heading / Title</label>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '0.78rem', color: editingSection.config?.showTitle !== false ? '#059669' : '#94a3b8', fontWeight: 600 }}>
+                          <input
+                            type="checkbox"
+                            checked={editingSection.config?.showTitle !== false}
+                            onChange={(e) =>
+                              setEditingSection({
+                                ...editingSection,
+                                config: { ...editingSection.config, showTitle: e.target.checked },
+                              })
+                            }
+                          />
+                          {editingSection.config?.showTitle !== false ? 'Visible on Storefront' : 'Hidden from Storefront'}
+                        </label>
+                      </div>
                       <textarea
                         rows={2}
                         value={editingSection.title || ''}
                         onChange={(e) => setEditingSection({ ...editingSection, title: e.target.value })}
                         className="admin-textarea"
                         placeholder="e.g. 0% BORING.\n100% AIR."
+                        style={{
+                          opacity: editingSection.config?.showTitle !== false ? 1 : 0.6,
+                          background: editingSection.config?.showTitle !== false ? '#ffffff' : '#f8fafc',
+                        }}
                       />
                     </div>
 
                     <div className="admin-form-group">
-                      <label className="admin-label">Subtitle / Narrative Summary</label>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                        <label className="admin-label" style={{ marginBottom: 0 }}>Subtitle / Narrative Summary</label>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '0.78rem', color: editingSection.config?.showSubtitle !== false ? '#059669' : '#94a3b8', fontWeight: 600 }}>
+                          <input
+                            type="checkbox"
+                            checked={editingSection.config?.showSubtitle !== false}
+                            onChange={(e) =>
+                              setEditingSection({
+                                ...editingSection,
+                                config: { ...editingSection.config, showSubtitle: e.target.checked },
+                              })
+                            }
+                          />
+                          {editingSection.config?.showSubtitle !== false ? 'Visible on Storefront' : 'Hidden from Storefront'}
+                        </label>
+                      </div>
                       <textarea
                         rows={3}
                         value={editingSection.subtitle || ''}
                         onChange={(e) => setEditingSection({ ...editingSection, subtitle: e.target.value })}
                         className="admin-textarea"
+                        style={{
+                          opacity: editingSection.config?.showSubtitle !== false ? 1 : 0.6,
+                          background: editingSection.config?.showSubtitle !== false ? '#ffffff' : '#f8fafc',
+                        }}
                       />
                     </div>
                   </>
@@ -667,34 +711,94 @@ export const AdminHomepageEditor = () => {
                       />
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                      <div className="admin-form-group" style={{ marginBottom: 0 }}>
-                        <label className="admin-label">Primary CTA Label</label>
-                        <input
-                          type="text"
-                          value={editingSection.config?.primaryCtaLabel || ''}
-                          onChange={(e) =>
-                            setEditingSection({
-                              ...editingSection,
-                              config: { ...editingSection.config, primaryCtaLabel: e.target.value },
-                            })
-                          }
-                          className="admin-input"
-                        />
+                    <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '12px', marginTop: '14px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0f172a' }}>
+                          Primary Call-to-Action (CTA) Button
+                        </div>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '0.78rem', color: editingSection.config?.showPrimaryCta !== false ? '#059669' : '#94a3b8', fontWeight: 600 }}>
+                          <input
+                            type="checkbox"
+                            checked={editingSection.config?.showPrimaryCta !== false}
+                            onChange={(e) =>
+                              setEditingSection({
+                                ...editingSection,
+                                config: { ...editingSection.config, showPrimaryCta: e.target.checked },
+                              })
+                            }
+                          />
+                          {editingSection.config?.showPrimaryCta !== false ? 'Button Visible' : 'Button Hidden from Storefront'}
+                        </label>
                       </div>
-                      <div className="admin-form-group" style={{ marginBottom: 0 }}>
-                        <label className="admin-label">CTA Target Route</label>
-                        <input
-                          type="text"
-                          value={editingSection.config?.primaryCtaLink || ''}
-                          onChange={(e) =>
-                            setEditingSection({
-                              ...editingSection,
-                              config: { ...editingSection.config, primaryCtaLink: e.target.value },
-                            })
-                          }
-                          className="admin-input"
-                        />
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                        <div className="admin-form-group" style={{ marginBottom: 0 }}>
+                          <label className="admin-label">Primary CTA Label</label>
+                          <input
+                            type="text"
+                            value={editingSection.config?.primaryCtaLabel || ''}
+                            onChange={(e) =>
+                              setEditingSection({
+                                ...editingSection,
+                                config: { ...editingSection.config, primaryCtaLabel: e.target.value },
+                              })
+                            }
+                            className="admin-input"
+                            placeholder="e.g. EXPLORE COLLECTION"
+                            disabled={editingSection.config?.showPrimaryCta === false}
+                            style={{
+                              opacity: editingSection.config?.showPrimaryCta !== false ? 1 : 0.6,
+                              background: editingSection.config?.showPrimaryCta !== false ? '#ffffff' : '#f8fafc',
+                            }}
+                          />
+                        </div>
+                        <div className="admin-form-group" style={{ marginBottom: 0 }}>
+                          <label className="admin-label">CTA Target Route</label>
+                          <input
+                            type="text"
+                            value={editingSection.config?.primaryCtaLink || ''}
+                            onChange={(e) =>
+                              setEditingSection({
+                                ...editingSection,
+                                config: { ...editingSection.config, primaryCtaLink: e.target.value },
+                              })
+                            }
+                            className="admin-input"
+                            placeholder="/shop"
+                            disabled={editingSection.config?.showPrimaryCta === false}
+                            style={{
+                              opacity: editingSection.config?.showPrimaryCta !== false ? 1 : 0.6,
+                              background: editingSection.config?.showPrimaryCta !== false ? '#ffffff' : '#f8fafc',
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Floating Badges / Stickers Toggle */}
+                    <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '12px', marginTop: '14px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                          <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0f172a' }}>
+                            Floating Badges / Stickers Layer
+                          </div>
+                          <p style={{ fontSize: '0.74rem', color: '#64748b', margin: '2px 0 0' }}>
+                            Displays floating streetwear badges (e.g. 🔥 100% WATERPROOF FOAM, ☁️ CLOUDFOOTBED TECH)
+                          </p>
+                        </div>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '0.78rem', color: editingSection.config?.showStickers !== false ? '#059669' : '#94a3b8', fontWeight: 600 }}>
+                          <input
+                            type="checkbox"
+                            checked={editingSection.config?.showStickers !== false}
+                            onChange={(e) =>
+                              setEditingSection({
+                                ...editingSection,
+                                config: { ...editingSection.config, showStickers: e.target.checked },
+                              })
+                            }
+                          />
+                          {editingSection.config?.showStickers !== false ? 'Stickers Visible' : 'Stickers Hidden'}
+                        </label>
                       </div>
                     </div>
                   </div>
@@ -1096,6 +1200,27 @@ export const AdminHomepageEditor = () => {
                             <option value="right">Right</option>
                           </select>
                         </div>
+                      </div>
+
+                      <div className="admin-form-group">
+                        <label className="admin-label">Top-Right Eyebrow / Campaign Tag</label>
+                        <input
+                          type="text"
+                          value={
+                            editingSection.config?.campaignEyebrow !== undefined
+                              ? editingSection.config.campaignEyebrow
+                              : editingSection.eyebrow || '/999 Store'
+                          }
+                          onChange={(e) =>
+                            setEditingSection({
+                              ...editingSection,
+                              eyebrow: e.target.value,
+                              config: { ...editingSection.config, campaignEyebrow: e.target.value },
+                            })
+                          }
+                          className="admin-input"
+                          placeholder="/999 Store"
+                        />
                       </div>
 
                       <div className="admin-form-group">
@@ -1673,6 +1798,21 @@ export const AdminHomepageEditor = () => {
                                 color: '#ffffff',
                               }}
                             >
+                              <div
+                                style={{
+                                  position: 'absolute',
+                                  top: '14px',
+                                  right: '16px',
+                                  fontSize: '0.95rem',
+                                  fontWeight: 600,
+                                  color: '#ffffff',
+                                  letterSpacing: '-0.02em',
+                                }}
+                              >
+                                {editingSection.config?.campaignEyebrow !== undefined
+                                  ? editingSection.config.campaignEyebrow
+                                  : editingSection.eyebrow || '/999 Store'}
+                              </div>
                               <div style={{ marginTop: '90px', fontSize: '1.25rem', fontWeight: 600, lineHeight: 1.2 }}>
                                 {(editingSection.config?.campaignHeadline || editingSection.title || 'Your day\nfound its footing.')
                                   .split('\n')

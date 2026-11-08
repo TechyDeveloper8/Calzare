@@ -18,6 +18,7 @@ export const HeroBannerSection = ({ section }) => {
     : desktopImage;
 
   const textAlignment = config.textAlignment || 'left'; // 'left' | 'center' | 'right'
+  const ctaPosition = config.ctaPosition || 'centered_bottom';
   const overlayOpacity = config.overlayOpacity !== undefined ? config.overlayOpacity : 0.25;
 
   // Visibility controls (chooseable in admin CMS)
@@ -37,8 +38,13 @@ export const HeroBannerSection = ({ section }) => {
   const showStickers = config.showStickers !== false && stickers.length > 0;
   const hasTextContent = showTitle || showSubtitle || showPrimaryCta || showSecondaryCta;
 
+  // Layout mode: Desktop Centered-Bottom, Mobile Bottom
+  const isCenteredBottom =
+    ctaPosition === 'centered_bottom' ||
+    (!showTitle && !showSubtitle && (showPrimaryCta || showSecondaryCta));
+
   return (
-    <section className="hero-section hero-fullbleed">
+    <section className={`hero-section hero-fullbleed ${isCenteredBottom ? 'hero-section--centered-bottom' : ''}`}>
       {/* Edge-to-edge full-bleed campaign photography with responsive art direction */}
       <div className="hero-backdrop" style={{ background: '#121214' }}>
         {desktopImage && (
@@ -60,7 +66,9 @@ export const HeroBannerSection = ({ section }) => {
           <div
             className="hero-scrim"
             style={{
-              background: desktopImage
+              background: isCenteredBottom && !showTitle && !showSubtitle
+                ? `linear-gradient(to top, rgba(10, 11, 14, 0.75) 0%, rgba(10, 11, 14, 0.2) 28%, transparent 65%)`
+                : desktopImage
                 ? `linear-gradient(to right, rgba(15, 15, 16, ${Math.min(0.85, overlayOpacity + 0.5)}) 0%, rgba(15, 15, 16, ${overlayOpacity}) 60%, rgba(15, 15, 16, 0.1) 100%)`
                 : 'linear-gradient(135deg, #18181b 0%, #09090b 100%)',
             }}
@@ -69,14 +77,14 @@ export const HeroBannerSection = ({ section }) => {
       </div>
 
       {/* Foreground Container with Editorial Art Direction */}
-      <div className="container hero-container" style={{ position: 'relative', zIndex: 10 }}>
+      <div className={`container hero-container ${isCenteredBottom ? 'hero-container--centered-bottom' : ''}`} style={{ position: 'relative', zIndex: 10 }}>
         {hasTextContent && (
           <div
-            className="hero-content"
+            className={`hero-content ${isCenteredBottom ? 'hero-content--centered-bottom' : ''}`}
             style={{
-              textAlign: textAlignment,
-              marginLeft: textAlignment === 'center' ? 'auto' : textAlignment === 'right' ? 'auto' : 0,
-              marginRight: textAlignment === 'center' ? 'auto' : 0,
+              textAlign: isCenteredBottom ? 'center' : textAlignment,
+              marginLeft: isCenteredBottom || textAlignment === 'center' ? 'auto' : textAlignment === 'right' ? 'auto' : 0,
+              marginRight: isCenteredBottom || textAlignment === 'center' ? 'auto' : 0,
             }}
           >
             {showTitle && <h1 className="hero-title">{rawTitle}</h1>}
@@ -85,19 +93,19 @@ export const HeroBannerSection = ({ section }) => {
 
             {(showPrimaryCta || showSecondaryCta) && (
               <div
-                className="hero-cta-group"
+                className={`hero-cta-group ${isCenteredBottom ? 'hero-cta-group--centered-bottom' : ''}`}
                 style={{
-                  justifyContent: textAlignment === 'center' ? 'center' : textAlignment === 'right' ? 'flex-end' : 'flex-start',
+                  justifyContent: isCenteredBottom || textAlignment === 'center' ? 'center' : textAlignment === 'right' ? 'flex-end' : 'flex-start',
                 }}
               >
                 {showPrimaryCta && (
-                  <Link to={config.primaryCtaLink || '/shop'} className="btn-primary btn-lime">
+                  <Link to={config.primaryCtaLink || '/shop'} className="btn-primary btn-lime hero-btn-main">
                     {rawPrimaryCtaLabel} <ArrowUpRight size={18} />
                   </Link>
                 )}
 
                 {showSecondaryCta && (
-                  <Link to={config.secondaryCtaLink || '/new-arrivals'} className="btn-secondary btn-glass">
+                  <Link to={config.secondaryCtaLink || '/new-arrivals'} className="btn-secondary btn-glass hero-btn-secondary">
                     {config.secondaryCtaLabel}
                   </Link>
                 )}

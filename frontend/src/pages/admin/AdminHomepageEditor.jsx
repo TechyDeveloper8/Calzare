@@ -114,6 +114,7 @@ export const AdminHomepageEditor = () => {
       clone.config.showSubtitle = clone.config.showSubtitle !== false;
       clone.config.showPrimaryCta = clone.config.showPrimaryCta !== false;
       clone.config.showStickers = clone.config.showStickers !== false;
+      clone.config.ctaPosition = clone.config.ctaPosition || 'centered_bottom';
     }
     if (clone.sectionType === 'reviews' && (!clone.config?.customerReviews || clone.config.customerReviews.length === 0)) {
       clone.config = clone.config || {};
@@ -771,6 +772,34 @@ export const AdminHomepageEditor = () => {
                               background: editingSection.config?.showPrimaryCta !== false ? '#ffffff' : '#f8fafc',
                             }}
                           />
+                        </div>
+
+                        <div className="admin-form-group" style={{ gridColumn: '1 / -1', marginTop: '10px', marginBottom: 0 }}>
+                          <label className="admin-label">CTA Placement & Alignment</label>
+                          <select
+                            value={editingSection.config?.ctaPosition || 'centered_bottom'}
+                            onChange={(e) =>
+                              setEditingSection({
+                                ...editingSection,
+                                config: { ...editingSection.config, ctaPosition: e.target.value },
+                              })
+                            }
+                            className="admin-select"
+                            disabled={editingSection.config?.showPrimaryCta === false}
+                          >
+                            <option value="centered_bottom">
+                              Centered-Bottom (Desktop: Centered Bottom | Mobile: Bottom) - Recommended
+                            </option>
+                            <option value="bottom_left">
+                              Bottom-Left (Desktop: Bottom Left | Mobile: Bottom)
+                            </option>
+                            <option value="standard">
+                              Inline Standard (Directly underneath narrative copy)
+                            </option>
+                          </select>
+                          <span className="admin-hint">
+                            Positions the CTA button at the centered-bottom on desktop screens and anchored to the bottom on mobile screens.
+                          </span>
                         </div>
                       </div>
                     </div>

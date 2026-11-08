@@ -405,6 +405,110 @@
   align-items: center;
 }
 
+/* ── Centered-Bottom CTA Mode (Desktop: Centered Bottom | Mobile: Bottom) ── */
+.hero-section--centered-bottom {
+  align-items: flex-end;
+  padding-top: 60px;
+  padding-bottom: clamp(36px, 5.5vh, 64px);
+}
+
+.hero-container--centered-bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.hero-content--centered-bottom {
+  max-width: 860px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.hero-content--centered-bottom .hero-title {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-content--centered-bottom .hero-subtitle {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-cta-group--centered-bottom {
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.hero-cta-group--centered-bottom .hero-btn-main {
+  min-width: 250px;
+  height: 52px;
+  padding: 0 38px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 9999px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hero-cta-group--centered-bottom .hero-btn-main:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 34px rgba(216, 255, 0, 0.35);
+}
+
+/* Mobile View: CTA Anchored to Bottom */
+@media (max-width: 768px) {
+  .hero-section--centered-bottom {
+    align-items: flex-end;
+    padding-top: 40px;
+    padding-bottom: clamp(24px, 4.5vh, 36px);
+    min-height: clamp(520px, 85vh, 680px);
+  }
+
+  .hero-container--centered-bottom {
+    padding-inline: 16px;
+  }
+
+  .hero-content--centered-bottom {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .hero-cta-group--centered-bottom {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    gap: 12px;
+  }
+
+  .hero-cta-group--centered-bottom .hero-btn-main {
+    width: 100%;
+    min-width: 0;
+    height: 50px;
+    font-size: 14px;
+    justify-content: center;
+  }
+
+  .hero-cta-group--centered-bottom .hero-btn-secondary {
+    width: 100%;
+    min-width: 0;
+    height: 48px;
+    justify-content: center;
+  }
+}
+
 @media (max-width: 640px) {
   .hero-title {
     font-size: clamp(1.85rem, 8vw, 2.75rem);

@@ -17,8 +17,6 @@ export const HeroBannerSection = ({ section }) => {
     ? getAssetUrl(config.mobileMediaUrl.trim())
     : desktopImage;
 
-  const textAlignment = config.textAlignment || 'left'; // 'left' | 'center' | 'right'
-  const ctaPosition = config.ctaPosition || 'centered_bottom';
   const overlayOpacity = config.overlayOpacity !== undefined ? config.overlayOpacity : 0.25;
 
   // Visibility controls (chooseable in admin CMS)
@@ -38,13 +36,8 @@ export const HeroBannerSection = ({ section }) => {
   const showStickers = config.showStickers !== false && stickers.length > 0;
   const hasTextContent = showTitle || showSubtitle || showPrimaryCta || showSecondaryCta;
 
-  // Layout mode: Desktop Centered-Bottom, Mobile Bottom
-  const isCenteredBottom =
-    ctaPosition === 'left_bottom' ||
-    (!showTitle && !showSubtitle && (showPrimaryCta || showSecondaryCta));
-
   return (
-    <section className={`hero-section hero-fullbleed ${isCenteredBottom ? 'hero-section--centered-bottom' : ''}`}>
+    <section className="hero-section hero-fullbleed hero-section--left-bottom">
       {/* Edge-to-edge full-bleed campaign photography with responsive art direction */}
       <div className="hero-backdrop" style={{ background: '#121214' }}>
         {desktopImage && (
@@ -66,8 +59,8 @@ export const HeroBannerSection = ({ section }) => {
           <div
             className="hero-scrim"
             style={{
-              background: isCenteredBottom && !showTitle && !showSubtitle
-                ? `linear-gradient(to top, rgba(10, 11, 14, 0.75) 0%, rgba(10, 11, 14, 0.2) 28%, transparent 65%)`
+              background: !showTitle && !showSubtitle
+                ? `linear-gradient(to top, rgba(10, 11, 14, 0.72) 0%, rgba(10, 11, 14, 0.18) 28%, transparent 60%)`
                 : desktopImage
                   ? `linear-gradient(to right, rgba(15, 15, 16, ${Math.min(0.85, overlayOpacity + 0.5)}) 0%, rgba(15, 15, 16, ${overlayOpacity}) 60%, rgba(15, 15, 16, 0.1) 100%)`
                   : 'linear-gradient(135deg, #18181b 0%, #09090b 100%)',
@@ -77,14 +70,14 @@ export const HeroBannerSection = ({ section }) => {
       </div>
 
       {/* Foreground Container with Editorial Art Direction */}
-      <div className={`container hero-container ${isCenteredBottom ? 'hero-container--centered-bottom' : ''}`} style={{ position: 'relative', zIndex: 10 }}>
+      <div className="container hero-container hero-container--left-bottom" style={{ position: 'relative', zIndex: 10 }}>
         {hasTextContent && (
           <div
-            className={`hero-content ${isCenteredBottom ? 'hero-content--centered-bottom' : ''}`}
+            className="hero-content hero-content--left-bottom"
             style={{
-              textAlign: isBottom ? 'left' : textAlignment,
-              marginLeft: isCenteredBottom || textAlignment === 'center' ? 'auto' : textAlignment === 'right' ? 'auto' : 0,
-              marginRight: isCenteredBottom || textAlignment === 'center' ? 'auto' : 0,
+              textAlign: 'left',
+              marginLeft: 0,
+              marginRight: 'auto',
             }}
           >
             {showTitle && <h1 className="hero-title">{rawTitle}</h1>}
@@ -92,12 +85,7 @@ export const HeroBannerSection = ({ section }) => {
             {showSubtitle && <p className="hero-subtitle">{rawSubtitle}</p>}
 
             {(showPrimaryCta || showSecondaryCta) && (
-              <div
-                className={`hero-cta-group ${isCenteredBottom ? 'hero-cta-group--centered-bottom' : ''}`}
-                style={{
-                  justifyContent: isCenteredBottom || textAlignment === 'center' ? 'center' : textAlignment === 'right' ? 'flex-end' : 'flex-start',
-                }}
-              >
+              <div className="hero-cta-group hero-cta-group--left-bottom">
                 {showPrimaryCta && (
                   <Link to={config.primaryCtaLink || '/shop'} className="btn-primary btn-lime hero-btn-main">
                     {rawPrimaryCtaLabel} <ArrowUpRight size={18} />

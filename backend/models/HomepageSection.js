@@ -57,7 +57,7 @@ const homepageSectionSchema = new mongoose.Schema(
       primaryCtaLink: { type: String, default: '/shop' },
       secondaryCtaLabel: { type: String },
       secondaryCtaLink: { type: String },
-      ctaPosition: { type: String, default: 'centered_bottom' },
+      ctaPosition: { type: String, default: 'left_bottom' },
       showTitle: { type: Boolean, default: true },
       showSubtitle: { type: Boolean, default: true },
       showPrimaryCta: { type: Boolean, default: true },

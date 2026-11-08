@@ -1475,8 +1475,8 @@ export const AdminHomepageEditor = () => {
                             .map((p) => {
                               const selectedIdsList = (editingSection.config?.selectedProductIds || []).map((id) => (id?._id || id?.toString() || id));
                               const pIdStr = p._id?.toString() || p._id;
-                              const isChecked = selectedIdsList.includes(pIdStr);
-                              const cutoutUrl = (editingSection.config?.productCutoutImages && (editingSection.config.productCutoutImages[pIdStr] || editingSection.config.productCutoutImages[p._id])) || '';
+                              const isRailProductSelected = selectedIdsList.includes(pIdStr);
+                              const railCutoutUrl = (editingSection.config?.productCutoutImages && (editingSection.config.productCutoutImages[pIdStr] || editingSection.config.productCutoutImages[p._id])) || '';
                               const isExpanded = expandedCutoutProductId === p._id;
 
                               return (
@@ -1484,7 +1484,7 @@ export const AdminHomepageEditor = () => {
                                   key={p._id}
                                   style={{
                                     background: '#ffffff',
-                                    border: isChecked ? '1.5px solid #0056aa' : '1px solid #e2e8f0',
+                                    border: isRailProductSelected ? '1.5px solid #0056aa' : '1px solid #e2e8f0',
                                     borderRadius: '6px',
                                     padding: '8px 12px',
                                     boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
@@ -1494,7 +1494,7 @@ export const AdminHomepageEditor = () => {
                                     {editingSection.config?.productSource === 'manual_select' && (
                                       <input
                                         type="checkbox"
-                                        checked={isChecked}
+                                        checked={isRailProductSelected}
                                         onChange={(e) => {
                                           const current = editingSection.config?.selectedProductIds || [];
                                           const next = e.target.checked
@@ -1516,7 +1516,7 @@ export const AdminHomepageEditor = () => {
                                         height: '42px',
                                         borderRadius: '4px',
                                         border: '1px solid #e2e8f0',
-                                        background: cutoutUrl
+                                        background: railCutoutUrl
                                           ? 'repeating-conic-gradient(#f1f5f9 0% 25%, #ffffff 0% 50%) 50% / 10px 10px'
                                           : '#f8fafc',
                                         display: 'flex',
@@ -1527,7 +1527,7 @@ export const AdminHomepageEditor = () => {
                                       }}
                                     >
                                       <img
-                                        src={getAssetUrl(cutoutUrl || p.defaultImages?.[0]?.url || p.defaultImages?.[0] || '/images/store999/promo.jpg')}
+                                        src={getAssetUrl(railCutoutUrl || p.defaultImages?.[0]?.url || p.defaultImages?.[0] || '/images/store999/promo.jpg')}
                                         alt=""
                                         style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
                                       />
@@ -1542,7 +1542,7 @@ export const AdminHomepageEditor = () => {
                                         <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#0056aa' }}>
                                           ₹{(p.baseSalePrice || p.price || 999).toLocaleString('en-IN')}
                                         </span>
-                                        {cutoutUrl ? (
+                                        {railCutoutUrl ? (
                                           <span style={{ fontSize: '0.66rem', fontWeight: 700, background: '#dcfce7', color: '#15803d', padding: '1px 6px', borderRadius: '4px' }}>
                                             ✨ No-BG Cutout Active
                                           </span>
@@ -1562,9 +1562,9 @@ export const AdminHomepageEditor = () => {
                                         style={{ fontSize: '0.72rem', padding: '4px 8px' }}
                                         onClick={() => setExpandedCutoutProductId(isExpanded ? null : p._id)}
                                       >
-                                        {cutoutUrl ? (isExpanded ? 'Hide' : 'Change Cutout') : (isExpanded ? 'Cancel' : 'Upload Cutout (No BG)')}
+                                        {railCutoutUrl ? (isExpanded ? 'Hide' : 'Change Cutout') : (isExpanded ? 'Cancel' : 'Upload Cutout (No BG)')}
                                       </button>
-                                      {cutoutUrl && (
+                                      {railCutoutUrl && (
                                         <button
                                           type="button"
                                           style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '0.72rem', cursor: 'pointer', padding: '4px' }}
@@ -1590,7 +1590,7 @@ export const AdminHomepageEditor = () => {
                                       <ImageUploadField
                                         label={`Upload Transparent Cutout PNG for ${p.name}`}
                                         description="Upload high-res PNG image with transparent background (no background color). The shoe will float directly on the white sliding rail without any bounding box."
-                                        value={cutoutUrl}
+                                        value={railCutoutUrl}
                                         onChange={(url) => {
                                           setEditingSection({
                                             ...editingSection,
@@ -1721,8 +1721,8 @@ export const AdminHomepageEditor = () => {
                             const selectedIds = editingSection.config?.selectedProductIds || [];
                             let railList = [];
                             if (editingSection.config?.productSource === 'manual_select' && selectedIds.length > 0) {
-                              const pMap = new Map(availableProducts.map((p) => [p._id?.toString() || p._id, p]));
-                              railList = selectedIds.map((id) => pMap.get(id?._id?.toString() || id?.toString() || id)).filter(Boolean);
+                              const railProductMap = new Map(availableProducts.map((p) => [p._id?.toString() || p._id, p]));
+                              railList = selectedIds.map((id) => railProductMap.get(id?._id?.toString() || id?.toString() || id)).filter(Boolean);
                             } else {
                               railList = availableProducts.filter(
                                 (p) => (p.baseSalePrice || p.price || 0) <= (editingSection.config?.priceCap || 999)
@@ -1736,10 +1736,10 @@ export const AdminHomepageEditor = () => {
                                 <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '4px' }}>
                                   {displayRail.map((p) => {
                                     const pIdStr = p._id?.toString() || p._id;
-                                    const cutout = (editingSection.config?.productCutoutImages && (editingSection.config.productCutoutImages[pIdStr] || editingSection.config.productCutoutImages[p._id])) || '';
+                                    const railPreviewCutout = (editingSection.config?.productCutoutImages && (editingSection.config.productCutoutImages[pIdStr] || editingSection.config.productCutoutImages[p._id])) || '';
                                     const fallback = p.defaultImages?.[0]?.url || p.defaultImages?.[0];
-                                    const imgSrc = cutout || fallback || '/images/store999/promo.jpg';
-                                    const isCutout = Boolean(cutout);
+                                    const imgSrc = railPreviewCutout || fallback || '/images/store999/promo.jpg';
+                                    const isCutout = Boolean(railPreviewCutout);
 
                                     return (
                                       <div

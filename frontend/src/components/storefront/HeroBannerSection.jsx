@@ -6,8 +6,8 @@ import { ArrowUpRight, Sparkles } from 'lucide-react';
 export const HeroBannerSection = ({ section }) => {
   const config = section.config || {};
   const stickers = config.stickers || [
-    { text: '🔥 100% WATERPROOF FOAM', badgeStyle: 'lime_pill', position: 'top_right' },
-    { text: '☁️ CLOUDFOOTBED TECH', badgeStyle: 'glass_float', position: 'bottom_left' },
+    { text: '100% WATERPROOF FOAM', badgeStyle: 'lime_pill', position: 'top_right' },
+    { text: 'CLOUDFOOTBED TECH', badgeStyle: 'glass_float', position: 'bottom_left' },
   ];
   const desktopImage = config.desktopMediaUrl?.trim()
     ? getAssetUrl(config.desktopMediaUrl.trim())

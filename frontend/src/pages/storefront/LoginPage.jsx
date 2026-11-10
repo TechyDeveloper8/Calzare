@@ -105,13 +105,6 @@ export const LoginPage = () => {
             Create one now
           </Link>
         </div>
-
-        <div style={{ textAlign: 'center', marginTop: '16px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-          Store Staff or Admin?{' '}
-          <Link to="/admin/login" style={{ color: 'var(--text-secondary)', textDecoration: 'underline' }}>
-            Access Admin CMS
-          </Link>
-        </div>
       </div>
     </div>
   );

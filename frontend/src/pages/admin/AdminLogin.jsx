@@ -10,7 +10,6 @@ import {
   Eye,
   EyeOff,
   ArrowLeft,
-  KeyRound,
   CheckCircle2,
 } from 'lucide-react';
 
@@ -59,12 +58,6 @@ export const AdminLogin = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const fillDemoCredentials = () => {
-    setEmail('admin@calzare.com');
-    setPassword('Admin@123456');
-    setError('');
   };
 
   return (
@@ -192,7 +185,7 @@ export const AdminLogin = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 className="admin-input"
                 style={{ paddingLeft: '36px' }}
-                placeholder="staff@calzare.com"
+                placeholder="name@company.com"
               />
               <Mail
                 size={16}
@@ -264,29 +257,6 @@ export const AdminLogin = () => {
             )}
           </button>
         </form>
-
-        {/* Dev / Demo Autofill Helper (Discrete action for testing) */}
-        <div style={{ marginTop: '20px', textAlign: 'center' }}>
-          <button
-            type="button"
-            onClick={fillDemoCredentials}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: '#2563eb',
-              fontSize: '0.74rem',
-              fontWeight: 600,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '4px',
-              padding: '4px 8px',
-              borderRadius: '4px',
-            }}
-          >
-            <KeyRound size={12} /> Auto-fill Demo Admin Credentials
-          </button>
-        </div>
 
         {/* Security Compliance Seal */}
         <div

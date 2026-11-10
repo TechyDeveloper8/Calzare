@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { formatMongoUri } from '../config/db.js';
 import { ensureCoreAudienceCollections } from '../controllers/catalogController.js';
+import { ensureDefaultHomepageSections } from '../controllers/homepageController.js';
 
 dotenv.config();
 
@@ -20,13 +21,19 @@ async function init() {
     console.log(`  • ${c.name} (/${c.slug}) — Hero: "${c.hero?.heading || 'Default'}"`);
   });
 
+  console.log('\nChecking & initializing default homepage CMS sections...');
+  const sections = await ensureDefaultHomepageSections();
+  console.log(`✓ Active Homepage Sections (${sections.length}):`);
+  sections.forEach((s) => {
+    console.log(`  [${s.displayOrder}] ${s.sectionKey} (${s.sectionType})`);
+  });
+
   await mongoose.disconnect();
-  console.log('\nAll 4 Core Audience Hero Banners are ready on the database.');
+  console.log('\nAll 4 Core Collections and 10 Homepage CMS Sections are ready on the database.');
   process.exit(0);
 }
 
 init().catch((err) => {
-  console.error('\n[Error] Failed to initialize collections:', err.message);
+  console.error('\n[Error] Failed to initialize defaults:', err.message);
   process.exit(1);
 });
-

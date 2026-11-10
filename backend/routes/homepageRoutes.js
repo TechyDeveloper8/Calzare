@@ -8,6 +8,7 @@ import {
   adminReorderSections,
   adminToggleSection,
   adminDeleteSection,
+  adminInitHomepageSections,
 } from '../controllers/homepageController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 import { cacheResponse, invalidateCache } from '../middleware/cacheMiddleware.js';
@@ -29,6 +30,7 @@ router.get('/', cacheResponse(60, 30, 120), getPublishedHomepage);
 
 // Admin Visual Homepage CMS
 router.get('/admin/sections', protect, authorize('admin', 'superadmin', 'editor'), adminGetAllSections);
+router.post('/admin/init-defaults', protect, authorize('admin', 'superadmin'), purgeHomepageCache, adminInitHomepageSections);
 router.get('/admin/sections/:id', protect, authorize('admin', 'superadmin', 'editor'), adminGetSectionById);
 router.post('/admin/sections', protect, authorize('admin', 'superadmin', 'editor'), purgeHomepageCache, adminCreateSection);
 router.put('/admin/sections/reorder', protect, authorize('admin', 'superadmin', 'editor'), purgeHomepageCache, adminReorderSections);

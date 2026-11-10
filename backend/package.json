@@ -10,7 +10,8 @@
     "test": "node --test --test-concurrency=1 tests/ecommerce.test.js",
     "clean:db": "node scripts/purgeSeedData.js",
     "create:admin": "node scripts/createAdmin.js",
-    "init:collections": "node scripts/initAudienceCollections.js"
+    "init:collections": "node scripts/initAudienceCollections.js",
+    "init:homepage": "node scripts/initHomepageSections.js"
   },
   "engines": {
     "node": ">=18.0.0"

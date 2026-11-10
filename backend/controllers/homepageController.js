@@ -3,9 +3,26 @@ import { Product } from '../models/Product.js';
 import { Collection } from '../models/Collection.js';
 import { Review } from '../models/Review.js';
 import { logAudit } from '../utils/auditLogger.js';
+import { getDefaultHomepageSections } from '../config/defaultHomepageSections.js';
+
+export const ensureDefaultHomepageSections = async () => {
+  const existingCount = await HomepageSection.countDocuments();
+  if (existingCount > 0) {
+    return await HomepageSection.find().sort({ displayOrder: 1 }).lean();
+  }
+
+  const defaultSections = getDefaultHomepageSections();
+  await HomepageSection.insertMany(defaultSections);
+  return await HomepageSection.find().sort({ displayOrder: 1 }).lean();
+};
 
 export const getPublishedHomepage = async (req, res, next) => {
   try {
+    const totalCount = await HomepageSection.countDocuments();
+    if (totalCount === 0) {
+      await ensureDefaultHomepageSections();
+    }
+
     const now = new Date();
     // Query enabled sections, respecting optional start/end scheduling
     const sections = await HomepageSection.find({
@@ -181,8 +198,24 @@ export const getPublishedHomepage = async (req, res, next) => {
 // Admin Visual Editor APIs
 export const adminGetAllSections = async (req, res, next) => {
   try {
+    const totalCount = await HomepageSection.countDocuments();
+    if (totalCount === 0) {
+      await ensureDefaultHomepageSections();
+    }
     const sections = await HomepageSection.find().sort({ displayOrder: 1 });
     res.json({ success: true, sections });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const adminInitHomepageSections = async (req, res, next) => {
+  try {
+    await HomepageSection.deleteMany({});
+    const defaultSections = getDefaultHomepageSections();
+    await HomepageSection.insertMany(defaultSections);
+    const sections = await HomepageSection.find().sort({ displayOrder: 1 });
+    res.json({ success: true, sections, message: 'Homepage sections initialized to defaults' });
   } catch (error) {
     next(error);
   }

@@ -104,7 +104,7 @@ export const HomePage = ({ onQuickView: propOnQuickView }) => {
           __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'OnlineStore',
-            name: 'CALZARE Footwear',
+            name: 'CALZARE',
             description:
               'High-performance closed-cell waterproof EVA foam footwear designed for modern street culture and all-day walking support.',
             url: window.location.origin,

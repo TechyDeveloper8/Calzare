@@ -1,8 +1,31 @@
 import mongoose from 'mongoose';
 
+/**
+ * Normalizes MongoDB URIs to prevent malformed credential crashes:
+ * - Auto-encodes unescaped '@' in passwords (e.g. 'pass@@host' -> 'pass%40@host')
+ * - Ensures a production database path exists on SRV clusters
+ */
+export const formatMongoUri = (rawUri) => {
+  if (!rawUri || typeof rawUri !== 'string') return rawUri;
+  let sanitized = rawUri.trim();
+
+  // Self-heal passwords ending or containing unescaped '@' before host
+  sanitized = sanitized.replace(/:([^:@]+)@@/, (_, pass) => ':' + encodeURIComponent(pass + '@') + '@');
+
+  // Ensure default database name if omitted on Atlas cluster URI
+  if (sanitized.includes('mongodb+srv://') && /mongodb\.net\/?(\?.*)?$/.test(sanitized)) {
+    sanitized = sanitized.replace(/mongodb\.net\/?(\?.*)?$/, (_, query) => {
+      return 'mongodb.net/calzare_production' + (query ? query : '?retryWrites=true&w=majority');
+    });
+  }
+
+  return sanitized;
+};
+
 export const connectDB = async () => {
   try {
-    const mongoUri = process.env.MONGO_URI || process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/calzare_ecommerce';
+    const rawUri = process.env.MONGO_URI || process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/calzare_ecommerce';
+    const mongoUri = formatMongoUri(rawUri);
 
     // High-concurrency connection pooling configuration
     const conn = await mongoose.connect(mongoUri, {

@@ -16,6 +16,8 @@ import { Category } from '../models/Category.js';
 import { Collection } from '../models/Collection.js';
 import { HomepageSection } from '../models/HomepageSection.js';
 import { StoreSetting } from '../models/StoreSetting.js';
+import { CMSPage } from '../models/CMSPage.js';
+import { formatMongoUri } from '../config/db.js';
 
 dotenv.config();
 
@@ -25,11 +27,13 @@ const cliUri = process.argv.find(
   (arg) => arg.startsWith('mongodb://') || arg.startsWith('mongodb+srv://')
 );
 
-const MONGO_URI =
+const RAW_MONGO_URI =
   cliUri ||
   process.env.MONGO_URI ||
   process.env.MONGODB_URI ||
   'mongodb://127.0.0.1:27017/calzare_ecommerce';
+
+const MONGO_URI = formatMongoUri(RAW_MONGO_URI);
 
 const isAtlas = MONGO_URI.includes('mongodb+srv') || MONGO_URI.includes('.mongodb.net');
 
@@ -98,19 +102,28 @@ const purgeSeedData = async () => {
     const auditRes = await AuditLog.deleteMany({});
     results['Audit Logs'] = auditRes.deletedCount;
 
-    // 12. Optional: Categories purge if explicitly requested
+    // 12. Purge Demo / Seed Articles from CMSPage
+    const seedArticleSlugs = [
+      'foam-revolution-closed-cell-eva',
+      'monsoon-ready-streetwear-styling',
+      'circular-footwear-future',
+    ];
+    const cmsArtRes = await CMSPage.deleteMany({ slug: { $in: seedArticleSlugs } });
+    results['Seed Articles (Demo Journal)'] = cmsArtRes.deletedCount;
+
+    // 13. Optional: Categories purge if explicitly requested
     if (includeCategories) {
       const catRes = await Category.deleteMany({});
       results['Categories'] = catRes.deletedCount;
     }
 
-    // 13. Clean references in Collections
+    // 14. Clean references in Collections
     await Collection.updateMany(
       {},
       { $set: { manualProductIds: [] } }
     );
 
-    // 14. Clean references in Homepage Sections
+    // 15. Clean references in Homepage Sections
     const hpSections = await HomepageSection.find({});
     for (const sec of hpSections) {
       let changed = false;

@@ -11,15 +11,18 @@ import { Review } from '../models/Review.js';
 import { CMSPage } from '../models/CMSPage.js';
 import { NavigationMenu } from '../models/NavigationMenu.js';
 import { StoreSetting } from '../models/StoreSetting.js';
+import { formatMongoUri } from '../config/db.js';
 
 dotenv.config();
 
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/calzare_ecommerce';
+const RAW_MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/calzare_ecommerce';
+const MONGO_URI = formatMongoUri(RAW_MONGO_URI);
 
 const seedDatabase = async () => {
   try {
-    if (process.env.NODE_ENV === 'production' && process.env.ALLOW_SEED_IN_PRODUCTION !== 'true') {
-      console.error('\n[BLOCKED] seedDatabase cannot run in production mode to protect live real-time store data!\n');
+    const isCloud = MONGO_URI.includes('mongodb+srv') || MONGO_URI.includes('.mongodb.net');
+    if ((process.env.NODE_ENV === 'production' || isCloud) && process.env.ALLOW_SEED_IN_PRODUCTION !== 'true') {
+      console.error('\n[BLOCKED] seedDatabase cannot run against production/Atlas clusters without explicit ALLOW_SEED_IN_PRODUCTION=true!\n');
       process.exit(1);
     }
 

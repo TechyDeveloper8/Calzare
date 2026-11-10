@@ -151,7 +151,7 @@ export const BrandComparisonSection = ({
             )}
             <img
               src={desktopMediaUrl || mobileMediaUrl}
-              alt={altText || `Brand comparison for ${productName || 'CALZARE Footwear'}`}
+              alt={altText || `Brand comparison for ${productName || 'CALZARE'}`}
               loading="lazy"
               decoding="async"
               className="pdp-brand-comparison__image"

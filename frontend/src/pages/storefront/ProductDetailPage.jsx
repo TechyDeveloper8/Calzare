@@ -150,7 +150,7 @@ export const ProductDetailPage = ({ onQuickView: propOnQuickView }) => {
           }
 
           // Dynamic SEO meta tags & canonical link
-          document.title = `${p.seoTitle || p.name} — CALZARE Footwear`;
+          document.title = `${p.seoTitle || p.name} — CALZARE`;
           const metaDesc = document.querySelector('meta[name="description"]');
           if (metaDesc) {
             metaDesc.setAttribute(
@@ -512,7 +512,7 @@ export const ProductDetailPage = ({ onQuickView: propOnQuickView }) => {
                     <path d="M3.5 13h17M3.5 13a4.5 4.5 0 0 0 4.5 4.5h8a4.5 4.5 0 0 0 4.5-4.5M3.5 13l2-6a3 3 0 0 1 3-2h7a3 3 0 0 1 3 2l2 6" />
                   </svg>
                   <span style={{ fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.12em', marginTop: '10px', color: '#94a3b8' }}>
-                    CALZARE FOOTWEAR
+                    CALZARE
                   </span>
                 </div>
               )}

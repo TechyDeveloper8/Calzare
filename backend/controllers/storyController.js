@@ -221,8 +221,8 @@ export const adminGetStoryPage = async (req, res) => {
       page = await StoryPage.create({
         slug,
         title: 'Our Story',
-        metaTitle: 'Our Story — CALZARE Footwear',
-        metaDescription: 'Discover the story, craftsmanship, and design philosophy behind CALZARE footwear.',
+        metaTitle: 'Our Story — CALZARE',
+        metaDescription: 'Discover the story, craftsmanship, and design philosophy behind CALZARE.',
         isPublished: false,
         sections: [],
       });

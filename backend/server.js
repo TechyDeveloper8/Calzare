@@ -125,7 +125,7 @@ app.get(['/', '/api/health'], (req, res) => {
     status: 'healthy',
     timestamp: new Date().toISOString(),
     uptimeSeconds: Math.floor(process.uptime()),
-    service: 'CALZARE Footwear Engine v1.0.0',
+    service: 'CALZARE Engine v1.0.0',
     cache: cacheService.getStats(),
     memory: {
       rssMb: Math.round(memory.rss / (1024 * 1024)),

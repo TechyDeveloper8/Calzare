@@ -93,6 +93,9 @@ export const Header = ({ onOpenSearch }) => {
     navItems.push({ label: 'Contact', url: '/contact' });
   }
 
+  // Brand display name cleanly formatted as 'CALZARE'
+  const brandDisplayName = (settings?.storeName || 'CALZARE').replace(/\s*footwear/gi, '').trim() || 'CALZARE';
+
   return (
     <>
       <header
@@ -110,7 +113,7 @@ export const Header = ({ onOpenSearch }) => {
           <div className="nav-container">
             {/* Brand Logo - Aligned to Fully Left Side */}
             <Link to="/" className="brand-logo" style={{ textDecoration: 'none' }}>
-              {settings?.storeName || 'CALZARE'}
+              {brandDisplayName}
             </Link>
 
             {/* Desktop Navigation Links - Centered in Middle */}
@@ -369,7 +372,7 @@ export const Header = ({ onOpenSearch }) => {
             {/* Drawer Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
               <div className="brand-logo" style={{ fontSize: '1.95rem', fontWeight: 900, letterSpacing: '-0.04em' }}>
-                {settings?.storeName || 'CALZARE'}
+                {brandDisplayName}
               </div>
               <button
                 onClick={() => setMobileMenuOpen(false)}

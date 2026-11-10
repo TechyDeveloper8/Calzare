@@ -28,7 +28,7 @@ export const sendOrderConfirmationEmail = async (order) => {
     const recipient = order.guestEmail || order.customer?.email;
     if (!recipient) return { success: false, message: 'No recipient email found' };
 
-    const subject = `Order Confirmed: ${order.orderNumber} | CALZARE Footwear`;
+    const subject = `Order Confirmed: ${order.orderNumber} | CALZARE`;
     const itemsHtml = order.items
       .map(
         (item) => `
@@ -112,7 +112,7 @@ export const sendOrderConfirmationEmail = async (order) => {
     }
 
     const info = await t.sendMail({
-      from: process.env.FROM_EMAIL || '"CALZARE Footwear" <orders@calzare.com>',
+      from: process.env.FROM_EMAIL || '"CALZARE" <orders@calzare.com>',
       to: recipient,
       subject,
       html,
@@ -169,7 +169,7 @@ export const sendShippingUpdateEmail = async (order) => {
     }
 
     const info = await t.sendMail({
-      from: process.env.FROM_EMAIL || '"CALZARE Footwear" <orders@calzare.com>',
+      from: process.env.FROM_EMAIL || '"CALZARE" <orders@calzare.com>',
       to: recipient,
       subject,
       html,

@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const storeSettingSchema = new mongoose.Schema(
   {
-    storeName: { type: String, default: 'CALZARE Footwear' },
+    storeName: { type: String, default: 'CALZARE' },
     tagline: { type: String, default: 'Good Shoes. Loud Personality.' },
     legalCompanyName: { type: String, default: 'Calzare Heels Private Limited' },
     websiteUrl: { type: String, default: 'calzare.in' },

@@ -2589,7 +2589,7 @@ export const AdminProductForm = () => {
                 Google Search Result Preview
               </span>
               <div style={{ color: '#1a0dab', fontSize: '1.05rem', fontWeight: 600, textDecoration: 'underline', marginBottom: '2px', cursor: 'pointer' }}>
-                {form.seoTitle || `${form.name || 'Footwear Silhouette'} — CALZARE Footwear`}
+                {form.seoTitle || `${form.name || 'Silhouette'} — CALZARE`}
               </div>
               <div style={{ color: '#006621', fontSize: '0.78rem', marginBottom: '4px' }}>
                 https://calzare.in/product/{form.slug || 'product-slug'}

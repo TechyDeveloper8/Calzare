@@ -6,6 +6,7 @@ import { api } from '../../api/api.js';
 
 export const Footer = () => {
   const { settings, menus } = useStoreConfig();
+  const brandDisplayName = (settings?.storeName || 'CALZARE').replace(/\s*footwear/gi, '').trim() || 'CALZARE';
   const [footerEmail, setFooterEmail] = useState('');
   const [subStatus, setSubStatus] = useState({ loading: false, success: false, message: '' });
 
@@ -60,7 +61,7 @@ export const Footer = () => {
                 alignItems: 'baseline',
               }}
             >
-              {settings?.storeName || 'CALZARE'}
+              {brandDisplayName}
             </div>
             <p style={{ color: '#a0a0a8', fontSize: '0.92rem', lineHeight: '1.65', margin: '0 0 12px 0', maxWidth: '380px' }}>
               {settings?.tagline || 'Good Shoes. Loud Personality.'} Sculpted from closed-cell waterproof EVA foam

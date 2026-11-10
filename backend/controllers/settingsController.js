@@ -9,12 +9,15 @@ export const getPublicSettings = async (req, res, next) => {
     let settings = await StoreSetting.findOne();
     if (!settings) {
       settings = await StoreSetting.create({});
+    } else if (settings.storeName === 'CALZARE Footwear') {
+      settings.storeName = 'CALZARE';
+      await settings.save();
     }
 
     res.json({
       success: true,
       settings: {
-        storeName: settings.storeName,
+        storeName: (settings.storeName || 'CALZARE').replace(/\s*footwear/gi, '').trim() || 'CALZARE',
         tagline: settings.tagline,
         legalCompanyName: settings.legalCompanyName,
         websiteUrl: settings.websiteUrl,
@@ -47,6 +50,9 @@ export const adminGetSettings = async (req, res, next) => {
     let settings = await StoreSetting.findOne();
     if (!settings) {
       settings = await StoreSetting.create({});
+    } else if (settings.storeName === 'CALZARE Footwear') {
+      settings.storeName = 'CALZARE';
+      await settings.save();
     }
     res.json({ success: true, settings });
   } catch (error) {

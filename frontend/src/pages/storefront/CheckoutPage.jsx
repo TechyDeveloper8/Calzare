@@ -92,7 +92,7 @@ export const CheckoutPage = () => {
             key: razorpayKey,
             amount: rzpOrder.amount,
             currency: 'INR',
-            name: 'CALZARE Footwear',
+            name: 'CALZARE',
             description: `Order ${order.orderNumber}`,
             order_id: rzpOrder.id,
             handler: async function (response) {

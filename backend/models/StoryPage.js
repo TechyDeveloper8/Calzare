@@ -48,12 +48,12 @@ const storyPageSchema = new mongoose.Schema(
     },
     metaTitle: {
       type: String,
-      default: 'Our Story — CALZARE Footwear',
+      default: 'Our Story — CALZARE',
       trim: true,
     },
     metaDescription: {
       type: String,
-      default: 'Discover the story, craftsmanship, and design philosophy behind CALZARE footwear.',
+      default: 'Discover the story, craftsmanship, and design philosophy behind CALZARE.',
       trim: true,
     },
     ogImage: {

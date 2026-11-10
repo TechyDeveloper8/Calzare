@@ -1,6 +1,5 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import bcrypt from 'bcryptjs';
 import { User } from '../models/User.js';
 import { formatMongoUri } from '../config/db.js';
 
@@ -11,28 +10,35 @@ const password = process.argv[3] || process.env.ADMIN_PASSWORD || 'Admin@123456'
 const name = process.argv[4] || 'CALZARE Super Admin';
 
 async function createOrUpdateAdmin() {
-  const rawUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/calzare_ecommerce';
+  const rawUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/calzare_production';
   const mongoUri = formatMongoUri(rawUri);
 
   console.log('Connecting to database...');
   await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 8000 });
   console.log(`[Connected] ${mongoose.connection.host}/${mongoose.connection.name}`);
 
-  const hashedPassword = await bcrypt.hash(password, 12);
   let admin = await User.findOne({ email });
 
   if (admin) {
-    admin.password = hashedPassword;
+    // Setting admin.password triggers the Mongoose pre('save') hook which hashes with bcrypt
+    admin.password = password;
     admin.role = 'superadmin';
+    admin.isActive = true;
+    admin.failedLoginAttempts = 0;
+    admin.lockUntil = null;
     await admin.save();
-    console.log(`\n✓ Existing Admin password successfully updated: ${email}`);
+    console.log(`\n✓ Existing Admin password successfully reset: ${email}`);
   } else {
+    // User.create triggers the Mongoose pre('save') hook which hashes with bcrypt
     admin = await User.create({
       name,
       email,
-      password: hashedPassword,
+      password,
       role: 'superadmin',
       phone: '+91 99887 76655',
+      isActive: true,
+      failedLoginAttempts: 0,
+      lockUntil: null,
     });
     console.log(`\n✓ New Super Admin account successfully created: ${email}`);
   }
@@ -52,4 +58,3 @@ createOrUpdateAdmin().catch((err) => {
   console.error('\n[Error] Failed to create or update admin:', err.message);
   process.exit(1);
 });
-

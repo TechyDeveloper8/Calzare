@@ -56,7 +56,24 @@ export const login = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Please provide email and password' });
     }
 
-    const user = await User.findOne({ email: cleanEmail }).select('+password');
+    let user = await User.findOne({ email: cleanEmail }).select('+password');
+
+    // Auto-provision initial superadmin if database is newly initialized
+    if (!user && cleanEmail === 'admin@calzare.com') {
+      const superadminCount = await User.countDocuments({ role: 'superadmin' });
+      if (superadminCount === 0) {
+        await User.create({
+          name: 'CALZARE Super Admin',
+          email: 'admin@calzare.com',
+          password: process.env.ADMIN_PASSWORD || 'Admin@123456',
+          role: 'superadmin',
+          phone: '+91 99887 76655',
+          isActive: true,
+        });
+        user = await User.findOne({ email: cleanEmail }).select('+password');
+      }
+    }
+
     if (!user) {
       await logAudit(req, 'FAILED_LOGIN_UNKNOWN_ACCOUNT', 'User', null, { attemptedEmail: cleanEmail });
       return res.status(401).json({ success: false, message: 'Invalid email or password' });

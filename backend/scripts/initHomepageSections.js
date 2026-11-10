@@ -29,3 +29,4 @@ init().catch((err) => {
   console.error('\n[Error] Failed to initialize homepage sections:', err.message);
   process.exit(1);
 });
+

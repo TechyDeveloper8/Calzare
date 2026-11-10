@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => {
     env.API_URL ||
     env.Config ||
     env.VITE_API_BASE_URL ||
-    (mode === 'production' ? 'https://calzare.onrender.com' : '');
+    '';
 
   return {
     plugins: [react()],

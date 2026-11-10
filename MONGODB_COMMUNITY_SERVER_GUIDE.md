@@ -132,18 +132,22 @@ sudo ufw reload
 
 ---
 
-## Step 5: Connect Render to Your Community Server
+## Step 5: Connect Your VPS Backend to MongoDB Community Server
 
-If your backend is hosted on **Render** and your MongoDB Community Server is on your VPS:
+On your VPS where `calzare-backend` runs under PM2:
 
-1. Open your [Render Dashboard](https://dashboard.render.com).
-2. Go to your backend Web Service (`calzare` / `calzare-backend`).
-3. Click **Environment Variables** in the left sidebar.
-4. Update `MONGO_URI`:
+1. Update `/var/www/calzare/backend/.env`:
    ```text
-   mongodb://calzare_admin:YourStrongPasswordHere123!@YOUR_VPS_IP:27017/calzare_production?authSource=admin
+   MONGO_URI=mongodb://calzare_admin:YourStrongPasswordHere123!@127.0.0.1:27017/calzare_production?authSource=admin
    ```
-5. Click **Save Changes**. Render will automatically redeploy and connect directly to your self-hosted MongoDB Community Server.
+2. Restart the PM2 process:
+   ```bash
+   pm2 restart calzare-backend
+   ```
+3. Test connectivity:
+   ```bash
+   curl http://127.0.0.1:5000/api/health
+   ```
 
 ---
 

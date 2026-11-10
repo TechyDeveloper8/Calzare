@@ -7,9 +7,6 @@ export const getBackendBaseUrl = (req) => {
   if (process.env.BACKEND_URL) {
     return process.env.BACKEND_URL.replace(/\/+$/, '');
   }
-  if (process.env.RENDER_EXTERNAL_URL) {
-    return process.env.RENDER_EXTERNAL_URL.replace(/\/+$/, '');
-  }
   if (req) {
     const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'http';
     const host = req.headers['x-forwarded-host'] || req.get('host');
@@ -17,7 +14,7 @@ export const getBackendBaseUrl = (req) => {
       return `${protocol}://${host}`.replace(/\/+$/, '');
     }
   }
-  return 'https://calzare.onrender.com';
+  return '';
 };
 
 export const uploadMedia = async (req, res, next) => {

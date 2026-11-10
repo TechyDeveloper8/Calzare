@@ -66,8 +66,6 @@ app.use(
         process.env.CLIENT_URL === '*' ||
         allowedOrigins.includes('*') ||
         allowedOrigins.includes(origin) ||
-        origin.endsWith('.vercel.app') ||
-        origin.endsWith('.onrender.com') ||
         origin.includes('localhost') ||
         origin.includes('127.0.0.1')
       ) {

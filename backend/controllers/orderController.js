@@ -219,7 +219,7 @@ export const createOrder = async (req, res, next) => {
       success: true,
       order,
       razorpayOrder: razorpayOrderData,
-      razorpayKeyId: settings.razorpayKeyId,
+      razorpayKeyId: settings.razorpayKeyId || process.env.RAZORPAY_KEY_ID || 'rzp_test_calzare12345',
       message: 'Order created successfully',
     });
   } catch (error) {

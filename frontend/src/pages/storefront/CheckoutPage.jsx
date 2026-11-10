@@ -84,7 +84,7 @@ export const CheckoutPage = () => {
 
       // Handle Razorpay Payment flow
       if (formData.paymentMethod === 'razorpay') {
-        const razorpayKey = res.razorpayKeyId || 'rzp_test_calzare12345';
+        const razorpayKey = res.razorpayKeyId || import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_calzare12345';
         const rzpOrder = res.razorpayOrder;
 
         if (window.Razorpay && rzpOrder) {

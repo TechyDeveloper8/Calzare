@@ -52,3 +52,4 @@ createOrUpdateAdmin().catch((err) => {
   console.error('\n[Error] Failed to create or update admin:', err.message);
   process.exit(1);
 });
+

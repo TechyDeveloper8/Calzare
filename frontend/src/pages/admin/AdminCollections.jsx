@@ -49,6 +49,18 @@ export const AdminCollections = () => {
     }
   };
 
+  const handleInitCoreCollections = async () => {
+    try {
+      setLoading(true);
+      await api.adminInitCoreCollections();
+      await fetchData();
+    } catch (err) {
+      alert(err.message || 'Failed to initialize core collections');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Category Modal State
   const [catModalOpen, setCatModalOpen] = useState(false);
   const [editingCat, setEditingCat] = useState(null);
@@ -354,24 +366,12 @@ export const AdminCollections = () => {
     <div>
       <div className="admin-page-header">
         <div>
-          <h1 className="admin-page-title">Categories & Collections</h1>
+          <h1 className="admin-page-title">Collections & Categories</h1>
           <p className="admin-page-subtitle">
-            Manage footwear taxonomy, curated drops, and dynamic rule-based pricing stores (Under ₹999)
+            Manage storefront audience hero banners, footwear collections, and product categories.
           </p>
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
-          {activeTab === 'hero-banners' && (
-            <button
-              onClick={() => {
-                const womenCol = collections.find((c) => c.slug === 'women') || collections[0];
-                handleOpenHeroStudio(womenCol);
-              }}
-              className="admin-btn admin-btn-primary"
-              style={{ gap: '6px', backgroundColor: '#0f172a', color: '#ffffff' }}
-            >
-              <Sparkles size={16} color="#d8ff00" /> Open Hero Studio CMS
-            </button>
-          )}
           {activeTab === 'categories' && (
             <button onClick={() => openCatModal()} className="admin-btn admin-btn-primary" style={{ gap: '6px' }}>
               <Plus size={16} /> New Category
@@ -380,6 +380,15 @@ export const AdminCollections = () => {
           {activeTab === 'collections' && (
             <button onClick={() => openColModal()} className="admin-btn admin-btn-primary" style={{ gap: '6px' }}>
               <Plus size={16} /> New Collection
+            </button>
+          )}
+          {activeTab === 'hero-banners' && collections.length === 0 && (
+            <button
+              onClick={handleInitCoreCollections}
+              className="admin-btn admin-btn-primary"
+              style={{ gap: '6px' }}
+            >
+              <Layers size={15} /> Initialize Core Collections
             </button>
           )}
         </div>
@@ -409,8 +418,8 @@ export const AdminCollections = () => {
             gap: '6px',
           }}
         >
-          <Sparkles size={16} color={activeTab === 'hero-banners' ? '#0f172a' : '#888'} />
-          Hero Banners CMS (Kids, Men, Women & Drops)
+          <ImageIcon size={15} color={activeTab === 'hero-banners' ? '#0f172a' : '#888'} />
+          Audience Hero Banners ({collections.length})
         </button>
         <button
           onClick={() => setActiveTab('collections')}
@@ -453,80 +462,6 @@ export const AdminCollections = () => {
       {/* ── 1. Hero Banners CMS Tab (Kids, Men, Women & Drops) ───────────────── */}
       {activeTab === 'hero-banners' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          {/* Studio Banner Header */}
-          <div
-            style={{
-              backgroundColor: '#0f172a',
-              color: '#ffffff',
-              borderRadius: '12px',
-              padding: '24px 28px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              gap: '16px',
-              boxShadow: '0 10px 25px -5px rgba(15, 23, 42, 0.15)',
-            }}
-          >
-            <div style={{ maxWidth: '640px' }}>
-              <div
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  backgroundColor: 'rgba(216, 255, 0, 0.15)',
-                  color: '#d8ff00',
-                  padding: '4px 12px',
-                  borderRadius: '999px',
-                  fontSize: '0.74rem',
-                  fontWeight: 800,
-                  textTransform: 'uppercase',
-                  marginBottom: '10px',
-                }}
-              >
-                <Sparkles size={12} /> Editorial Section Hero CMS
-              </div>
-              <h2 style={{ fontSize: '1.45rem', fontWeight: 900, margin: '0 0 8px', color: '#ffffff' }}>
-                Manage Collection Hero Banners (Kids, Men & Women)
-              </h2>
-              <p style={{ margin: 0, fontSize: '0.86rem', color: '#94a3b8', lineHeight: 1.5 }}>
-                Directly upload high-resolution images, update sparkle eyebrow badges, change bold headlines, and customize Explore CTAs for every audience page with instant real-time WYSIWYG preview.
-              </p>
-            </div>
-
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              {['women', 'men', 'kids', 'unisex'].map((slug) => {
-                const targetCol = collections.find((c) => c.slug === slug);
-                const label =
-                  slug === 'women'
-                    ? "Women's Hero"
-                    : slug === 'men'
-                    ? "Men's Hero"
-                    : slug === 'kids'
-                    ? "Kids' Hero"
-                    : 'Unisex Hero';
-                return (
-                  <button
-                    key={slug}
-                    onClick={() => targetCol && handleOpenHeroStudio(targetCol)}
-                    className="admin-btn"
-                    style={{
-                      backgroundColor: '#1e293b',
-                      color: '#ffffff',
-                      border: '1px solid #334155',
-                      padding: '8px 14px',
-                      fontSize: '0.8rem',
-                      fontWeight: 700,
-                      gap: '6px',
-                    }}
-                  >
-                    <Sparkles size={13} color="#d8ff00" /> {label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
           {/* Filter Pills */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
             <div style={{ display: 'flex', gap: '8px' }}>
@@ -542,8 +477,8 @@ export const AdminCollections = () => {
                     padding: '6px 14px',
                     borderRadius: '20px',
                     border: '1px solid',
-                    borderColor: heroFilter === pill.id ? 'var(--ink-black)' : '#cbd5e1',
-                    backgroundColor: heroFilter === pill.id ? 'var(--ink-black)' : '#ffffff',
+                    borderColor: heroFilter === pill.id ? '#0f172a' : '#cbd5e1',
+                    backgroundColor: heroFilter === pill.id ? '#0f172a' : '#ffffff',
                     color: heroFilter === pill.id ? '#ffffff' : '#475569',
                     fontSize: '0.78rem',
                     fontWeight: 700,
@@ -555,7 +490,7 @@ export const AdminCollections = () => {
                 </button>
               ))}
             </div>
-            <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
+            <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>
               Showing {filteredHeroCollections.length} banner sections
             </span>
           </div>
@@ -568,15 +503,44 @@ export const AdminCollections = () => {
           ) : filteredHeroCollections.length === 0 ? (
             <div
               style={{
-                padding: '60px',
+                padding: '60px 20px',
                 textAlign: 'center',
-                color: '#64748b',
                 backgroundColor: '#ffffff',
                 borderRadius: '12px',
                 border: '1px solid #e2e8f0',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '12px',
               }}
             >
-              No collection hero banners match the filter.
+              <div
+                style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '10px',
+                  backgroundColor: '#f1f5f9',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#475569',
+                }}
+              >
+                <Layers size={22} />
+              </div>
+              <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 700, color: '#0f172a' }}>
+                No Audience Collections Initialized
+              </h3>
+              <p style={{ margin: 0, fontSize: '0.84rem', color: '#64748b', maxWidth: '420px', lineHeight: 1.5 }}>
+                Initialize the 4 core audience collections (Men, Women, Kids, Unisex) with standard layouts, hero banners, and category filters.
+              </p>
+              <button
+                onClick={handleInitCoreCollections}
+                className="admin-btn admin-btn-primary"
+                style={{ marginTop: '8px', padding: '10px 22px', fontSize: '0.82rem', gap: '6px' }}
+              >
+                <Plus size={15} /> Initialize 4 Core Collections
+              </button>
             </div>
           ) : (
             <div
@@ -743,7 +707,7 @@ export const AdminCollections = () => {
                               gap: '4px',
                               fontSize: '0.7rem',
                               fontWeight: 700,
-                              backgroundColor: hero.background === 'dark_canvas' ? '#d8ff00' : '#0f172a',
+                              backgroundColor: hero.background === 'dark_canvas' ? '#ffffff' : '#0f172a',
                               color: hero.background === 'dark_canvas' ? '#0f172a' : '#ffffff',
                               padding: '5px 12px',
                               borderRadius: '999px',
@@ -838,13 +802,13 @@ export const AdminCollections = () => {
                           style={{
                             padding: '6px 14px',
                             fontSize: '0.78rem',
-                            fontWeight: 800,
+                            fontWeight: 700,
                             gap: '6px',
                             backgroundColor: '#0f172a',
                             color: '#ffffff',
                           }}
                         >
-                          <Sparkles size={13} color="#d8ff00" /> Edit Hero Banner
+                          <ImageIcon size={13} /> Edit Hero Banner
                         </button>
                       </div>
                     </div>

@@ -96,9 +96,137 @@ export const adminDeleteCategory = async (req, res, next) => {
 };
 
 // Collections
+export const ensureCoreAudienceCollections = async () => {
+  const existingCount = await Collection.countDocuments();
+  if (existingCount > 0) return await Collection.find().sort({ displayOrder: 1 });
+
+  const coreCollections = [
+    {
+      name: "MEN'S FOOTWEAR EDIT",
+      slug: 'men',
+      description: 'Heavy-duty arch contoured clogs, platform slides, and waterproof trail sandals built for masculine proportions and all-day movement.',
+      displayOrder: 1,
+      isPublished: true,
+      ruleType: 'audience_match',
+      ruleValue: 'Men',
+      hero: {
+        label: "THE MEN'S EDIT",
+        heading: 'BUILT TO STAND OUT.',
+        supportingText: 'Everyday comfort. Zero ordinary energy.',
+        desktopBannerUrl: '/images/split/men-collection-image.jpg',
+        mobileBannerUrl: '',
+        imagePosition: 'center center',
+        background: 'editorial_minimal',
+        ctaText: 'EXPLORE DROP',
+        ctaLink: '#collection-grid',
+        isVisible: true,
+      },
+      categoryShortcuts: [
+        { label: 'All Footwear', slug: 'all', isEnabled: true },
+        { label: 'Clogs', slug: 'clogs', isEnabled: true },
+        { label: 'Sliders', slug: 'sliders', isEnabled: true },
+        { label: 'Sandals', slug: 'sandals', isEnabled: true },
+        { label: 'Foam Walkers', slug: 'foam-walkers', isEnabled: true },
+      ],
+      editorialBanner: { isEnabled: false },
+    },
+    {
+      name: "WOMEN'S FOOTWEAR EDIT",
+      slug: 'women',
+      description: 'Ultra-lightweight platform mules, pastel clogs, and ergonomic rebound slides crafted for effortless everyday street style.',
+      displayOrder: 2,
+      isPublished: true,
+      ruleType: 'audience_match',
+      ruleValue: 'Women',
+      hero: {
+        label: "THE WOMEN'S EDIT",
+        heading: 'EFFORTLESS REBOUND.',
+        supportingText: 'No laces, no rush — comfort that clocks off exactly when you do.',
+        desktopBannerUrl: '/images/split/women-collection-image.jpg',
+        mobileBannerUrl: '',
+        imagePosition: 'center center',
+        background: 'editorial_minimal',
+        ctaText: 'EXPLORE DROP',
+        ctaLink: '#collection-grid',
+        isVisible: true,
+      },
+      categoryShortcuts: [
+        { label: 'All Footwear', slug: 'all', isEnabled: true },
+        { label: 'Clogs', slug: 'clogs', isEnabled: true },
+        { label: 'Sliders', slug: 'sliders', isEnabled: true },
+        { label: 'Sandals', slug: 'sandals', isEnabled: true },
+        { label: 'Foam Walkers', slug: 'foam-walkers', isEnabled: true },
+      ],
+      editorialBanner: { isEnabled: false },
+    },
+    {
+      name: "KIDS' FOOTWEAR COLLECTION",
+      slug: 'kids',
+      description: 'Playproof, featherlight, and non-slip clogs and slides designed for growing feet, endless jumping, and everyday adventures.',
+      displayOrder: 3,
+      isPublished: true,
+      ruleType: 'audience_match',
+      ruleValue: 'Kids',
+      hero: {
+        label: "THE KIDS' EDIT",
+        heading: 'BUILT FOR PLAY.',
+        supportingText: 'Featherlight, washable, and ultra-durable comfort for little explorers everywhere.',
+        desktopBannerUrl: '/images/split/kids-collection-image.jpg',
+        mobileBannerUrl: '',
+        imagePosition: 'center center',
+        background: 'editorial_minimal',
+        ctaText: 'EXPLORE DROP',
+        ctaLink: '#collection-grid',
+        isVisible: true,
+      },
+      categoryShortcuts: [
+        { label: 'All Footwear', slug: 'all', isEnabled: true },
+        { label: 'Clogs', slug: 'clogs', isEnabled: true },
+        { label: 'Sliders', slug: 'sliders', isEnabled: true },
+        { label: 'Sandals', slug: 'sandals', isEnabled: true },
+      ],
+      editorialBanner: { isEnabled: false },
+    },
+    {
+      name: 'UNISEX ARCHITECTURAL SERIES',
+      slug: 'unisex',
+      description: 'Clean lines and universal proportions sculpted in monolithic EVA foam for every foot and every stride.',
+      displayOrder: 4,
+      isPublished: true,
+      ruleType: 'audience_match',
+      ruleValue: 'Unisex',
+      hero: {
+        label: 'THE UNISEX EDIT',
+        heading: 'UNIVERSAL FORM. PURE FUNCTION.',
+        supportingText: 'Sculpted footwear engineered for all identities, all terrains, and all-day ease.',
+        desktopBannerUrl: '/images/split/unisex-collection-image.jpg',
+        mobileBannerUrl: '',
+        imagePosition: 'center center',
+        background: 'editorial_minimal',
+        ctaText: 'EXPLORE DROP',
+        ctaLink: '#collection-grid',
+        isVisible: true,
+      },
+      categoryShortcuts: [
+        { label: 'All Footwear', slug: 'all', isEnabled: true },
+        { label: 'Clogs', slug: 'clogs', isEnabled: true },
+        { label: 'Sliders', slug: 'sliders', isEnabled: true },
+      ],
+      editorialBanner: { isEnabled: false },
+    },
+  ];
+
+  await Collection.insertMany(coreCollections);
+  return await Collection.find().sort({ displayOrder: 1 });
+};
+
 export const getCollections = async (req, res, next) => {
   try {
-    const collections = await Collection.find({ isPublished: true }).sort({ displayOrder: 1 });
+    let collections = await Collection.find({ isPublished: true }).sort({ displayOrder: 1 });
+    if (!collections || collections.length === 0) {
+      await ensureCoreAudienceCollections();
+      collections = await Collection.find({ isPublished: true }).sort({ displayOrder: 1 });
+    }
     res.json({ success: true, collections });
   } catch (error) {
     next(error);
@@ -246,8 +374,21 @@ export const getCollectionBySlug = async (req, res, next) => {
 
 export const adminGetAllCollections = async (req, res, next) => {
   try {
-    const collections = await Collection.find().sort({ displayOrder: 1 });
+    let collections = await Collection.find().sort({ displayOrder: 1 });
+    if (!collections || collections.length === 0) {
+      await ensureCoreAudienceCollections();
+      collections = await Collection.find().sort({ displayOrder: 1 });
+    }
     res.json({ success: true, collections });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const adminInitCoreCollections = async (req, res, next) => {
+  try {
+    const collections = await ensureCoreAudienceCollections();
+    res.json({ success: true, collections, message: 'Core audience collections initialized successfully' });
   } catch (error) {
     next(error);
   }

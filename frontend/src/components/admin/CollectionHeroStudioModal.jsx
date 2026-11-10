@@ -193,19 +193,19 @@ export const CollectionHeroStudioModal = ({
                 width: '36px',
                 height: '36px',
                 borderRadius: '8px',
-                backgroundColor: 'rgba(216, 255, 0, 0.15)',
-                color: '#d8ff00',
+                backgroundColor: 'rgba(59, 130, 246, 0.15)',
+                color: '#60a5fa',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
             >
-              <Sparkles size={20} />
+              <ImageIcon size={18} />
             </div>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <h2 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#ffffff' }}>
-                  Collection Hero CMS Studio
+                  Collection Hero Studio
                 </h2>
                 <span
                   style={{
@@ -221,7 +221,7 @@ export const CollectionHeroStudioModal = ({
                 </span>
               </div>
               <p style={{ margin: 0, fontSize: '0.76rem', color: '#94a3b8' }}>
-                Live visual management of <code>.collection-hero__inner</code> for Kids, Men, Women & drops
+                Configure high-resolution banner imagery, headline copy, and category links for this storefront collection.
               </p>
             </div>
           </div>
@@ -252,8 +252,8 @@ export const CollectionHeroStudioModal = ({
                     fontSize: '0.78rem',
                     fontWeight: 700,
                     cursor: 'pointer',
-                    border: isSelected ? '1px solid #d8ff00' : '1px solid #334155',
-                    backgroundColor: isSelected ? '#d8ff00' : '#1e293b',
+                    border: isSelected ? '1px solid #ffffff' : '1px solid #334155',
+                    backgroundColor: isSelected ? '#ffffff' : '#1e293b',
                     color: isSelected ? '#0f172a' : '#cbd5e1',
                     transition: 'all 0.15s ease',
                   }}
@@ -503,7 +503,7 @@ export const CollectionHeroStudioModal = ({
                     gap: '6px',
                   }}
                 >
-                  <Sparkles size={16} /> Typography & Content
+                  <Layers size={16} /> Typography & Content
                 </div>
                 <div style={{ fontSize: '0.74rem', color: '#64748b', marginBottom: '14px' }}>
                   Customize eyebrow badge, bold editorial headline, and supporting description.
@@ -511,7 +511,7 @@ export const CollectionHeroStudioModal = ({
 
                 <div className="admin-form-group" style={{ marginBottom: '12px' }}>
                   <label className="admin-label">
-                    Eyebrow / Label (with Sparkle Icon)
+                    Eyebrow / Category Tag
                   </label>
                   <input
                     type="text"
@@ -660,13 +660,13 @@ export const CollectionHeroStudioModal = ({
                   style={{
                     fontSize: '0.7rem',
                     backgroundColor: '#f1f5f9',
-                    padding: '2px 6px',
+                    padding: '2px 8px',
                     borderRadius: '4px',
                     color: '#64748b',
                     fontWeight: 600,
                   }}
                 >
-                  .collection-hero__inner
+                  Storefront View
                 </span>
               </div>
 
@@ -808,7 +808,7 @@ export const CollectionHeroStudioModal = ({
                           cursor: 'pointer',
                           padding: viewport === 'mobile' ? '10px 22px' : '12px 28px',
                           fontSize: viewport === 'mobile' ? '0.8rem' : '0.86rem',
-                          background: formData.background === 'dark_canvas' ? '#d8ff00' : '#0f172a',
+                          background: formData.background === 'dark_canvas' ? '#ffffff' : '#0f172a',
                           color: formData.background === 'dark_canvas' ? '#0f172a' : '#ffffff',
                         }}
                       >

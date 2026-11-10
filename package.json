@@ -13,6 +13,7 @@
     "client": "npm --prefix frontend run dev",
     "test": "npm --prefix backend test",
     "clean:db": "npm --prefix backend run clean:db",
-    "create:admin": "npm --prefix backend run create:admin"
+    "create:admin": "npm --prefix backend run create:admin",
+    "init:collections": "npm --prefix backend run init:collections"
   }
 }

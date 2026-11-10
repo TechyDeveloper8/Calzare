@@ -182,6 +182,7 @@ export const api = {
   adminDeleteCategory: (id) => request(`/catalog/categories/${id}`, { method: 'DELETE' }),
 
   adminGetCollections: () => request('/catalog/collections/admin/all'),
+  adminInitCoreCollections: () => request('/catalog/collections/init-defaults', { method: 'POST' }),
   adminCreateCollection: (body) => request('/catalog/collections', { method: 'POST', body }),
   adminUpdateCollection: (id, body) => request(`/catalog/collections/${id}`, { method: 'PUT', body }),
   adminDeleteCollection: (id) => request(`/catalog/collections/${id}`, { method: 'DELETE' }),

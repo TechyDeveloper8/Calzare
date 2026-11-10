@@ -2,7 +2,7 @@ const rawApiRoot =
   import.meta.env.VITE_API_URL ||
   import.meta.env.VITE_API_BASE_URL ||
   import.meta.env.API_URL ||
-  (import.meta.env.PROD ? 'https://calzare.onrender.com' : '');
+  '';
 const API_BASE = rawApiRoot
   ? `${rawApiRoot.replace(/\/+$/, '').replace(/\/api\/v1$/, '')}/api/v1`
   : '/api/v1';
@@ -39,7 +39,7 @@ export const getAssetUrl = (url) => {
   const backendHost = (
     import.meta.env.VITE_API_URL ||
     import.meta.env.VITE_API_BASE_URL ||
-    (import.meta.env.PROD ? 'https://calzare.onrender.com' : 'http://localhost:5000')
+    (typeof window !== 'undefined' ? window.location.origin : '')
   )
     .replace(/\/+$/, '')
     .replace(/\/api(\/v1)?\/?$/, '');

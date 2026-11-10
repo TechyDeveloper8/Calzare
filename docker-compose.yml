@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  # MongoDB Community Server (Production-grade self-hosted container)
+  mongodb:
+    image: mongo:7.0
+    container_name: calzare-mongodb-community
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-calzare_admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-CalzareSecure2026!}
+      MONGO_INITDB_DATABASE: calzare_production
+    volumes:
+      - mongo-data:/data/db
+      - mongo-config:/data/configdb
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - calzare-network
+
+  # CALZARE Node.js Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: calzare-backend
+    restart: unless-stopped
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    ports:
+      - "5000:5000"
+    environment:
+      PORT: 5000
+      NODE_ENV: production
+      CLIENT_URL: ${CLIENT_URL:-*}
+      MONGO_URI: mongodb://${MONGO_INITDB_ROOT_USERNAME:-calzare_admin}:${MONGO_INITDB_ROOT_PASSWORD:-CalzareSecure2026!}@mongodb:27017/calzare_production?authSource=admin
+      JWT_SECRET: ${JWT_SECRET:-calzare_jwt_prod_secret_8492049182390123984918230912}
+      JWT_EXPIRES_IN: 7d
+      STORAGE_TYPE: local
+      UPLOAD_DIR: uploads
+      FSHIP_API_KEY: ${FSHIP_API_KEY:-68e1a2b5a61128696f34531432751be18eaea96aea6ea1aa093ff8b54c4b0507}
+      FSHIP_BASE_URL: https://capi.fship.in
+      FSHIP_PICKUP_PINCODE: 560038
+    volumes:
+      - calzare-uploads:/app/uploads
+    networks:
+      - calzare-network
+
+volumes:
+  mongo-data:
+    driver: local
+  mongo-config:
+    driver: local
+  calzare-uploads:
+    driver: local
+
+networks:
+  calzare-network:
+    driver: bridge

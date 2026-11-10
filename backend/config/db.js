@@ -12,10 +12,12 @@ export const formatMongoUri = (rawUri) => {
   // Self-heal passwords ending or containing unescaped '@' before host
   sanitized = sanitized.replace(/:([^:@]+)@@/, (_, pass) => ':' + encodeURIComponent(pass + '@') + '@');
 
-  // Ensure default database name if omitted on Atlas cluster URI
-  if (sanitized.includes('mongodb+srv://') && /mongodb\.net\/?(\?.*)?$/.test(sanitized)) {
-    sanitized = sanitized.replace(/mongodb\.net\/?(\?.*)?$/, (_, query) => {
-      return 'mongodb.net/calzare_production' + (query ? query : '?retryWrites=true&w=majority');
+  // If no database name is specified in standard mongodb:// or mongodb+srv://
+  // (e.g. mongodb://host:27017 or mongodb://user:pass@host:27017?authSource=admin)
+  if (/^mongodb(\+srv)?:\/\/[^/?]+\/?(\?.*)?$/.test(sanitized)) {
+    sanitized = sanitized.replace(/^mongodb(\+srv)?:\/\/([^/?]+)\/?(\?.*)?$/, (_, srv, host, query) => {
+      const q = query ? (query.startsWith('?') ? query : `?${query}`) : '';
+      return `mongodb${srv || ''}://${host}/calzare_production${q}`;
     });
   }
 

@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import compression from 'compression';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 import { connectDB } from './config/db.js';
@@ -84,6 +85,11 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 // Serve Uploaded Media Files statically with cross-origin headers
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
 app.use(
   '/uploads',
   (req, res, next) => {
@@ -91,9 +97,9 @@ app.use(
     res.setHeader('Access-Control-Allow-Origin', '*');
     next();
   },
-  express.static(path.join(__dirname, 'uploads'), {
-    maxAge: '7d',
-  })
+  express.static(uploadsDir, { maxAge: '7d' }),
+  express.static(path.join(process.cwd(), 'uploads'), { maxAge: '7d' }),
+  express.static(path.join(process.cwd(), 'backend', 'uploads'), { maxAge: '7d' })
 );
 
 // General rate limiter for API routes

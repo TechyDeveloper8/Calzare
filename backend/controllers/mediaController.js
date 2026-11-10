@@ -1,7 +1,11 @@
 import { MediaAsset } from '../models/MediaAsset.js';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
 import { logAudit } from '../utils/auditLogger.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export const getBackendBaseUrl = (req) => {
   if (process.env.BACKEND_URL) {
@@ -107,9 +111,15 @@ export const deleteMediaAsset = async (req, res, next) => {
 
     // Try deleting file from disk if local
     try {
-      const diskPath = path.join(process.cwd(), 'uploads', asset.filename);
+      const diskPath = path.join(__dirname, '../uploads', asset.filename);
+      const cwdDiskPath = path.join(process.cwd(), 'uploads', asset.filename);
+      const cwdBackendPath = path.join(process.cwd(), 'backend', 'uploads', asset.filename);
       if (fs.existsSync(diskPath)) {
         fs.unlinkSync(diskPath);
+      } else if (fs.existsSync(cwdDiskPath)) {
+        fs.unlinkSync(cwdDiskPath);
+      } else if (fs.existsSync(cwdBackendPath)) {
+        fs.unlinkSync(cwdBackendPath);
       }
     } catch (e) {
       console.warn('Could not delete file from disk:', e.message);

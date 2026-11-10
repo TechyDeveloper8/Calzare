@@ -92,7 +92,36 @@ const request = async (endpoint, options = {}) => {
   return data;
 };
 
+// In-memory client cache with TTL to eliminate latency on tab/route switching
+const clientCache = new Map();
+const DEFAULT_TTL_MS = 60 * 1000; // 60 seconds
+
+export const clearClientCache = () => {
+  clientCache.clear();
+};
+
+const cachedGet = async (endpoint, ttlMs = DEFAULT_TTL_MS) => {
+  const cached = clientCache.get(endpoint);
+  const now = Date.now();
+  if (cached && now - cached.timestamp < ttlMs) {
+    return cached.data;
+  }
+  const data = await request(endpoint);
+  clientCache.set(endpoint, { data, timestamp: now });
+  return data;
+};
+
+// Generic mutation wrapper that automatically invalidates cached data
+const mutate = async (endpoint, options = {}) => {
+  const result = await request(endpoint, options);
+  clearClientCache();
+  return result;
+};
+
 export const api = {
+  // Client Cache Invalidation
+  clearCache: clearClientCache,
+
   // Auth
   register: (body) => request('/auth/register', { method: 'POST', body }),
   login: (body) => request('/auth/login', { method: 'POST', body }),
@@ -110,12 +139,12 @@ export const api = {
   checkDelivery: (pincode) => request(`/products/check-delivery/${encodeURIComponent(pincode)}`),
   checkDeliveryPincode: (pincode) => request(`/products/check-delivery/${encodeURIComponent(pincode)}`),
   searchProducts: (q) => request(`/products/search?q=${encodeURIComponent(q)}`),
-  getCategories: () => request('/catalog/categories'),
-  getCollections: () => request('/catalog/collections'),
-  getCollectionBySlug: (slug) => request(`/catalog/collections/${slug}`),
+  getCategories: () => cachedGet('/catalog/categories'),
+  getCollections: () => cachedGet('/catalog/collections'),
+  getCollectionBySlug: (slug) => cachedGet(`/catalog/collections/${slug}`),
 
   // Homepage
-  getHomepage: () => request('/homepage'),
+  getHomepage: () => cachedGet('/homepage', 30 * 1000),
 
   // Cart
   getCart: () => request('/cart'),
@@ -133,24 +162,24 @@ export const api = {
   trackOrder: (body) => request('/orders/track', { method: 'POST', body }),
 
   // Reviews
-  createReview: (body) => request('/reviews', { method: 'POST', body }),
+  createReview: (body) => mutate('/reviews', { method: 'POST', body }),
 
   // CMS, Inquiries & Editorial
-  getPageBySlug: (slug) => request(`/cms/page/${slug}`),
-  getJournalArticles: () => request('/cms/journal'),
-  getJournalArticleBySlug: (slug) => request(`/cms/journal/${slug}`),
+  getPageBySlug: (slug) => cachedGet(`/cms/page/${slug}`, 60 * 1000),
+  getJournalArticles: () => cachedGet('/cms/journal', 60 * 1000),
+  getJournalArticleBySlug: (slug) => cachedGet(`/cms/journal/${slug}`, 60 * 1000),
   submitContactInquiry: (body) => request('/cms/contact', { method: 'POST', body }),
-  getNavigationMenus: () => request('/navigation'),
+  getNavigationMenus: () => cachedGet('/navigation', 60 * 1000),
   getStoryPage: (params = {}) => {
     const qs = new URLSearchParams(params).toString();
-    return request(`/story${qs ? `?${qs}` : ''}`);
+    return cachedGet(`/story${qs ? `?${qs}` : ''}`, 60 * 1000);
   },
 
   // Offers & Public Coupons
-  getPublicOffers: () => request('/coupons/public'),
+  getPublicOffers: () => cachedGet('/coupons/public', 60 * 1000),
 
   // Store Settings & Newsletter
-  getPublicSettings: () => request('/settings/public'),
+  getPublicSettings: () => cachedGet('/settings/public', 60 * 1000),
   subscribeNewsletter: (body) => request('/settings/newsletter', { method: 'POST', body }),
 
   // ADMIN CMS ENDPOINTS
@@ -160,32 +189,32 @@ export const api = {
   // Homepage Visual CMS Editor
   adminGetSections: () => request('/homepage/admin/sections'),
   adminGetSectionById: (id) => request(`/homepage/admin/sections/${id}`),
-  adminCreateSection: (body) => request('/homepage/admin/sections', { method: 'POST', body }),
-  adminUpdateSection: (id, body) => request(`/homepage/admin/sections/${id}`, { method: 'PUT', body }),
-  adminReorderSections: (orderedIds) => request('/homepage/admin/sections/reorder', { method: 'PUT', body: { orderedIds } }),
-  adminToggleSection: (id) => request(`/homepage/admin/sections/${id}/toggle`, { method: 'PATCH' }),
-  adminDeleteSection: (id) => request(`/homepage/admin/sections/${id}`, { method: 'DELETE' }),
+  adminCreateSection: (body) => mutate('/homepage/admin/sections', { method: 'POST', body }),
+  adminUpdateSection: (id, body) => mutate(`/homepage/admin/sections/${id}`, { method: 'PUT', body }),
+  adminReorderSections: (orderedIds) => mutate('/homepage/admin/sections/reorder', { method: 'PUT', body: { orderedIds } }),
+  adminToggleSection: (id) => mutate(`/homepage/admin/sections/${id}/toggle`, { method: 'PATCH' }),
+  adminDeleteSection: (id) => mutate(`/homepage/admin/sections/${id}`, { method: 'DELETE' }),
 
   // Products & Variants Manager
   adminGetProductById: (id) => request(`/products/admin/${id}`),
-  adminCreateProduct: (body) => request('/products', { method: 'POST', body }),
-  adminUpdateProduct: (id, body) => request(`/products/${id}`, { method: 'PUT', body }),
-  adminDeleteProduct: (id) => request(`/products/${id}`, { method: 'DELETE' }),
-  adminCreateVariant: (productId, body) => request(`/products/${productId}/variants`, { method: 'POST', body }),
-  adminUpdateVariant: (variantId, body) => request(`/products/variants/${variantId}`, { method: 'PUT', body }),
-  adminDeleteVariant: (variantId) => request(`/products/variants/${variantId}`, { method: 'DELETE' }),
+  adminCreateProduct: (body) => mutate('/products', { method: 'POST', body }),
+  adminUpdateProduct: (id, body) => mutate(`/products/${id}`, { method: 'PUT', body }),
+  adminDeleteProduct: (id) => mutate(`/products/${id}`, { method: 'DELETE' }),
+  adminCreateVariant: (productId, body) => mutate(`/products/${productId}/variants`, { method: 'POST', body }),
+  adminUpdateVariant: (variantId, body) => mutate(`/products/variants/${variantId}`, { method: 'PUT', body }),
+  adminDeleteVariant: (variantId) => mutate(`/products/variants/${variantId}`, { method: 'DELETE' }),
 
   // Categories & Collections
   adminGetCategories: () => request('/catalog/categories/admin/all'),
-  adminCreateCategory: (body) => request('/catalog/categories', { method: 'POST', body }),
-  adminUpdateCategory: (id, body) => request(`/catalog/categories/${id}`, { method: 'PUT', body }),
-  adminDeleteCategory: (id) => request(`/catalog/categories/${id}`, { method: 'DELETE' }),
+  adminCreateCategory: (body) => mutate('/catalog/categories', { method: 'POST', body }),
+  adminUpdateCategory: (id, body) => mutate(`/catalog/categories/${id}`, { method: 'PUT', body }),
+  adminDeleteCategory: (id) => mutate(`/catalog/categories/${id}`, { method: 'DELETE' }),
 
   adminGetCollections: () => request('/catalog/collections/admin/all'),
-  adminInitCoreCollections: () => request('/catalog/collections/init-defaults', { method: 'POST' }),
-  adminCreateCollection: (body) => request('/catalog/collections', { method: 'POST', body }),
-  adminUpdateCollection: (id, body) => request(`/catalog/collections/${id}`, { method: 'PUT', body }),
-  adminDeleteCollection: (id) => request(`/catalog/collections/${id}`, { method: 'DELETE' }),
+  adminInitCoreCollections: () => mutate('/catalog/collections/init-defaults', { method: 'POST' }),
+  adminCreateCollection: (body) => mutate('/catalog/collections', { method: 'POST', body }),
+  adminUpdateCollection: (id, body) => mutate(`/catalog/collections/${id}`, { method: 'PUT', body }),
+  adminDeleteCollection: (id) => mutate(`/catalog/collections/${id}`, { method: 'DELETE' }),
 
   // Orders Fulfillment
   adminGetOrders: (params = {}) => {
@@ -223,24 +252,24 @@ export const api = {
 
   // CMS Pages
   adminGetPages: () => request('/cms/admin/all'),
-  adminCreatePage: (body) => request('/cms/admin', { method: 'POST', body }),
-  adminUpdatePage: (id, body) => request(`/cms/admin/${id}`, { method: 'PUT', body }),
-  adminDeletePage: (id) => request(`/cms/admin/${id}`, { method: 'DELETE' }),
+  adminCreatePage: (body) => mutate('/cms/admin', { method: 'POST', body }),
+  adminUpdatePage: (id, body) => mutate(`/cms/admin/${id}`, { method: 'PUT', body }),
+  adminDeletePage: (id) => mutate(`/cms/admin/${id}`, { method: 'DELETE' }),
 
   // Our Story CMS Manager
   adminGetStoryPage: (slug = 'about-us') => request(`/story/admin?slug=${encodeURIComponent(slug)}`),
-  adminUpdateStoryPage: (body, slug = 'about-us') => request(`/story/admin?slug=${encodeURIComponent(slug)}`, { method: 'PUT', body }),
-  adminAddStorySection: (body, slug = 'about-us') => request(`/story/admin/sections?slug=${encodeURIComponent(slug)}`, { method: 'POST', body }),
-  adminDuplicateStorySection: (sectionId, slug = 'about-us') => request(`/story/admin/sections/${sectionId}/duplicate?slug=${encodeURIComponent(slug)}`, { method: 'POST' }),
-  adminDeleteStorySection: (sectionId, slug = 'about-us') => request(`/story/admin/sections/${sectionId}?slug=${encodeURIComponent(slug)}`, { method: 'DELETE' }),
-  adminReorderStorySections: (orderedIds, slug = 'about-us') => request(`/story/admin/sections/reorder?slug=${encodeURIComponent(slug)}`, { method: 'PUT', body: { orderedIds } }),
-  adminToggleStorySection: (sectionId, slug = 'about-us') => request(`/story/admin/sections/${sectionId}/toggle?slug=${encodeURIComponent(slug)}`, { method: 'PATCH' }),
-  adminPublishStoryPage: (slug = 'about-us') => request(`/story/admin/publish?slug=${encodeURIComponent(slug)}`, { method: 'POST' }),
-  adminUnpublishStoryPage: (slug = 'about-us') => request(`/story/admin/unpublish?slug=${encodeURIComponent(slug)}`, { method: 'POST' }),
+  adminUpdateStoryPage: (body, slug = 'about-us') => mutate(`/story/admin?slug=${encodeURIComponent(slug)}`, { method: 'PUT', body }),
+  adminAddStorySection: (body, slug = 'about-us') => mutate(`/story/admin/sections?slug=${encodeURIComponent(slug)}`, { method: 'POST', body }),
+  adminDuplicateStorySection: (sectionId, slug = 'about-us') => mutate(`/story/admin/sections/${sectionId}/duplicate?slug=${encodeURIComponent(slug)}`, { method: 'POST' }),
+  adminDeleteStorySection: (sectionId, slug = 'about-us') => mutate(`/story/admin/sections/${sectionId}?slug=${encodeURIComponent(slug)}`, { method: 'DELETE' }),
+  adminReorderStorySections: (orderedIds, slug = 'about-us') => mutate(`/story/admin/sections/reorder?slug=${encodeURIComponent(slug)}`, { method: 'PUT', body: { orderedIds } }),
+  adminToggleStorySection: (sectionId, slug = 'about-us') => mutate(`/story/admin/sections/${sectionId}/toggle?slug=${encodeURIComponent(slug)}`, { method: 'PATCH' }),
+  adminPublishStoryPage: (slug = 'about-us') => mutate(`/story/admin/publish?slug=${encodeURIComponent(slug)}`, { method: 'POST' }),
+  adminUnpublishStoryPage: (slug = 'about-us') => mutate(`/story/admin/unpublish?slug=${encodeURIComponent(slug)}`, { method: 'POST' }),
 
   // Navigation Menus
   adminGetMenus: () => request('/navigation/admin/all'),
-  adminUpdateMenu: (menuKey, body) => request(`/navigation/admin/${menuKey}`, { method: 'PUT', body }),
+  adminUpdateMenu: (menuKey, body) => mutate(`/navigation/admin/${menuKey}`, { method: 'PUT', body }),
 
   // Customers CRM & Security
   adminGetUsers: (params = {}) => {
@@ -253,7 +282,7 @@ export const api = {
 
   // Store Settings & Audit Logs
   adminGetSettings: () => request('/settings/admin'),
-  adminUpdateSettings: (body) => request('/settings/admin', { method: 'PUT', body }),
+  adminUpdateSettings: (body) => mutate('/settings/admin', { method: 'PUT', body }),
   adminTestFshipConnection: (body) => request('/settings/admin/test-fship', { method: 'POST', body }),
   adminGetSubscribers: () => request('/settings/subscribers'),
   adminGetAuditLogs: (params = {}) => {

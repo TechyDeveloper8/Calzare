@@ -69,6 +69,7 @@ export const ProductCard = ({ product, onQuickView }) => {
               alt={product.name}
               className={`product-card-img ${secondaryImg ? 'has-hover' : ''}`}
               loading="lazy"
+              decoding="async"
             />
             {secondaryImg && (
               <img
@@ -76,6 +77,7 @@ export const ProductCard = ({ product, onQuickView }) => {
                 alt={`${product.name} alternate view`}
                 className="product-card-img-hover"
                 loading="lazy"
+                decoding="async"
               />
             )}
           </>

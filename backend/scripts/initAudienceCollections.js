@@ -29,3 +29,4 @@ init().catch((err) => {
   console.error('\n[Error] Failed to initialize collections:', err.message);
   process.exit(1);
 });
+

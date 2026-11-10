@@ -1,30 +1,80 @@
 # ==============================================================================
-# CALZARE FOOTWEAR — NGINX VIRTUAL HOST CONFIGURATION FOR BLUEHOST VPS
-# Place in: /etc/nginx/sites-available/calzare.conf
-# Enable:   ln -s /etc/nginx/sites-available/calzare.conf /etc/nginx/sites-enabled/
+# CALZARE FOOTWEAR — HIGH PERFORMANCE NGINX CONFIGURATION FOR BLUEHOST VPS
+# Place in: /etc/nginx/conf.d/calzare.conf
+# Test:     nginx -t && systemctl reload nginx
 # ==============================================================================
 
 server {
     listen 80;
-    server_name yourdomain.com www.yourdomain.com api.yourdomain.com;
+    server_name _;
 
-    # Client body limit for product media uploads
+    # Client body limit for high-resolution product media uploads
     client_max_body_size 25M;
 
-    # 1. Frontend Static Assets & SPA Routing
+    # Performance Tuning: TCP & Fast File Transfers
+    sendfile on;
+    tcp_nopush on;
+    tcp_nodelay on;
+    keepalive_timeout 65;
+    types_hash_max_size 2048;
+
+    # Gzip Compression (reduces transfer size by 70-80% for low latency)
+    gzip on;
+    gzip_vary on;
+    gzip_proxied any;
+    gzip_comp_level 6;
+    gzip_min_length 256;
+    gzip_types
+        text/plain
+        text/css
+        text/xml
+        text/javascript
+        application/json
+        application/javascript
+        application/x-javascript
+        application/xml
+        application/xml+rss
+        image/svg+xml;
+
+    # 1. Immutable Hashed Production Assets (Vite chunks: .js, .css)
+    location /assets/ {
+        root /var/www/calzare/frontend/dist;
+        expires 1y;
+        add_header Cache-Control "public, max-age=31536000, immutable";
+        access_log off;
+    }
+
+    # 2. Uploaded Product Media & Images (Cached in browser for 30 days)
+    location /uploads/ {
+        proxy_pass http://127.0.0.1:5000/uploads/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_cache_bypass $http_upgrade;
+        expires 30d;
+        add_header Cache-Control "public, max-age=2592000";
+    }
+
+    # 3. Static Images and Webfonts in Public Folder
+    location ~* \.(jpg|jpeg|png|webp|gif|ico|svg|woff|woff2|ttf|eot)$ {
+        root /var/www/calzare/frontend/dist;
+        expires 30d;
+        add_header Cache-Control "public, max-age=2592000, no-transform";
+        access_log off;
+    }
+
+    # 4. Frontend SPA Router (index.html never cached stale)
     location / {
         root /var/www/calzare/frontend/dist;
         index index.html;
         try_files $uri $uri/ /index.html;
 
-        # Cache static assets (images, fonts, bundles)
-        location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|webp)$ {
-            expires 30d;
-            add_header Cache-Control "public, no-transform";
-        }
+        # Fresh index.html ensures users instantly receive newly deployed builds
+        add_header Cache-Control "no-cache, no-store, must-revalidate";
+        add_header Pragma "no-cache";
+        add_header Expires "0";
     }
 
-    # 2. Reverse Proxy to Node.js REST API Backend
+    # 5. Reverse Proxy to Node.js REST API Backend
     location /api/ {
         proxy_pass http://127.0.0.1:5000;
         proxy_http_version 1.1;
@@ -36,15 +86,9 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_cache_bypass $http_upgrade;
         proxy_read_timeout 60s;
-    }
 
-    # 3. Serve Uploaded Media Files directly from Node backend
-    location /uploads/ {
-        proxy_pass http://127.0.0.1:5000/uploads/;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_cache_bypass $http_upgrade;
-        expires 7d;
+        # Buffer tuning for high throughput
+        proxy_buffers 8 16k;
+        proxy_buffer_size 32k;
     }
 }
-

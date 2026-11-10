@@ -15,6 +15,25 @@ export default defineConfig(({ mode }) => {
     define: {
       'import.meta.env.VITE_API_URL': JSON.stringify(resolvedApi),
     },
+    build: {
+      chunkSizeWarningLimit: 600,
+      cssCodeSplit: true,
+      reportCompressedSize: false,
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              if (id.includes('react-router-dom') || id.includes('react-dom') || id.includes('react/')) {
+                return 'vendor-react';
+              }
+              if (id.includes('lucide-react')) {
+                return 'vendor-icons';
+              }
+            }
+          },
+        },
+      },
+    },
     server: {
       port: 5173,
       proxy: {
@@ -30,4 +49,3 @@ export default defineConfig(({ mode }) => {
     },
   };
 });
-

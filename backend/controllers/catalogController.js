@@ -7,7 +7,7 @@ import { logAudit } from '../utils/auditLogger.js';
 // Categories
 export const getCategories = async (req, res, next) => {
   try {
-    const categories = await Category.find({ isActive: true }).sort({ displayOrder: 1 });
+    const categories = await Category.find({ isActive: true }).sort({ displayOrder: 1 }).lean();
     res.json({ success: true, categories });
   } catch (error) {
     next(error);
@@ -222,10 +222,10 @@ export const ensureCoreAudienceCollections = async () => {
 
 export const getCollections = async (req, res, next) => {
   try {
-    let collections = await Collection.find({ isPublished: true }).sort({ displayOrder: 1 });
+    let collections = await Collection.find({ isPublished: true }).sort({ displayOrder: 1 }).lean();
     if (!collections || collections.length === 0) {
       await ensureCoreAudienceCollections();
-      collections = await Collection.find({ isPublished: true }).sort({ displayOrder: 1 });
+      collections = await Collection.find({ isPublished: true }).sort({ displayOrder: 1 }).lean();
     }
     res.json({ success: true, collections });
   } catch (error) {

@@ -133,7 +133,8 @@ export const getProducts = async (req, res, next) => {
       .populate('variants')
       .sort(sortOption)
       .skip((pageNum - 1) * limitNum)
-      .limit(limitNum);
+      .limit(limitNum)
+      .lean();
 
     res.json({
       success: true,

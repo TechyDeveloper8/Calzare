@@ -31,14 +31,16 @@ export const getPublishedHomepage = async (req, res, next) => {
           if (sec.config?.productSource === 'manual_select' && sec.config?.selectedProductIds?.length) {
             products = await Product.find({ _id: { $in: sec.config.selectedProductIds }, status: 'published' })
               .populate('variants')
-              .populate('category', 'name slug');
+              .populate('category', 'name slug')
+              .lean();
           } else {
             // Auto-populated based on actual orders & salesCount
             products = await Product.find({ status: 'published' })
               .sort({ salesCount: -1, averageRating: -1, isBestseller: -1 })
               .limit(limit)
               .populate('variants')
-              .populate('category', 'name slug');
+              .populate('category', 'name slug')
+              .lean();
           }
           item.dynamicProducts = products;
         }
@@ -87,7 +89,8 @@ export const getPublishedHomepage = async (req, res, next) => {
             .sort(sortOption)
             .limit(limit)
             .populate('variants')
-            .populate('category', 'name slug');
+            .populate('category', 'name slug')
+            .lean();
 
           // Fallback: If no products match the priceCap filter, load lowest-priced published products
           // so this section is NEVER empty when products exist in the store!
@@ -96,7 +99,8 @@ export const getPublishedHomepage = async (req, res, next) => {
               .sort({ baseSalePrice: 1 })
               .limit(limit)
               .populate('variants')
-              .populate('category', 'name slug');
+              .populate('category', 'name slug')
+              .lean();
           }
 
           // If manual select, preserve admin specified order

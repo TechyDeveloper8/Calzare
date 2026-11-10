@@ -731,6 +731,8 @@
   display: flex;
   flex-direction: column;
   position: relative;
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 .product-card:hover {
